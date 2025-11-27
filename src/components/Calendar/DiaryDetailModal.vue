@@ -150,12 +150,13 @@ function formatDateTime(datetime) {
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 22px;
   color: white;
   margin: 0;
   font-weight: 600;
   flex: 1;
   text-align: center;
+  transform: translateX(20px);
 }
 
 .close-btn {
@@ -197,17 +198,17 @@ function formatDateTime(datetime) {
 }
 
 .diary-title h1 {
-  font-size: 26px;
+  font-size: 30px;
   color: #333;
   margin: 10px 0;
   flex: 1;
   text-align: left;
 }
 
-.diary-badge {
+.diary-title span{
   padding: 4px 12px;
   border-radius: 12px;
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: #ffffff;
 }
@@ -274,12 +275,11 @@ function formatDateTime(datetime) {
   padding-top: 10px;
   border-top: 1px solid #e0e0e0;
   font-size: 15px;
+  margin-bottom: 8px;
 }
 
 .meta-item {
-  margin-top: 3px;
   margin-bottom: 10px;
-  padding-top: 5px;
 }
 
 .meta-label {

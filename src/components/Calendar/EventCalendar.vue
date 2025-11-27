@@ -4,11 +4,10 @@
     <!-- 月份標題和導航 -->
     <div class="calendar-header">
 
-      <!-- 左側按鈕群 -->
       <div class="header-left">
-        <button class="nav-btn" @click="previousMonth">↑</button>
-        <button class="nav-btn" @click="nextMonth">↓</button>
-        <button class="today-btn" @click="goToday">今天</button>
+        <button class="nav-btn" @click="previousMonth">◀</button>
+        <button class="today-btn" @click="goToday">Today</button>
+        <button class="nav-btn" @click="nextMonth">▶</button>
       </div>
 
       <!-- 年月（點擊打開選單） -->
@@ -109,7 +108,6 @@
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -270,94 +268,115 @@ onMounted(() => {
 <style scoped>
 .calendar-container {
   background: white;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 25px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: fixed;
+  /* position: fixed;
   left: 20px;
   top:11%;
   width: 67%;
-  height: auto;
+  height: auto; */
+  width: 100%;
+  max-width: 100%;            
+  position: relative;
 }
 
 .calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
-.header-left{
-  display: flex; 
-  align-items:center;
-  justify-content:flex-start; 
-  gap:3px;
-  padding: 10px 0px;
-  width: 75px;
-  height: 40px;
+.header-left {
+    display: flex; 
+    align-items: center; 
+}
+
+.nav-btn, .today-btn {
+    border: 1px solid #ccc;
+    padding: 8px 14px;
+    cursor: pointer;
+    background-color: white;
+    color:#0557e5;
+    font-size: 16px;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s; 
+}
+
+.nav-btn:first-child {
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+
+.nav-btn:last-child {
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+}
+
+.nav-btn:hover, .today-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.today-btn {
+    margin: 0 8px; 
+    border-radius: 4px;
+}
+
+.today-btn:hover {
+  background: #b1afaf;
+  transform: scale(1.05);
+}
+
+.today-btn:active {
+  transform: scale(0.95);
 }
 
 .header-right{
-  padding: 10px 10px;
-  width: 25px;
-  height: 25px;
-  display: flex;
+  display: flex; 
   align-items: center;
-  justify-content: center;
+}
+
+.add-event-btn {
+  border: 1px solid #ccc;
+  padding: 0px 8px;
+  cursor: pointer;
+  background-color: white;
+  color:#0557e5;
+  font-size: 30px;
+  font-weight: bold;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s; 
+}
+
+.add-event-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.add-event-btn:active {
+  transform: scale(0.95);
 }
 
 .month-title {
+  transform: translateX(-20%);
   font-size: 28px;
+  text-align: center;
   font-weight: 700;
   color: #5eb3e4;
-  text-align: center;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  cursor: pointer;     
+  cursor: pointer;
   user-select: none;
 }
 
-/* .month-picker-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999; 
-}
-
-.month-picker-modal {
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  width: 250px;
-  text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-  z-index: 10000;
-}
-
-.month-picker-modal select {
-  width: 100%;
-  margin: 8px 0;
-  padding: 6px;
-  font-size: 16px;
-} */
-
 .month-picker-popup {
   position: absolute;
-  top: 80px; /* 🔥 彈窗顯示在標題下方 */
+  top: 70px; 
   left: 50%;
   transform: translateX(-50%);
   background: white;
-  width: 280px;
-  padding: 12px;
+  width: 90%;
+  max-width: 300px;
+  padding: 14px;
   border-radius: 12px;
   box-shadow: 0 4px 18px rgba(0,0,0,0.2);
-  z-index: 10000;
+  z-index: 9999;
 }
 
 .picker-title {
@@ -416,29 +435,6 @@ onMounted(() => {
   cursor: pointer;
 }
 
-
-.nav-btn {
-  background: none;
-  border: none;
-  border-radius: 12px;
-  font-size: 40px;
-  font-weight: 600;
-  color: #414243;
-  cursor: pointer;
-  transition: 0.2s;
-  padding: 5px 10px;
-}
-
-.nav-btn:hover {
-  background: #f0f0f0;
-  color: #8ac2de;
-  transform: scale(1.05);
-}
-
-.nav-btn:active {
-  transform: scale(0.95);
-}
-
 .calendar-title {
   text-align: center;
   font-size: 18px;
@@ -456,60 +452,16 @@ onMounted(() => {
   position: relative;
 }
 
-.add-event-btn {
-  background: none;
-  border: none;
-  border-radius: 12px;
-  font-size: 40px;
-  font-weight: bold;
-  color: #0557e5;
-  cursor: pointer;
-  transition: 0.2s;
-  padding: 5px 10px;
-}
-
-.add-event-btn:hover {
-  background: #f0f0f0;
-  color: #8ac2de;
-  transform: scale(1.05);
-}
-
-.add-event-btn:active {
-  transform: scale(0.95);
-}
-
-.today-btn {
-  background: #5eb3e4;
-  color:white;
-  border: none;
-  padding: 8px 18px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: 0.2s;
-}
-
-.today-btn:hover {
-  background: #b1afaf;
-  transform: scale(1.05);
-}
-
-.today-btn:active {
-  transform: scale(0.95);
-}
-
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border: 1px solid #e0e0e0;
+  /* border: 1px solid #e0e0e0; */
   margin-bottom: 1px;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  border: 1px solid #e0e0e0;
-
 }
 
 .weekday {
@@ -523,18 +475,16 @@ onMounted(() => {
 
 .weekday:nth-child(7n),
 .day-cell:nth-child(7n){
-  border-right: none; /* 每列最後一格不要右邊框 */
+  border-right: none; 
 }
 
 .day-cell {
   background: white;
-  min-height: 100px;
-  padding: 8px;
+  min-height: 90px;
+  padding: 6px;
   cursor: pointer;
-  position: relative;
   border-right: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
-  display: flex;
   flex-direction: column;
 }
 
@@ -629,23 +579,52 @@ onMounted(() => {
 }
 
 /* 響應式設計 */
+@media (max-width: 1024px) {
+  .calendar-container {
+    padding: 15px;
+  }
+  .month-title {
+    font-size: 24px;
+  }
+}
+
 @media (max-width: 768px) {
   .calendar-container {
-    padding: 10px;
+    padding: 12px;
   }
-
+  .month-title {
+    font-size: 22px;
+  }
   .day-cell {
     min-height: 70px;
     padding: 4px;
   }
-
-  .day-number {
-    font-size: 14px;
-  }
-
   .event-item {
     font-size: 10px;
     padding: 2px 4px;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendar-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .month-title {
+    font-size: 20px;
+  }
+
+  .weekdays div {
+    font-size: 12px;
+    padding: 6px 0;
+  }
+
+  .day-cell {
+    min-height: 60px;
+  }
+
+  .month-picker-popup {
+    width: 95%;
   }
 }
 </style>

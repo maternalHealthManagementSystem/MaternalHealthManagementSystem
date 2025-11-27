@@ -75,10 +75,11 @@ body {
                'PingFang TC', 'Helvetica Neue', Arial, sans-serif;
   background: #f5f7fa;
   color: #333;
+  /* overflow: hidden; */
 }
 
 #app {
-  min-height: 100vh;
+  /* min-height: 100vh; */
   display: flex;
   flex-direction: column;
 }
@@ -101,7 +102,7 @@ body {
   max-width: 1600px;
   margin: 0 auto;
   padding: 0 10px;
-  height: 90px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,7 +120,6 @@ body {
   color: #57aee2;
   letter-spacing: 1px;
   user-select: none;
-  margin-left: 0px
 }
 
 .navbar-menu {
@@ -212,18 +212,16 @@ body {
 .main-content {
   flex: 1;
   width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
   padding: 20px;
-  padding-top: 90px;
-  padding-top: 100px !important;
+  padding-top: 30px !important;
+  margin-top: 20px; 
 }
 
 /* 頁尾 */
 .footer {
   background: white;
   border-top: 1px solid #e0e0e0;
-  padding: 20px;
+  padding: 15px;
   text-align: center;
   color: #999;
   font-size: 18px;

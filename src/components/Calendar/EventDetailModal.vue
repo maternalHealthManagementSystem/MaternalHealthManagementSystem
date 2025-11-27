@@ -314,7 +314,7 @@ onUnmounted(() => {
   background: white;
   border-radius: 12px;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -333,13 +333,13 @@ onUnmounted(() => {
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 120%;
   color: white;
   margin: 0;
   font-weight: 600;
-  flex: 1;
   text-align: center;
   margin-top: 10px; 
+  transform: translateX(215px);
 }
 
 .close-btn {
@@ -380,7 +380,7 @@ onUnmounted(() => {
 }
 
 .event-title h1 {
-  font-size: 26px;
+  font-size: 30px;
   color: #333;
   margin: 10px 0;
   flex: 1;
@@ -390,7 +390,7 @@ onUnmounted(() => {
 .event-type-badge {
   padding: 4px 12px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 17px;
   font-weight: 600;
   color: #ffffff;
 }

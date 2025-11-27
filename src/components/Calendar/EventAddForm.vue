@@ -340,12 +340,13 @@ function saveEvent() {
 }
 
 .modal-title {
-  font-size: 18px;
+  font-size: 22px;
   color: white;
   margin: 0;
   font-weight: 600;
   flex: 1;
   text-align: center;
+  transform: translateX(20px);
 }
 
 .close-btn {
@@ -388,7 +389,7 @@ function saveEvent() {
   display: block;
   margin-bottom: 8px;
   color: #333;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 600;
   text-align: left;
 }
@@ -404,7 +405,7 @@ function saveEvent() {
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 16px;
   transition: border-color 0.3s;
 }
 

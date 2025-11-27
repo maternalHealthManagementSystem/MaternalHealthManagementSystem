@@ -322,6 +322,7 @@ const diaries = ref([
     title: '產檢的安心感',
     content: '今天去產檢，聽到寶寶的心跳聲，覺得很安心，醫生說一切正常。',
     image: 'public/images/超音波小月份.jpg',
+    
     updatedAt: '2025-11-30T12:45:00Z'
   },
   {
@@ -608,7 +609,7 @@ function handleSaveDiary(updatedDiary) {
 
 <style scoped>
 .content-wrapper {
-  height: 100vh;
+  /* height: 100vh;
   background: #f5f7fa;
   display: flex;
   flex-direction: column;
@@ -616,21 +617,39 @@ function handleSaveDiary(updatedDiary) {
   grid-template-columns: 1fr 350px;
   gap: 20px;
   max-width: 1400px;
-  margin: 0 auto;
-}
+  margin: 0 auto; */
+  background: #f5f7fa;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  /* display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 20px;
+  height: calc(100vh - 80px); 
+  overflow: hidden;
+  padding: 0 20px;
+  max-width: 1600px;
+  margin: 0 auto; */
+  }
 
 .calendar-section {
-  border-radius: 8px;
+  /* border-radius: 8px;
   padding: 25px;
   position: fixed;
   left: 20px;
   top:10%;
   width: 70%;
-  height: auto;
+  height: auto; */
+  flex: 2 1 65%;
+  min-width: 500px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .diary-section {
-  background: white;
+  /* background: white;
   border-radius: 8px;
   padding: 25px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -638,8 +657,14 @@ function handleSaveDiary(updatedDiary) {
   right: 20px;
   top:11%;
   width: 30%;
-  height: auto;
-}
+  height: auto;*/
+  flex: 1 1 30%;
+  min-width: 280px;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+} 
 
 .date-select {
   width: 100%;
@@ -652,8 +677,13 @@ function handleSaveDiary(updatedDiary) {
 }
 
 .diary-form h3 {
-  color: #333;
+  color: #606365;
   margin-bottom: 20px;
+  padding-top: 10px;
+  font-size: 24px;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 5px;
 }
 
 .diary-form{
@@ -736,8 +766,7 @@ function handleSaveDiary(updatedDiary) {
   width: 100%;
   height: 200px;
   position: relative;
-  border-radius: 8px;
-  overflow: hidden;
+
 }
 
 .image-preview img {
@@ -748,21 +777,16 @@ function handleSaveDiary(updatedDiary) {
 
 .remove-image {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(161, 159, 159, 0.6);
-  color: rgb(11, 11, 11);
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.5);
   border: none;
-  width: 30px;
-  height: 30px;
+  color: white;
   border-radius: 50%;
-  cursor: pointer;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
+  width: 28px;
+  height: 28px;
 }
+
 
 .remove-image:hover {
   background: rgba(165, 163, 163, 0.9);
@@ -782,24 +806,21 @@ function handleSaveDiary(updatedDiary) {
   margin-top: 20px;
 }
 
-.btn-cancel,
 .btn-save {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  border-radius: 6px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
+flex: 1;
+background: #5eb3e4;
+color: white;
+border: none;
+padding: 12px;
+border-radius: 6px;
 }
-
 .btn-cancel {
-  background: white;
-  color: #666;
-  border: 1px solid #ddd;
+flex: 1;
+background: white;
+border: 1px solid #ddd;
+padding: 12px;
+border-radius: 6px;
 }
-
 .btn-cancel:hover {
   background: #f5f5f5;
 }
@@ -819,9 +840,27 @@ function handleSaveDiary(updatedDiary) {
   cursor: not-allowed;
 }
 
+/* 響應式：平板 */
 @media (max-width: 1024px) {
-  .content-wrapper {
-    grid-template-columns: 1fr;
-  }
+.content-wrapper {
+grid-template-columns: 1fr;
+height: auto;
+}
+.calendar-section,
+.diary-section {
+height: auto;
+overflow: visible;
+}
+}
+
+
+/* 手機版 */
+@media (max-width: 650px) {
+.content-wrapper {
+padding: 10px;
+}
+.diary-section {
+margin-top: 10px;
+}
 }
 </style>
