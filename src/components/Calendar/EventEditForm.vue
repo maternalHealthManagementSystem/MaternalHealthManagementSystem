@@ -118,7 +118,7 @@
           </button>
           <button type="button" class="btn-save" @click="saveEvent">
             儲存
-          </button>
+          </button>          
         </div>
       </div>
     </div>
@@ -256,7 +256,7 @@ function saveEvent() {
   background: white;
   border-radius: 12px;
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -278,23 +278,24 @@ function saveEvent() {
   background: none;
   border: none;
   color: #5eb3e4;
-  font-size: 14px;
+  font-size: 18px;
   cursor: pointer;
   padding: 5px 10px;
+  flex-shrink: 0; 
+  transition: opacity 0.3s;
 }
 
 .back-btn:hover {
-  text-decoration: underline;
+  opacity: 0.8;
 }
 
 .modal-title {
-  font-size: 20px;
+  font-size: 120%;
   color: white;
   margin: 0;
   font-weight: 600;
   flex: 1;
   text-align: center;
-  transform: translateX(20px);
 }
 
 .close-btn {
@@ -310,10 +311,11 @@ function saveEvent() {
   justify-content: center;
   border-radius: 4px;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.15);
   color: #333;
 }
 
@@ -348,7 +350,8 @@ function saveEvent() {
 }
 
 .form-input,
-.form-select {
+.form-select,
+.form-textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ddd;
@@ -358,7 +361,8 @@ function saveEvent() {
 }
 
 .form-input:focus,
-.form-select:focus {
+.form-select:focus,
+.form-textarea:focus {
   outline: none;
   border-color: #5eb3e4;
 }
@@ -369,14 +373,8 @@ function saveEvent() {
 }
 
 .form-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
   font-family: inherit;
   resize: vertical;
-  transition: border-color 0.3s;
 }
 
 .form-textarea:focus {
@@ -470,20 +468,116 @@ function saveEvent() {
   transform: scale(0.9);
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
+/* 平板版（1024px 以下）*/
+@media (max-width: 1024px) {
   .modal-container {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+    border-radius: 10px;
+    max-width: 700px;
+  }
+  
+  .modal-header {
+    padding: 18px;
+  }
+
+  .modal-title{
+  font-size: 26px; 
+
   }
 
   .modal-body {
     padding: 20px;
   }
+  
+  .form-label {
+    font-size: 18px;
+  }
+  
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 18px;
+  }
+  
+  .modal-footer {
+    padding: 22px;
+  }
+}
+/* 小平板 / 大手機樣式 (Max-width: 820px) */
+@media (max-width: 820px) {
+  .modal-container {
+    max-width: 85vw;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
 
   .form-row {
-    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .modal-footer {
+    padding: 18px;
+  }
+}
+/* 手機版（600px 以下） */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 15px;
+  }
+
+  .modal-title {
+    font-size: 110%; 
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .form-row .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-row .form-group:last-child {
+      margin-bottom: 0;
+  }
+
+  .form-label {
+    font-size: 16px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-cancel,
+  .btn-save {
+    padding: 10px; 
+    font-size: 14px;
   }
 }
 </style>

@@ -156,7 +156,6 @@ function formatDateTime(datetime) {
   font-weight: 600;
   flex: 1;
   text-align: center;
-  transform: translateX(20px);
 }
 
 .close-btn {
@@ -172,10 +171,11 @@ function formatDateTime(datetime) {
   justify-content: center;
   border-radius: 4px;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.15);  
   color: #333;
 }
 
@@ -185,7 +185,8 @@ function formatDateTime(datetime) {
 
 /* 內容區 */
 .modal-body {
-  padding: 30px;
+  padding: 20px;
+  padding-top:10px;
   overflow-y: auto;
   flex: 1;
 }
@@ -203,6 +204,7 @@ function formatDateTime(datetime) {
   margin: 10px 0;
   flex: 1;
   text-align: left;
+  line-height: 1.2;
 }
 
 .diary-title span{
@@ -211,6 +213,7 @@ function formatDateTime(datetime) {
   font-size: 17px;
   font-weight: 600;
   color: #ffffff;
+  flex-shrink: 0;
 }
 
 .diary-date {
@@ -236,6 +239,7 @@ function formatDateTime(datetime) {
   font-weight: 600;
   color: white;
   background: #4fc3f7;
+  flex-shrink: 0;
 }
 
 /* 圖片 */
@@ -288,6 +292,8 @@ function formatDateTime(datetime) {
 
 .meta-value {
   color: #666;
+  font-weight: 500;
+  margin-right: 5px;
 }
 
 /* 底部按鈕 */
@@ -352,24 +358,134 @@ function formatDateTime(datetime) {
   transform: scale(0.9);
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
+/* 平板版（1024px 以下）*/
+@media (max-width: 1024px) {
   .modal-container {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+    max-width: 700px;
+    border-radius: 10px;
+  }
+
+  .modal-header {
+    padding: 18px;
   }
 
   .modal-body {
     padding: 20px;
   }
 
-  .diary-title {
-    font-size: 20px;
+  .diary-title h1 {
+    font-size: 24px;
   }
 
   .diary-image img {
+    max-height: 350px;
+  }
+  .modal-footer {
+    padding: 20px;
+  }
+}
+/* 小平板 / 大手機樣式 (Max-width: 820px) */
+@media (max-width: 820px) {
+  .modal-container {
+    max-width: 85vw;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .diary-title h1 {
+    font-size: 26px;
+  }
+  
+  .diary-image img {
     max-height: 300px;
+  }
+
+  .modal-footer {
+    padding: 16px;
+  }
+}
+/* 手機版（600px 以下） */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0; 
+  }
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 12px 15px; 
+  }
+  
+  .modal-title {
+    font-size: 110%; 
+  }
+
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .diary-title {
+    flex-wrap: wrap; 
+    gap: 8px;
+  }
+  
+  .diary-title h1 {
+    font-size: 24px; 
+    margin: 5px 0;
+    order: 1; 
+    flex-basis: 100%; 
+  }
+  
+  .diary-title span {
+    font-size: 15px;
+    order: 2; 
+  }
+  
+  .diary-date {
+    margin-top: 5px;
+    font-size: 15px;
+  }
+
+  .diary-image {
+    margin-bottom: 15px;
+  }
+  .diary-image img {
+    max-height: 250px;
+  }
+
+  .diary-content {
+    font-size: 15px;
+  }
+  
+  .diary-meta {
+    font-size: 14px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-delete,
+  .btn-edit {
+    padding: 10px; 
+    font-size: 14px;
   }
 }
 </style>

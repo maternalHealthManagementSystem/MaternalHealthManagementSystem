@@ -299,10 +299,11 @@ function saveDiary() {
   justify-content: center;
   border-radius: 4px;
   transition: all 0.3s;
+  flex-shrink: 0
 }
 
 .close-btn:hover {
-  background: #f0f0f0;
+background: rgba(255, 255, 255, 0.15);
   color: #333;
 }
 
@@ -317,12 +318,12 @@ function saveDiary() {
   font-weight: 600;
   flex: 1;
   text-align: center;
-  transform: translateX(25px);
 }
 
 /* 內容區 */
 .modal-body {
-  padding: 30px;
+  padding: 20px;
+  padding-top:15px;
   overflow-y: auto;
   flex: 1;
 }
@@ -346,30 +347,28 @@ function saveDiary() {
   margin-right: 4px;
 }
 
-.form-input {
+.form-input ,
+.form-textarea{
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 16px;
   transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
 .form-input:focus,
 .form-textarea:focus {
   outline: none;
   border-color: #5eb3e4;
+  box-shadow: 0 0 0 2px rgba(94, 179, 228, 0.2);
 }
 
 .form-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
-  transition: border-color 0.3s;
 }
 
 /* 現有圖片預覽 */
@@ -389,7 +388,7 @@ function saveDiary() {
 .image-preview-box img {
   display: block;
   max-width: 100%;
-  max-height: 300px;
+  max-height: 400px;
   object-fit: contain;
 }
 
@@ -436,7 +435,7 @@ function saveDiary() {
   border: 2px dashed #ddd;
   border-radius: 6px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 20px;
   color: #666;
   transition: all 0.3s;
 }
@@ -536,20 +535,117 @@ function saveDiary() {
   transform: scale(0.9);
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
+/* 平板版（1024px 以下）*/
+@media (max-width: 1024px) {
   .modal-container {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+    max-width: 700px;
+    border-radius: 10px;
+  }
+
+  .modal-header {
+    padding: 18px;
+  }
+
+  .form-label {
+    font-size: 20px;
+  }
+
+  .form-input,
+  .form-textarea {
+    font-size: 18px;
+  }
+
+  .image-preview-box img {
+    max-height:100%;
+  }
+
+  .modal-footer {
+    padding: 20px;
+  }
+}
+/* 小平板 / 大手機樣式 (Max-width: 820px) */
+@media (max-width: 820px) {
+  .modal-container {
+    max-width: 85vw;
+  }
+
+  .modal-header {
+    padding: 16px;
   }
 
   .modal-body {
     padding: 20px;
   }
+  
+.image-preview-box img {
+    max-height: 100%;
+  }
+
+  .modal-footer {
+    padding: 16px;
+  }
+}
+/* 手機版（600px 以下） */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0; 
+  }
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 12px 15px; 
+  }
+  
+  .modal-title {
+    font-size: 110%; 
+  }
+
+  .form-label {
+    font-size: 16px;
+  }
+  
+  .form-input,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+  
+  .form-group {
+    margin-bottom: 15px; 
+  }
 
   .image-preview-box img {
-    max-height: 250px;
+    max-height: 100%;
+  }
+
+  .remove-image-btn {
+    width: 30px;
+    height: 30px;
+    top: 5px;
+    right: 5px;
+    font-size: 16px;
+  }
+  
+  .upload-btn {
+      padding: 8px 15px;
+      font-size: 13px;
+  }
+
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-cancel,
+  .btn-save {
+    padding: 10px;
+    font-size: 14px;
   }
 }
 </style>

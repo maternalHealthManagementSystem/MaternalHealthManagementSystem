@@ -17,11 +17,6 @@
             <div v-if="errorMessage" class="error-message">
               {{ errorMessage }}
             </div>
-
-            <!-- 成功訊息 -->
-            <div v-if="successMessage" class="success-message">
-              {{ successMessage }}
-            </div>
             <!-- 標題 -->
             <div class="form-group">
               <label class="form-label">
@@ -314,6 +309,7 @@ function saveEvent() {
   padding: 8px 12px;
   border-radius: 6px;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .back-btn:hover {
@@ -333,6 +329,7 @@ function saveEvent() {
   justify-content: center;
   border-radius: 4px;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
@@ -346,7 +343,6 @@ function saveEvent() {
   font-weight: 600;
   flex: 1;
   text-align: center;
-  transform: translateX(20px);
 }
 
 .close-btn {
@@ -362,10 +358,11 @@ function saveEvent() {
   justify-content: center;
   border-radius: 4px;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .close-btn:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.15);
   color: #333;
 }
 
@@ -400,19 +397,23 @@ function saveEvent() {
 }
 
 .form-input,
-.form-select {
+.form-select,
+.form-textarea {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 16px;
   transition: border-color 0.3s;
+  box-sizing: border-box;
 }
 
 .form-input:focus,
-.form-select:focus {
+.form-select:focus,
+.form-textarea:focus {
   outline: none;
   border-color: #5eb3e4;
+  box-shadow: 0 0 0 3px rgba(94, 179, 228, 0.1);
 }
 
 .form-select {
@@ -421,14 +422,9 @@ function saveEvent() {
 }
 
 .form-textarea {
-  width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
   font-size: 14px;
   font-family: inherit;
   resize: vertical;
-  transition: border-color 0.3s;
 }
 
 .form-textarea:focus {
@@ -460,25 +456,6 @@ function saveEvent() {
 
 .error-message::before {
   content: '⚠️';
-}
-
-/* 成功訊息 */
-.success-message {
-  background: #d4edda;
-  border: 1px solid #28a745;
-  color: #155724;
-  padding: 12px;
-  border-radius: 6px;
-  font-size: 14px;
-  margin-top: 15px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.success-message::before {
-  content: '✓';
-  font-weight: bold;
 }
 
 /* 底部按鈕 */
@@ -544,20 +521,127 @@ function saveEvent() {
   transform: scale(0.9);
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
+/* 平板版（1024px 以下）*/
+@media (max-width: 1024px) {
   .modal-container {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+    border-radius: 10px;
+  }
+  
+  .modal-header {
+    padding: 15px 18px;
+  }
+
+  .modal-body {
+    padding: 25px;
+  }
+
+  .form-label {
+    font-size: 18px;
+  }
+  .form-input,
+  .form-select,
+  .form-textarea {
+    font-size: 18px;
+  }
+  
+  .modal-footer {
+    padding: 18px;
+  }
+}
+/* 小平板 / 大手機樣式 (Max-width: 820px) */
+@media (max-width: 820px) {
+  .modal-container {
+    max-width: 90vw;
+  }
+  
+  .modal-header {
+    padding: 12px 16px;
   }
 
   .modal-body {
     padding: 20px;
   }
+  
+  .form-row {
+    gap: 10px;
+  }
+
+  .modal-footer {
+    padding: 16px;
+  }
+}
+/* 手機版（600px 以下） */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 100%; 
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 10px 15px; 
+  }
+  
+  .modal-title {
+    font-size: 18px; 
+  }
+
+  .back-btn {
+      padding: 6px 10px;
+      font-size: 13px;
+      margin-left: -5px;
+  }
+
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    margin-right: -5px; 
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
 
   .form-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .form-row .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-row .form-group:last-child {
+      margin-bottom: 0;
+  }
+
+  .form-label {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-cancel,
+  .btn-save {
+    padding: 10px; 
+    font-size: 14px;
   }
 }
 </style>

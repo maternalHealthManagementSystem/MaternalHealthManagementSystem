@@ -79,7 +79,6 @@ body {
 }
 
 #app {
-  /* min-height: 100vh; */
   display: flex;
   flex-direction: column;
 }
@@ -91,18 +90,17 @@ body {
   left: 0;
   width: 100%;
   background: #ffffff;
-  padding: 0;
+  height: 80px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   z-index: 1000;
   border-bottom: 1px solid #e8eef3;
 }
 
 .navbar-container {
-  width: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0 10px;
-  height: 80px;
+  padding: 0 16px;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -118,15 +116,18 @@ body {
   font-size: 26px;
   font-weight:800;
   color: #57aee2;
-  letter-spacing: 1px;
-  user-select: none;
+  white-space: nowrap;
 }
 
 .navbar-menu {
   display: flex;
   gap: 25px;
-  flex: 1;
   justify-content: center;
+  flex: 1;
+}
+
+.navbar-menu::-webkit-scrollbar {
+  display: none;
 }
 
 .nav-item {
@@ -214,7 +215,7 @@ body {
   width: 100%;
   padding: 20px;
   padding-top: 30px !important;
-  margin-top: 20px; 
+  margin-top: 5px; 
 }
 
 /* 頁尾 */
@@ -253,7 +254,7 @@ body {
 
   .navbar-user {
     position: absolute;
-    top: 15px;
+    top: 3px;
     right: 20px;
   }
 
@@ -281,6 +282,7 @@ body {
     padding: 15px;
   }
 }
+
 
 /* 通用按鈕樣式 */
 .btn-primary {

@@ -3,60 +3,55 @@
 
     <!-- 月份標題和導航 -->
     <div class="calendar-header">
-
-      <div class="header-left">
-        <button class="nav-btn" @click="previousMonth">◀</button>
-        <button class="today-btn" @click="goToday">Today</button>
-        <button class="nav-btn" @click="nextMonth">▶</button>
-      </div>
-
       <!-- 年月（點擊打開選單） -->
       <h2 class="month-title" @click="openMonthPicker">
         {{ currentYear }}年{{ currentMonth }}月
       </h2>
 
-      <!-- 右側新增事件按鈕 -->
-      <div class="header-right">
-        <button class="add-event-btn" @click="openAddEvent">＋</button>
+      <!-- 年月 選擇器 -->
+      <div v-if="showMonthPicker" class="month-picker-popup">
+        <div class="picker-title">選擇年月</div>
+        <div class="picker-columns">
+          <!-- 年份 -->
+          <div class="picker-column">
+            <div 
+              v-for="y in yearOptions" 
+              :key="y"
+              class="picker-item"
+              :class="{ active: y === tempYear }"
+              @click="tempYear = y"
+            >
+              {{ y }} 年
+            </div>
+          </div>
+          <!-- 月份 -->
+          <div class="picker-column">
+            <div 
+              v-for="m in 12" 
+              :key="m"
+              class="picker-item"
+              :class="{ active: m === tempMonth }"
+              @click="tempMonth = m"
+            >
+              {{ m }} 月
+            </div>
+          </div>
+        </div>
+        <div class="picker-actions">
+          <button class="confirm-btn" @click="closeMonthPicker()">取消</button>
+          <button class="confirm-btn" @click="applyMonth()">確認</button>
+        </div>
       </div>
     </div>
 
-    <!-- 年月 選擇器 -->
-    <div v-if="showMonthPicker" class="month-picker-popup">
-      <div class="picker-title">選擇年月</div>
-
-      <div class="picker-columns">
-        
-        <!-- 年份 -->
-        <div class="picker-column">
-          <div 
-            v-for="y in yearOptions" 
-            :key="y"
-            class="picker-item"
-            :class="{ active: y === tempYear }"
-            @click="tempYear = y"
-          >
-            {{ y }} 年
-          </div>
-        </div>
-
-        <!-- 月份 -->
-        <div class="picker-column">
-          <div 
-            v-for="m in 12" 
-            :key="m"
-            class="picker-item"
-            :class="{ active: m === tempMonth }"
-            @click="tempMonth = m"
-          >
-            {{ m }} 月
-          </div>
-        </div>
+    <div class="calender-header-bar">
+      <div class="header-left">
+        <button class="nav-btn" @click="previousMonth">◀</button>
+        <button class="today-btn" @click="goToday">Today</button>
+        <button class="nav-btn" @click="nextMonth">▶</button>
       </div>
-
-      <div class="picker-actions">
-        <button class="confirm-btn" @click="closeMonthPicker()">取消</button>
-        <button class="confirm-btn" @click="applyMonth()">確認</button>
+      <div class="header-right">
+        <button class="add-event-btn" @click="openAddEvent">＋</button>
       </div>
     </div>
 
@@ -267,25 +262,37 @@ onMounted(() => {
 
 <style scoped>
 .calendar-container {
-  background: white;
+  padding: 20px;
   border-radius: 12px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  /* position: fixed;
-  left: 20px;
-  top:11%;
-  width: 67%;
-  height: auto; */
-  width: 100%;
-  max-width: 100%;            
-  position: relative;
-}
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  flex: 1;
+  box-sizing: border-box;
+} 
 
 .calendar-header {
   display: flex;
   align-items: center;
+  justify-content: center;
+  position: relative;
+  
+}
+
+.month-title {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #5eb3e4;
+  cursor: pointer;
+  user-select: none;
+}
+
+.calender-header-bar{
+  display: flex;
+  align-items: center; 
   justify-content: space-between;
-  margin-bottom: 18px;
+  padding: 10px;
 }
 
 .header-left {
@@ -355,19 +362,9 @@ onMounted(() => {
   transform: scale(0.95);
 }
 
-.month-title {
-  transform: translateX(-20%);
-  font-size: 28px;
-  text-align: center;
-  font-weight: 700;
-  color: #5eb3e4;
-  cursor: pointer;
-  user-select: none;
-}
-
 .month-picker-popup {
   position: absolute;
-  top: 70px; 
+  top: 100%; 
   left: 50%;
   transform: translateX(-50%);
   background: white;
@@ -393,7 +390,7 @@ onMounted(() => {
 
 .picker-column {
   width: 120px;
-  height: 160px; /* 🔥 像滾輪可滑動 */
+  height: 160px;
   overflow-y: auto;
   border-radius: 8px;
   border: 1px solid #ddd;
@@ -435,27 +432,9 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.calendar-title {
-  text-align: center;
-  font-size: 18px;
-  font-weight: 500;
-  color: #333;
-  margin-bottom: 15px;
-}
-
-.calendar-title-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 15px;
-  position: relative;
-}
-
 .weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  /* border: 1px solid #e0e0e0; */
   margin-bottom: 1px;
 }
 

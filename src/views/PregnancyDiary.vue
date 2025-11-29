@@ -608,40 +608,16 @@ function handleSaveDiary(updatedDiary) {
 </script>
 
 <style scoped>
-.content-wrapper {
-  /* height: 100vh;
-  background: #f5f7fa;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  grid-template-columns: 1fr 350px;
-  gap: 20px;
-  max-width: 1400px;
-  margin: 0 auto; */
+/* .content-wrapper {
   background: #f5f7fa;
   display: flex;
   gap: 20px;
-  flex-wrap: wrap;
-  /* display: grid;
-  grid-template-columns: 1fr 380px;
-  gap: 20px;
-  height: calc(100vh - 80px); 
-  overflow: hidden;
-  padding: 0 20px;
-  max-width: 1600px;
-  margin: 0 auto; */
+  align-items: flex-start;
   }
 
 .calendar-section {
-  /* border-radius: 8px;
-  padding: 25px;
-  position: fixed;
-  left: 20px;
-  top:10%;
-  width: 70%;
-  height: auto; */
-  flex: 2 1 65%;
-  min-width: 500px;
+  flex: 2 1 0 0 calc(65% - 10px);
+  min-width: 300px;
   background: white;
   border-radius: 8px;
   padding: 20px;
@@ -649,22 +625,53 @@ function handleSaveDiary(updatedDiary) {
 }
 
 .diary-section {
-  /* background: white;
-  border-radius: 8px;
-  padding: 25px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  position: fixed;
-  right: 20px;
-  top:11%;
-  width: 30%;
-  height: auto;*/
-  flex: 1 1 30%;
-  min-width: 280px;
+  flex: 0 0 calc(35% - 10px);
+  min-width: 300px;
   background: white;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-} 
+}  */
+
+
+.content-wrapper {
+  /* display: flex;
+  background: #f5f7fa;
+  gap: 20px;
+  flex-wrap: nowrap;
+  align-items: flex-start; */
+  display: flex;
+  justify-content: center;   
+  align-items: flex-start;
+  gap: 20px;
+  background: #f5f7fa;
+  flex-wrap: nowrap;
+  margin: 0 auto;
+}
+
+.calendar-section {
+  flex: 0 0 65%;
+  min-width: 750px;
+  min-height: 70px; 
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+}
+
+.calendar-section > * {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.diary-section {
+  flex: 0 0 35%;
+  min-width: 300px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+}
 
 .date-select {
   width: 100%;
@@ -840,27 +847,54 @@ border-radius: 6px;
   cursor: not-allowed;
 }
 
-/* 響應式：平板 */
+/* 平板版（1024px 以下）*/
 @media (max-width: 1024px) {
-.content-wrapper {
-grid-template-columns: 1fr;
-height: auto;
-}
-.calendar-section,
-.diary-section {
-height: auto;
-overflow: visible;
-}
+  .calendar-section {
+    flex: 0 0 60%;
+    min-width: 380px;
+    min-height: 650px;
+  }
+
+  .diary-section {
+    flex: 0 0 40%;
+    min-width: 280px;
+  }
 }
 
 
-/* 手機版 */
-@media (max-width: 650px) {
-.content-wrapper {
-padding: 10px;
+/* 小平板 / 大手機（820px 以下)*/
+@media (max-width: 820px) {
+  .content-wrapper {
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+
+  .calendar-section,
+  .diary-section {
+    flex: 1 1 100%;
+    min-width: 100%;
+    min-height: auto;
+  }
+
+  .calendar-section {
+    order: 1; /* 行事曆上面 */
+  }
+
+  .diary-section {
+    order: 2; /* 日記下面 */
+  }
 }
-.diary-section {
-margin-top: 10px;
-}
+
+
+/* 手機版（600px 以下） */
+@media (max-width: 600px) {
+  .calendar-section > *,
+  .diary-section {
+    padding: 15px;
+  }
+
+  .calendar-section {
+    min-height: 550px; 
+  }
 }
 </style>

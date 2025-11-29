@@ -53,18 +53,23 @@ eventdatailmodel
               <div class="detail-label">🕛時間軸</div>
               <div class="detail-content">
                 <div class="timeline">
-                  <div 
-                    v-for="hour in timelineHours" 
+                  <div
+                    v-for="hour in timelineHours"
                     :key="hour.value"
                     class="timeline-row"
-                    :class="{ highlight: hour.isInRange }"
                   >
                     <span class="time-label">{{ hour.label }}</span>
-                    <div class="timeline-bar" :class="{ active: hour.isInRange }">
-                      <div v-if="hour.isEventStart" class="event-block">
-                        <span>{{ event.title }}</span>
-                        <span>{{event.startTime }} – {{ event.endTime }}</span>
-                      </div>
+                    <div class="timeline-segment"></div>
+                  </div>
+
+                  <div
+                    v-if="event.startTime && event.endTime"
+                    class="event-block-container"
+                    :style="eventBlockStyle"
+                  >
+                    <div class="event-block">
+                      <span class="timeline-title">{{ event.title }}</span>
+                      <span class="timeline-time">{{ event.startTime }} – {{ event.endTime }}</span>
                     </div>
                   </div>
                 </div>
@@ -83,10 +88,6 @@ eventdatailmodel
           <div class="detail-item" v-if="event.location">
             <div class="detail-label">🗺️位置</div>
             <div class="detail-content">
-              <!-- <div v-if="!mapLoaded" class="map-placeholder">
-                <span class="map-icon">🗺️</span>
-                <p>地圖載入中...</p>
-              </div> -->
               <div ref="mapContainer" class="map-container"></div>
             </div>
           </div>
@@ -134,41 +135,81 @@ const emit = defineEmits(['close', 'delete', 'edit'])
 // 響應式數據
 const activeTab = ref('view')
 
-  // 時間軸計算
+// 時間軸計算
 const timelineHours = computed(() => {
   if (!props.event.startTime || !props.event.endTime) {
-    return []
+    return [];
   }
 
-  // 解析開始和結束時間
-  const startTime = parseTime(props.event.startTime)
-  const endTime = parseTime(props.event.endTime)
+// 解析開始和結束時間 (小時部分)
+  const startTimeHour = parseTime(props.event.startTime);
+  const endTimeHour = parseTime(props.event.endTime);
 
   // 計算顯示範圍（前後各加1小時）
-  const displayStart = Math.max(0, startTime - 1)
-  const displayEnd = Math.min(24, endTime + 1)
+  const displayStart = Math.max(0, startTimeHour - 1);
+  const displayEnd = Math.min(24, endTimeHour + 1);
 
-  const hours = []
+  const hours = [];
   for (let hour = displayStart; hour <= displayEnd; hour++) {
-    const isInRange = hour >= startTime && hour <= endTime
-    const isEventStart = hour === startTime
-
     hours.push({
       value: hour,
       label: formatHourLabel(hour),
-      isInRange: isInRange,
-      isEventStart: isEventStart
-    })
+    });
+  }
+  return hours;
+});
+
+// 計算事件區塊的樣式 (定位和高度)
+const eventBlockStyle = computed(() => {
+  if (!props.event.startTime || !props.event.endTime) {
+    return {};
   }
 
-  return hours
-})
+  const startHour = parseTime(props.event.startTime);
+  const startMinute = parseMinute(props.event.startTime);
+  const endHour = parseTime(props.event.endTime);
+  const endMinute = parseMinute(props.event.endTime);
+
+  const totalStartMinutes = startHour * 60 + startMinute;
+  const totalEndMinutes = endHour * 60 + endMinute;
+
+  // 獲取時間軸顯示的第一個小時的總分鐘數
+  const firstDisplayedHour = timelineHours.value[0].value;
+  const firstDisplayedTotalMinutes = firstDisplayedHour * 60;
+
+  // 計算事件相對於第一個顯示小時的頂部偏移 (單位為分鐘)
+  const offsetMinutes = totalStartMinutes - firstDisplayedTotalMinutes;
+
+  // 計算事件的持續時間 (單位為分鐘)
+  const durationMinutes = totalEndMinutes - totalStartMinutes;
+
+  // 每個小時在 CSS 中設定的高度為 60px
+  const pixelsPerHour = 60; 
+  const pixelsPerMinute = pixelsPerHour / 60; // 1 像素/分鐘
+
+  const topOffset = offsetMinutes * pixelsPerMinute;
+  const height = durationMinutes * pixelsPerMinute;
+
+  const containerPaddingTop = 15;
+
+  return {
+    top: `${topOffset + containerPaddingTop}px`, 
+    height: `${height}px`,
+  };
+});
 
 // 解析時間字串 (如 "10:00" -> 10)
 function parseTime(timeStr) {
-  if (!timeStr) return 0
-  const parts = timeStr.split(':')
-  return parseInt(parts[0], 10)
+  if (!timeStr) return 0;
+  const parts = timeStr.split(':');
+  return parseInt(parts[0], 10);
+}
+
+// 解析時間字串的分鐘部分 (如 "10:30" -> 30)
+function parseMinute(timeStr) {
+  if (!timeStr) return 0;
+  const parts = timeStr.split(':');
+  return parseInt(parts[1], 10);
 }
 
 // 格式化小時標籤
@@ -232,28 +273,23 @@ function getEventTypeText(type) {
 const mapContainer = ref(null)
 let map = null
 let marker = null
-
 function initMap(location) {
   if (!mapContainer.value || !location || !window.google) return
-
   // modal 關閉前如果有 map，先清理
   if (map) {
     marker?.setMap(null)
     map = null
     marker = null
   }
-
   map = new google.maps.Map(mapContainer.value, {
     center: { lat: 0, lng: 0 },
     zoom: 15
   })
-
   const geocoder = new google.maps.Geocoder()
   geocoder.geocode({ address: location }, (results, status) => {
     if (status === 'OK' && results[0]) {
       const pos = results[0].geometry.location
       map.setCenter(pos)
-
       marker = new google.maps.Marker({
         map,
         position: pos
@@ -263,7 +299,6 @@ function initMap(location) {
     }
   })
 }
-
 // 監控 modal 是否顯示
 watch(() => props.show, (isShown) => {
   if (isShown && props.event.location) {
@@ -277,12 +312,10 @@ watch(() => props.show, (isShown) => {
     }
   }
 })
-
 // 當地點改變時重新載入地圖
 watch(() => props.event.location, (newLoc) => {
   if (props.show && newLoc) nextTick(() => initMap(newLoc))
 })
-
 // 清理 map
 onUnmounted(() => {
   if (map) {
@@ -337,9 +370,8 @@ onUnmounted(() => {
   color: white;
   margin: 0;
   font-weight: 600;
+  flex-grow: 1;
   text-align: center;
-  margin-top: 10px; 
-  transform: translateX(215px);
 }
 
 .close-btn {
@@ -355,10 +387,11 @@ onUnmounted(() => {
   justify-content: center;
   border-radius: 4px;
   transition: all 0.3s;
+  flex-shrink: 0
 }
 
 .close-btn:hover {
-  background: #f0f0f0;
+  background: rgba(255, 255, 255, 0.15);
   color: #333;
 }
 .close-btn:active {
@@ -367,7 +400,8 @@ onUnmounted(() => {
 
 /* 內容區 */
 .modal-body {
-  padding: 30px;
+  padding: 20px;
+  padding-top:10px;
   overflow-y: auto;
   flex: 1;
 }
@@ -376,11 +410,10 @@ onUnmounted(() => {
 .event-title {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
 .event-title h1 {
-  font-size: 30px;
+  font-size: 28px;
   color: #333;
   margin: 10px 0;
   flex: 1;
@@ -413,13 +446,12 @@ onUnmounted(() => {
 
 /* 詳細資訊項目 */
 .detail-item {
-  margin-bottom: 25px;
+  margin-bottom: 20px;
 }
 
 .detail-label {
   font-size: 17px;
   color: #4d4c4c;
-  margin-bottom: 4fr;
   font-weight: 600;
   text-align: left;
 }
@@ -441,15 +473,16 @@ onUnmounted(() => {
   font-weight: 450;
   color: #666;
   justify-content: center;
+  text-align: center;
 }
 
 .time-range {
   display: flex;
-  align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 8px;
   color: #666;
   font-size: 16px;
-  justify-content: center;
 }
 
 .separator {
@@ -459,10 +492,10 @@ onUnmounted(() => {
 /* 地點 */
 .location-info {
   display: flex;
-  align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 8px;
   font-size: 16px;
-  justify-content: center;
 }
 
 /* 時間軸  */
@@ -470,6 +503,8 @@ onUnmounted(() => {
   background: #f8f9fa;
   border-radius: 6px;
   padding: 15px;
+  position: relative; 
+  overflow: hidden;
 }
 
 .timeline-row {
@@ -477,7 +512,11 @@ onUnmounted(() => {
   grid-template-columns: 90px 1fr;
   align-items: center;
   gap: 15px;
-  margin-bottom: 10px;
+  box-sizing: border-box;
+  height: 60px;
+  position: relative;
+  z-index: 1;
+  height: 60px;
 }
 
 .timeline-row:last-child {
@@ -488,10 +527,53 @@ onUnmounted(() => {
   font-size: 12px;
   color: #999;
   text-align: right;
+  padding-right: 5px; 
+  white-space: nowrap;
+}
+
+/* 每個小時的分隔線*/
+.timeline-segment {
+  height: 1px; 
+  background: #e0e0e0;
+  border-radius: 0; 
+}
+
+/* 時間區塊的容器 */
+.event-block-container {
+  position: absolute;
+  margin-top:29px;
+  left: 105px; 
+  width: calc(100% - 105px - 15px);
+  background-color: #ff6b9d; 
+  border-radius: 8px;
+  z-index: 2; 
+  padding: 10px 15px; 
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: white;
+  overflow: hidden; 
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+}
+
+.event-block ,
+.timeline-time,
+.timeline-title{
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 2px;
+  opacity: 0.9;
+}
+
+.timeline-time,
+.timeline-title{
+  display: flex;
+  justify-content:flex-start;
+  text-align: left;
 }
 
 .timeline-bar {
-  height: 8px;
   background: #e0e0e0;
   border-radius: 4px;
   position: relative;
@@ -506,15 +588,6 @@ onUnmounted(() => {
   padding: 0 15px;
 }
 
-.event-block {
-  color: white;
-  font-size: 13px;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .timeline-row.highlight {
   background: #fff;
   padding: 5px;
@@ -526,7 +599,6 @@ onUnmounted(() => {
   color: #666;
   font-weight: 500;
 }
-
 
 /* 地圖 */
 .map-placeholder {
@@ -624,20 +696,27 @@ onUnmounted(() => {
   transform: scale(0.9);
 }
 
-/* 響應式設計 */
-@media (max-width: 768px) {
+/* 平板版（1024px 以下）*/
+@media (max-width: 1024px) {
   .modal-container {
-    max-width: 100%;
-    max-height: 100vh;
-    border-radius: 0;
+    max-width: 700px;
+    border-radius: 10px;
+  }
+
+  .modal-header {
+    padding: 18px;
   }
 
   .modal-body {
     padding: 20px;
   }
 
-  .event-title h2 {
+  .event-title h1 {
     font-size: 20px;
+  }
+  
+  .modal-footer {
+    padding: 20px;
   }
 
   .timeline-row {
@@ -646,15 +725,122 @@ onUnmounted(() => {
   }
 
   .time-label {
-    font-size: 11px;
+    font-size: 15px;
   }
 
   .event-bar-title {
-    font-size: 12px;
+    font-size: 16px;
   }
 
   .event-bar-time {
-    font-size: 10px;
+    font-size: 16px;
   }
 }
+
+/* 小平板 / 大手機樣式 (Max-width: 820px) */
+@media (max-width: 820px) {
+  .modal-container {
+    max-width: 85vw;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+
+  .timeline-row {
+    grid-template-columns: 75px 1fr;
+    gap: 10px;
+  }
+
+  .map-container {
+    height: 250px;
+  }
+
+  .event-title h1 {
+    font-size: 26px;
+  }
+
+  .modal-footer {
+    padding: 18px;
+  }
+}
+
+/* 手機版（600px 以下） */
+@media (max-width: 600px) {
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 15px;
+  }
+
+  .modal-title {
+    font-size: 110%; 
+  }
+
+  .modal-body {
+    padding: 15px;
+  }
+
+  .event-title {
+    flex-wrap: wrap; 
+  }
+  
+  .event-title h1 {
+    font-size: 24px; 
+    margin: 8px 0;
+    order: 1; 
+  }
+  
+  .event-type-badge {
+    font-size: 15px;
+    order: 2; 
+  }
+
+  .detail-item {
+    margin-bottom: 20px;
+  }
+  
+  .detail-label {
+    font-size: 16px;
+  }
+  
+  .detail-content {
+    font-size: 14px;
+  }
+
+
+  .timeline-row {
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+  }
+  
+  .time-label {
+    font-size: 11px;
+  }
+
+  .map-container {
+    height: 200px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-delete,
+  .btn-edit {
+    padding: 10px; 
+    font-size: 14px;
+  }
+}
+
 </style>
