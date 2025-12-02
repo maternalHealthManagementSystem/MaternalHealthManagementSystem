@@ -262,7 +262,6 @@ onMounted(() => {
 
 <style scoped>
 .calendar-container {
-  padding: 20px;
   border-radius: 12px;
   background: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -275,7 +274,6 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   position: relative;
-  
 }
 
 .month-title {
@@ -286,6 +284,7 @@ onMounted(() => {
   color: #5eb3e4;
   cursor: pointer;
   user-select: none;
+  margin-bottom: 5px;
 }
 
 .calender-header-bar{
@@ -296,37 +295,38 @@ onMounted(() => {
 }
 
 .header-left {
-    display: flex; 
-    align-items: center; 
+  display: flex; 
+  align-items: center; 
 }
 
-.nav-btn, .today-btn {
-    border: 1px solid #ccc;
-    padding: 8px 14px;
-    cursor: pointer;
-    background-color: white;
-    color:#0557e5;
-    font-size: 16px;
-    transition: background-color 0.2s, border-color 0.2s, color 0.2s; 
+.nav-btn, 
+.today-btn {
+  border: 1px solid #ccc;
+  padding: 8px 14px;
+  cursor: pointer;
+  background-color: white;
+  color:#0557e5;
+  font-size: 16px;
+  border-radius: 4px;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s; 
 }
 
 .nav-btn:first-child {
-    border-top-left-radius: 4px;
-    border-bottom-left-radius: 4px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
 }
 
 .nav-btn:last-child {
-    border-top-right-radius: 4px;
-    border-bottom-right-radius: 4px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
 }
 
 .nav-btn:hover, .today-btn:hover {
-    background-color: #f0f0f0;
+  background-color: #f0f0f0;
 }
 
 .today-btn {
-    margin: 0 8px; 
-    border-radius: 4px;
+  margin: 0 8px; 
 }
 
 .today-btn:hover {
@@ -346,10 +346,11 @@ onMounted(() => {
 .add-event-btn {
   border: 1px solid #ccc;
   padding: 0px 8px;
+  border-radius: 4px;
   cursor: pointer;
   background-color: white;
   color:#0557e5;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: bold;
   transition: background-color 0.2s, border-color 0.2s, color 0.2s; 
 }
@@ -450,11 +451,15 @@ onMounted(() => {
   font-weight: 600;
   color: #666;
   font-size: 14px;
+  border-right: none; 
 }
 
-.weekday:nth-child(7n),
 .day-cell:nth-child(7n){
-  border-right: none; 
+  border-right: 1px solid #e0e0e0;
+}
+
+.day-cell:nth-child(1n){
+  border-left: 1px solid #e0e0e0;
 }
 
 .day-cell {
@@ -462,7 +467,6 @@ onMounted(() => {
   min-height: 90px;
   padding: 6px;
   cursor: pointer;
-  border-right: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
   flex-direction: column;
 }
