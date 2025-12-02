@@ -120,7 +120,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import EventCalendar from '../components/Calendar/EventCalendar.vue'
 import EventDetailModal from '../components/Calendar/EventDetailModal.vue'
 import EventEditForm from '../components/Calendar/EventEditForm.vue'
@@ -128,6 +129,12 @@ import EventAddForm from '../components/Calendar/EventAddForm.vue'
 import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue'
 import DiaryEditForm from '../components/Calendar/DiaryEditForm.vue'
 import dayjs from 'dayjs'
+
+import { useCalendarStore } from '../stores/calendarStore.js'
+const calendarStore = useCalendarStore()
+
+// --- 新增路由實例 ---
+const route = useRoute()
 
 // 彈窗狀態
 const showEventDetail = ref(false)
@@ -137,234 +144,63 @@ const showDiaryDetail = ref(false)
 const showDiaryEdit = ref(false)
 const defaultAddDate = ref("")
 
+// 新增日記表單
 const selectedDiary = ref({
-    id:'',
-    date: '',
-    title: '',
-    content: '',
-    image: '',
-    createdAt: '',
-    updatedAt: ''
+  id:'',
+  date: '',
+  title: '',
+  content: '',
+  image: '',
+  createdAt: '',
+  updatedAt: ''
 })
+
+// 新增日記表單
+const newDiary = ref({
+  date: '',
+  title: '',
+  content: '',
+  imagePreview: null,
+  imageFile: null
+})
+
 const selectedEvent = ref({
-    id: '',
-    date: '',
-    title: '',
-    type: '',
-    startDate: '',
-    startTime: '',
-    endTime: '',
-    location: '',
-    description: ''
+  id: '',
+  date: '',
+  title: '',
+  type: '',
+  startDate: '',
+  startTime: '',
+  endTime: '',
+  location: '',
+  description: ''
 })
-
-// 行程資料
-const events = ref([
-  {
-    id: 1,
-    date: '2025-11-30',
-    startDate: '2025-11-30',
-    title: '第一次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '確認懷孕週數、抽血檢驗、超音波檢查'
-  },
-  {
-    id: 2,
-    date: '2025-12-07',
-    startDate: '2025-12-07',
-    title: '第二次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎心音監測'
-  },
-  {
-    id: 3,
-    date: '2025-12-21',
-    startDate: '2025-12-21',
-    title: '第三次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '唐氏症篩檢、超音波檢查'
-  },
-  {
-    id: 4,
-    date: '2026-01-04',
-    startDate: '2026-01-04',
-    title: '第四次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎兒發育監測'
-  },
-  {
-    id: 5,
-    date: '2026-01-18',
-    startDate: '2026-01-18',
-    title: '第五次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '妊娠糖尿病篩檢、血壓監測'
-  },
-  {
-    id: 6,
-    date: '2026-02-01',
-    startDate: '2026-02-01',
-    title: '第六次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎動與羊水量檢查'
-  },
-  {
-    id: 7,
-    date: '2026-02-15',
-    startDate: '2026-02-15',
-    title: '第七次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '超音波檢查、胎兒位置確認'
-  },
-  {
-    id: 8,
-    date: '2026-03-01',
-    startDate: '2026-03-01',
-    title: '第八次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎心音監測'
-  },
-  {
-    id: 9,
-    date: '2026-03-15',
-    startDate: '2026-03-15',
-    title: '第九次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '胎兒發育監測、血壓與體重檢查'
-  },
-  {
-    id: 10,
-    date: '2026-03-29',
-    startDate: '2026-03-29',
-    title: '第十次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎兒位置與羊水量檢查'
-  },
-  {
-    id: 11,
-    date: '2026-04-05',
-    startDate: '2026-04-05',
-    title: '第十一至十四次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '每週一次例行產檢，監測胎兒狀況直到臨盆'
-  },
-  {
-    id: 12,
-    date: '2026-03-20',
-    startDate: '2026-03-20',
-    title: '待產包準備提醒',
-    type: 'reminder',
-    startTime: '20:00',
-    endTime: '21:00',
-    location: '家中',
-    description: '準備待產包：證件、換洗衣物、嬰兒用品'
-  },
-  {
-    id: 13,
-    date: '2025-12-05',
-    startDate: '2025-12-05',
-    title: '產檢後運動提醒',
-    type: 'reminder',
-    startTime: '18:00',
-    endTime: '18:30',
-    location: '社區公園',
-    description: '輕鬆散步 30 分鐘，促進血液循環'
-  }
-]
-)
-
-// 日記資料
-const diaries = ref([
-  {
-    id: 201,
-    date: '2025-11-29',
-    title: '美食冒險',
-    content: '今天突然想吃酸酸甜甜的水果，切了鳳梨和奇異果，滿足了味蕾。',
-    image: 'public/images/鳳梨奇異果.jpg',
-    createdAt: '2025-11-29T12:45:00Z',
-    updatedAt: ''
-  },
-  {
-    id: 202,
-    date: '2025-11-30',
-    title: '產檢的安心感',
-    content: '今天去產檢，聽到寶寶的心跳聲，覺得很安心，醫生說一切正常。',
-    image: 'public/images/超音波小月份.jpg',
-    
-    updatedAt: '2025-11-30T12:45:00Z'
-  },
-  {
-    id: 203,
-    date: '2025-12-01',
-    title: '孕婦的購物日',
-    content: '今天去買了幾件孕婦裝，穿起來舒服又好看，心情大好。',
-    image: 'public/images/購物.jpg',
-    createdAt: '2025-12-01T18:20:00Z',
-    updatedAt: ''
-  },
-  {
-    id: 204,
-    date: '2025-12-03',
-    title: '甜點時光',
-    content: '今天做了黑糖紅豆湯，暖暖的甜味讓心情也變得溫柔。',
-    image: 'public/images/黑糖紅豆湯.jpg',
-    createdAt: '2025-12-03T16:00:00Z',
-    updatedAt: ''
-  },
-  {
-    id: 205,
-    date: '2025-12-05',
-    title: '瑜伽練習',
-    content: '跟著影片做孕婦瑜伽，伸展身體的同時覺得很放鬆，呼吸也更順暢。',
-    image: 'public/images/孕婦瑜伽.jpg',
-    createdAt: '2025-12-05T19:00:00Z',
-    updatedAt: ''
-  }
-])
 
 // 合併事件和日記（用於顯示在日曆上）
-const allEvents = computed(() => {
-  const diaryEvents = diaries.value.map(diary => ({
-    ...diary,
-    type: 'diary', 
-    isDiary: true 
-  }))
-  return [...events.value, ...diaryEvents]
-})
+const allEvents = computed(() => calendarStore.allEvents)
 
+// 在元件掛載後檢查是否有編輯行程的 ID
+onMounted(() => {
+    // 檢查是否有傳遞特定日期，並選中它（如果有需要的話）
+    if (route.query.date) {
+        // 如果 Home 頁面傳遞了日期，可以讓日曆定位到該月份，或讓日記表單選中該日期
+        newDiary.value.date = route.query.date
+        currentMonth.value = dayjs(route.query.date) // 讓日曆顯示該月份
+    }
+
+    // 檢查是否有傳遞要編輯的 Event ID
+    if (route.query.editEventId) {
+        const eventId = parseInt(route.query.editEventId);
+        // 嘗試從 Store 的 events 陣列中找到該行程 (假設 ID 是數字)
+        const eventToEdit = calendarStore.events.find(e => e.id === eventId);
+        
+        if (eventToEdit) {
+            // 找到後，將其設置為 selectedEvent 並打開編輯表單
+            selectedEvent.value = { ...eventToEdit };
+            showEditForm.value = true;
+        }
+    }
+})
 
 // 處理行程、日記點擊 
 function handleEventClick(event) {
@@ -374,7 +210,8 @@ function handleEventClick(event) {
   // 判斷是日記還是行程
   if (event.isDiary) {
     // 顯示日記詳細資訊
-    selectedDiary.value = { ...event }
+    const fullDiary = calendarStore.diaries.find(d => d.id === event.id);
+    selectedDiary.value = { ...fullDiary }
     showDiaryDetail.value = true
   } else {
     // 顯示行程詳細資訊
@@ -385,50 +222,43 @@ function handleEventClick(event) {
 
 // 處理行程編輯事件
 function handleEditEvent(event) {
-  console.log('編輯事件:', event)
-  selectedEvent.value = { ...event }
-  showEventDetail.value = false
-  showEditForm.value = true
+    selectedEvent.value = { ...event }
+    showEventDetail.value = false
+    showEditForm.value = true
 }
 
 // 處理儲存編輯後的行程事件
 function handleSaveEvent(updatedEvent) {
-  console.log('儲存編輯行程:', updatedEvent)
-  
-  // 在 events 陣列中找到並更新行程事件
-  const index = events.value.findIndex(e => e.id === updatedEvent.id)
-  if (index > -1) {
-    events.value[index] = { ...updatedEvent }
+    console.log('儲存編輯行程:', updatedEvent)
+    // *** 呼叫 Store 的 Action ***
+    calendarStore.updateEvent(updatedEvent)
     alert('行程已更新！')
-  }
-  showEditForm.value = false
+
+    showEditForm.value = false
 }
 
-// 處理新增行程按鈕點擊
+// 處理新增行程按鈕點擊 
 function handleAddEvent() {
-  console.log('開啟新增行程表單')
-  defaultAddDate.value = dayjs().format('YYYY-MM-DD')
-  showAddForm.value = true
+    console.log('開啟新增行程表單')
+    defaultAddDate.value = dayjs().format('YYYY-MM-DD')
+    showAddForm.value = true
 }
 
 // 處理新增新行程
 function handleAddNewEvent(newEvent) {
-  console.log('新增行程:', newEvent)
-  
-  // 加入到 events 陣列
-  events.value.push(newEvent)
-  showAddForm.value = false
+    console.log('新增行程:', newEvent)
+    // *** 呼叫 Store 的 Action ***
+    calendarStore.addEvent(newEvent)
+    showAddForm.value = false
 }
 
-// 處理刪除事件
+// 處理刪除事件 
 function handleDeleteEvent(eventId) {
-  console.log('刪除事件 ID:', eventId)
-  const index = events.value.findIndex(e => e.id === eventId)
-  if (index > -1) {
-    events.value.splice(index, 1)
+    console.log('刪除事件 ID:', eventId)
+    // *** 呼叫 Store 的 Action ***
+    calendarStore.deleteEvent(eventId)
     showEventDetail.value = false
     alert('行程已刪除')
-  }
 }
 
 // 關閉行程詳細資訊視窗
@@ -436,15 +266,6 @@ function closeEventDetail() {
   console.log('關閉彈窗')
   showEventDetail.value = false
 }
-
-// 新增日記表單
-const newDiary = ref({
-  date: '',
-  title: '',
-  content: '',
-  imagePreview: null,
-  imageFile: null
-})
 
 // 檔案上傳參考
 const fileInput = ref(null)
@@ -461,11 +282,9 @@ const selectedDateDisplay = computed(() => {
 /// 建立下拉選單日期（依目前月份）
 const currentMonth = ref(dayjs())
 const dateOptions = computed(() => {
-  const daysInMonth = currentMonth.value.daysInMonth()
-  const year = currentMonth.value.year()
-  const month = currentMonth.value.month() + 1
-
-
+const daysInMonth = currentMonth.value.daysInMonth()
+const year = currentMonth.value.year()
+const month = currentMonth.value.month() + 1
   return Array.from({ length: daysInMonth }, (_, i) => {
     const d = i + 1
     const fullDate = dayjs(`${year}-${month}-${d}`).format('YYYY-MM-DD')
@@ -530,34 +349,34 @@ function removeImage() {
 
 // 儲存日記
 function saveDiary() {
-  if (!newDiary.value.date) {
-    alert('請選擇日期')
-    return
-  }
-  if (!newDiary.value.content && !newDiary.value.imagePreview) {
-    alert('請輸入日記內容或上傳圖片')
-    return
-  }
+    if (!newDiary.value.date) {
+        alert('請選擇日期')
+        return
+    }
+    if (!newDiary.value.content && !newDiary.value.imagePreview) {
+        alert('請輸入日記內容或上傳圖片')
+        return
+    }
 
-// 建立新日記
-  const diary = {
-    id: Date.now(),
-    date: newDiary.value.date,
-    title: newDiary.value.title || '今日日記',
-    content: newDiary.value.content,
-    image: newDiary.value.imagePreview,
-    createdAt: new Date().toISOString()
-  }
-  
-  console.log('儲存日記:', diary)
-  
-  // 加入到日記陣列
-  diaries.value.push(diary)
-  
-  alert(`日記已儲存！\n日期：${selectedDateDisplay.value}`)
-  
-  // 重置日記表單
-  resetDiaryForm()
+    // 建立新日記 (ID 生成邏輯保持不變)
+    const diary = {
+        id: Date.now(), // 這裡使用時間戳記作為 ID
+        date: newDiary.value.date,
+        title: newDiary.value.title || '今日日記',
+        content: newDiary.value.content,
+        image: newDiary.value.imagePreview,
+        createdAt: new Date().toISOString()
+    }
+
+    console.log('儲存日記:', diary)
+
+    // *** 呼叫 Store 的 Action ***
+    calendarStore.addDiary(diary)
+
+    alert(`日記已儲存！\n日期：${selectedDateDisplay.value}`)
+
+    // 重置日記表單
+    resetDiaryForm()
 }
 
 // 重置日記表單
@@ -576,13 +395,11 @@ function resetDiaryForm() {
 
 // 處理刪除日記
 function handleDeleteDiary(diaryId) {
-  console.log('刪除日記 ID:', diaryId)
-  const index = diaries.value.findIndex(d => d.id === diaryId)
-  if (index > -1) {
-    diaries.value.splice(index, 1)
+    console.log('刪除日記 ID:', diaryId)
+    // *** 呼叫 Store 的 Action ***
+    calendarStore.deleteDiary(diaryId)
     showDiaryDetail.value = false
     alert('日記已刪除')
-  }
 }
 
 // 處理編輯日記
@@ -595,16 +412,12 @@ function handleEditDiary(diary) {
 
 // 處理儲存編輯後的日記
 function handleSaveDiary(updatedDiary) {
-  console.log('儲存編輯日記:', updatedDiary)
-  
-  // 在 diaries 陣列中找到並更新日記
-  const index = diaries.value.findIndex(d => d.id === updatedDiary.id)
-  if (index > -1) {
-    diaries.value[index] = { ...updatedDiary }
+    console.log('儲存編輯日記:', updatedDiary)
+    // *** 呼叫 Store 的 Action ***
+    calendarStore.updateDiary(updatedDiary)
     alert('日記已更新！')
-  }
-  
-  showDiaryEdit.value = false
+
+    showDiaryEdit.value = false
 }
 </script>
 
