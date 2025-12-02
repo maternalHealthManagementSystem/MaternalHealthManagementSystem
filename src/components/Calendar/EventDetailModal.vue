@@ -634,6 +634,9 @@ onUnmounted(() => {
   line-height: 1.6;
   color: #666;
   margin: 0;
+  display: flex;
+  justify-content: center;
+  text-align: center;
 }
 
 /* 底部按鈕 */
