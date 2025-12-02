@@ -83,7 +83,7 @@
       @edit="handleEditEvent"
     />
 
-   <!-- 編輯行程表單 -->
+    <!-- 編輯行程表單 -->
     <EventEditForm
       :show="showEditForm"
       :event="selectedEvent"
@@ -91,7 +91,7 @@
       @save="handleSaveEvent"
     />
 
-  <!-- 新增行程表單 -->
+    <!-- 新增行程表單 -->
     <EventAddForm
       :show="showAddForm"
       :defaultDate="defaultAddDate"
@@ -116,13 +116,14 @@
       @close="showDiaryEdit = false"
       @save="handleSaveDiary"
     />
+  <CalendarSystem />
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import EventCalendar from '../components/Calendar/EventCalendar.vue'
 import EventDetailModal from '../components/Calendar/EventDetailModal.vue'
-import EventEditForm from '../components/Calendar/DiaryEditForm.vue'
+import EventEditForm from '../components/Calendar/EventEditForm.vue'
 import EventAddForm from '../components/Calendar/EventAddForm.vue'  
 import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue'
 import DiaryEditForm from '../components/Calendar/DiaryEditForm.vue'
@@ -608,51 +609,19 @@ function handleSaveDiary(updatedDiary) {
 </script>
 
 <style scoped>
-/* .content-wrapper {
-  background: #f5f7fa;
-  display: flex;
-  gap: 20px;
-  align-items: flex-start;
-  }
-
-.calendar-section {
-  flex: 2 1 0 0 calc(65% - 10px);
-  min-width: 300px;
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.diary-section {
-  flex: 0 0 calc(35% - 10px);
-  min-width: 300px;
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}  */
-
-
 .content-wrapper {
-  /* display: flex;
-  background: #f5f7fa;
-  gap: 20px;
-  flex-wrap: nowrap;
-  align-items: flex-start; */
   display: flex;
   justify-content: center;   
   align-items: flex-start;
   gap: 20px;
   background: #f5f7fa;
   flex-wrap: nowrap;
-  margin: 0 auto;
+  margin: 30px auto;
 }
 
 .calendar-section {
-  flex: 0 0 65%;
+  flex: 0 0 50%;
   min-width: 750px;
-  min-height: 70px; 
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
 }
@@ -661,12 +630,12 @@ function handleSaveDiary(updatedDiary) {
   flex: 1;
   background: white;
   border-radius: 8px;
-  padding: 20px;
+  padding: 15px;
 }
 
 .diary-section {
-  flex: 0 0 35%;
-  min-width: 300px;
+  flex: 0 0 30%;
+  min-width: 250px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   background: white;
   border-radius: 8px;
@@ -726,13 +695,14 @@ function handleSaveDiary(updatedDiary) {
 }
 
 .form-group textarea {
-  width: 100%;
-  padding: 10px;
+  width: 95%;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
   resize: vertical;
   font-family: inherit;
+  padding: 10px;
+  margin: 0;
 }
 
 .image-upload {
@@ -804,6 +774,7 @@ function handleSaveDiary(updatedDiary) {
   font-size: 12px;
   color: #999;
   margin: 8px 0 0 0;
+  text-align: center;
 }
 
 /* 底部按鈕 */
