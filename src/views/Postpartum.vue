@@ -1,0 +1,325 @@
+<template>
+  <SearchBar @search="handleSearch" />
+  <div class="postpartum-page">
+    <div class="page-header">
+      <h2>產後衛教資訊</h2>
+      <div class="search-placeholder"></div>
+    </div>
+
+    <div class="main-layout">
+      <div class="content-area">
+        <!-- 查有搜尋結果 -->
+        <template v-if="hasResult">
+          <div v-for="section in filteredSections"
+            :key="section.id"
+            :id="section.id"
+            class="info-section"
+          >
+            <div class="section-title-box">
+              <h3>{{ section.title }}</h3>
+              <div class="underline"></div>   
+            </div> 
+            <div class="scroll-box">
+              <ul class="link-list">
+                <li v-for="(item, index) in section.items" :key="index">            
+                  <a :href="item.link" target="_blank" class="resource-link">
+                    <span class="icon"></span>              
+                    {{ item.name }}
+                  </a>           
+                </li>        
+              </ul>       
+            </div>    
+          </div>
+                 
+        </template>
+        <!-- 查無搜尋結果 -->
+        <div v-else class="no-result">
+          <img src="../assets/no-result.png" alt="" />
+          <p>查無搜尋結果</p>
+        </div>
+      </div>
+    </div>
+
+    <aside v-if="!keyword" class="sidebar">
+      <div class="toc-container">
+        <h4 class="toc-title">目錄</h4>
+        <nav>
+          <ul>
+            <li v-for="section in sections" :key="section.id">
+              <a
+                href="#"
+                @click.prevent="scrollToSection(section.id)"
+                class="toc-link">
+              
+                {{ section.title }}
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </aside>
+  </div>
+  <ScrollTop />
+</template>
+
+<script setup>
+import { ref } from "vue";
+import SearchBar from "../components/SearchBar.vue";
+import ScrollTop from "../components/ScrollTop.vue";
+// 引入 JSON 資料
+import postpartumData from "../assets/data/postpartumData.json";
+const sections = ref(postpartumData);
+
+// 平滑捲動功能
+const scrollToSection = (id) => {
+  const element = document.getElementById(id);
+  if (element) {
+    // 扣除 header 高度 (假設 80px)，避免標題被遮住
+    const headerOffset = 80;
+    const elementPosition = element.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: "smooth",
+    });
+  }
+};
+
+/* --- 搜尋結果用資料 --- */
+const filteredSections = ref([...sections.value]); // 初始化顯示原始內容
+const hasResult = ref(true);
+const keyword = ref("");
+/* --- 搜尋功能 --- */
+const handleSearch = (key) => {
+  keyword.value = key; // 記錄目前搜尋文字
+  const kw = key.trim().toLowerCase();
+
+  if (!kw) {
+    // 清空搜尋 → 回原始資料
+    filteredSections.value = [...sections.value];
+    hasResult.value = true;
+    return;
+  }
+
+  // 搜尋是否任何 item 包含關鍵字
+  const result = sections.value
+    .map((sec) => ({
+      ...sec,
+      items: sec.items.filter((item) => item.name.toLowerCase().includes(kw)),
+    }))
+    .filter((sec) => sec.items.length > 0);
+
+  filteredSections.value = result;
+  hasResult.value = result.length > 0;
+};
+</script>
+
+<style scoped>
+/* 頁面基本設定 */
+.postpartum-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  color: #5a6b7c;
+}
+
+.page-header {
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h2 {
+  font-size: 28px;
+  color: #3b4a5a;
+  font-weight: bold;
+}
+
+/* 主佈局：Flexbox 左右分割 */
+.main-layout {
+  display: flex;
+  gap: 40px; /* 內容區與目錄區的間距 */
+  position: relative;
+}
+
+/* 左側內容區 */
+.content-area {
+  flex: 1; /* 佔據剩餘空間 */
+  min-width: 0; /* 防止 flex item 溢出 */
+}
+
+/* 單個資訊區塊樣式 */
+.info-section {
+  display: flex; /* 讓標題和內容框並排 */
+  align-items: flex-start;
+  margin-bottom: 50px;
+  gap: 20px;
+}
+
+/* 左側標題樣式 */
+.section-title-box {
+  width: 120px;
+  flex-shrink: 0;
+  text-align: center;
+  padding-top: 10px;
+}
+
+.section-title-box h3 {
+  font-size: 20px;
+  color: #5a6b7c;
+  margin: 0 0 5px 0;
+  font-weight: 500;
+}
+
+.underline {
+  height: 2px;
+  background-color: #8faec6;
+  width: 100%;
+}
+
+/* 右側捲動框樣式 */
+.scroll-box {
+  flex-grow: 1;
+  height: 200px; /* 固定高度 */
+  overflow-y: auto; /* 超出則捲動 */
+  background-color: #f8f9fa; /* 淺灰底色，參考截圖 */
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 15px;
+  /* 自訂捲軸樣式 (Chrome/Safari) */
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f0f0f0;
+}
+
+.scroll-box::-webkit-scrollbar {
+  width: 8px;
+}
+.scroll-box::-webkit-scrollbar-thumb {
+  background-color: #ccc;
+  border-radius: 4px;
+}
+
+/* 連結列表樣式 */
+.link-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.link-list li {
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed #e0e0e0;
+}
+
+.link-list li:last-child {
+  border-bottom: none;
+}
+
+.resource-link {
+  text-decoration: none;
+  color: #555;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.resource-link:hover {
+  color: #3498db;
+}
+
+.icon {
+  margin-right: 8px;
+  font-size: 14px;
+}
+
+/* --- 右側目錄區 (Sticky Sidebar) --- */
+.sidebar {
+  width: 200px;
+  flex-shrink: 0;
+}
+
+.toc-container {
+  position: sticky; /* 關鍵：黏性定位 */
+  top: 100px; /* 距離頂部的距離 */
+  background-color: #e3e9ef; /* 參考截圖的淡藍灰色背景 */
+  padding: 20px;
+  border-radius: 4px;
+}
+
+.toc-title {
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  color: #555;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
+}
+
+.toc-container ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-container li {
+  margin-bottom: 15px;
+}
+
+.toc-link {
+  text-decoration: none;
+  color: #3498db; /* 連結藍色 */
+  font-size: 16px;
+  font-weight: 500;
+  transition: all 0.2s;
+  border-bottom: 1px solid transparent;
+}
+
+.toc-link:hover {
+  color: #1e6091;
+  border-bottom-color: #1e6091;
+}
+
+/* RWD 響應式：手機版將目錄隱藏或改為置頂 */
+@media (max-width: 768px) {
+  .main-layout {
+    flex-direction: column-reverse; /* 手機版內容在上 */
+  }
+
+  .sidebar {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .toc-container {
+    position: static;
+  }
+
+  .info-section {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .section-title-box {
+    width: 100%;
+    text-align: left;
+  }
+}
+
+.no-result {
+  width: 100%;
+  text-align: center;
+  margin-top: 100px;
+  color: #b56b6b;
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.no-result img {
+  width: 120px;
+  opacity: 0.8;
+  margin-bottom: 20px;
+}
+</style>
