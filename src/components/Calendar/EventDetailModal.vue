@@ -547,7 +547,7 @@ onUnmounted(() => {
   background-color: #ff6b9d; 
   border-radius: 8px;
   z-index: 2; 
-  padding: 10px 15px; 
+  padding: 4px 15px; 
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -562,8 +562,10 @@ onUnmounted(() => {
 .timeline-title{
   font-size: 14px;
   font-weight: bold;
-  margin-bottom: 2px;
   opacity: 0.9;
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis;
 }
 
 .timeline-time,
