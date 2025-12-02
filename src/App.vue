@@ -362,7 +362,7 @@ const notificationCount = computed(() => {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #fff);
   padding: 1rem 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
   position: sticky;
@@ -374,7 +374,7 @@ const notificationCount = computed(() => {
 .logo {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #fff;
+  color: #57aee2;
   letter-spacing: 0.3px;
 }
 
@@ -388,7 +388,7 @@ const notificationCount = computed(() => {
 }
 
 .nav a {
-  color: #ffffff;
+  color: #000;
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
@@ -433,7 +433,7 @@ const notificationCount = computed(() => {
   cursor: pointer;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
   position: relative;
-  color: #764ba2;
+  color: #57aee2;
   transition: transform 0.2s;
 }
 .notify-icon:hover {
@@ -463,8 +463,8 @@ const notificationCount = computed(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.15);
+  color: #57aee2;
+  border: 2px solid #57aee2;
   transition: background 0.2s;
   overflow: hidden; /* 確保圖片不會超出邊界 */
 }
@@ -522,7 +522,7 @@ const notificationCount = computed(() => {
   min-width: 60px; /* 確保頭像不會被擠壓 */
   height: 60px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #764ba2, #945dcb);
+  background: linear-gradient(135deg, #57aee2);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -688,7 +688,7 @@ const notificationCount = computed(() => {
    --------------------------- */
 .footer {
   margin-top: auto;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #57aee2 );
   color: #fff;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
