@@ -281,7 +281,7 @@ onMounted(() => {
   text-align: center;
   font-size: 28px;
   font-weight: 700;
-  color: #5eb3e4;
+  color: #606365;
   cursor: pointer;
   user-select: none;
   margin-bottom: 5px;
