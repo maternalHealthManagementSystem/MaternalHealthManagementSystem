@@ -117,7 +117,8 @@ const handleSearch = (key) => {
 <style scoped>
 /* 頁面基本設定 */
 .postpartum-page {
-  max-width: 1200px;
+  width: 65%;
+  /* max-width: 1200px; */
   margin: 0 auto;
   padding: 20px;
   color: #5a6b7c;
