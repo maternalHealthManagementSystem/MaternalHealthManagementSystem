@@ -1,8 +1,8 @@
 <template>
-  <SearchBar @search="handleSearch" />
   <div class="postpartum-page">
     <div class="page-header">
       <h2>產後衛教資訊</h2>
+      <SearchBar @search="handleSearch" />
       <div class="search-placeholder"></div>
     </div>
 
