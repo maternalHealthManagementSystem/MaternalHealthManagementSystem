@@ -1,6 +1,6 @@
 <template>
   <div class="login-page">
-    <h1>孕產婦健康照護管理</h1>
+    <h1>孕產婦健康照護管理系統</h1>
 
     <div class="login-box">
       <div v-show="showIdPhone">
@@ -28,6 +28,12 @@
       <button v-show="showIdPhone" @click="verification">傳送簡訊驗證</button>
 
       <div v-show="!showIdPhone">
+
+        <!-- 🔥 DEMO 用驗證碼顯示 -->
+        <p v-if="demoMode && demoSMSDisplay" style="color: red; font-size: 14px; margin-bottom: 10px;">
+          驗證碼：{{ demoSMSDisplay }}
+        </p>
+
         <input
           v-model="smsCode"
           :class="{ error: smsError }"
@@ -37,36 +43,42 @@
         <p class="error-text" v-if="smsError">{{ smsError }}</p>
 
         <button class="text-button" @click="resendsms">重新寄送驗證碼</button>
-
-        <button class="text-button" @click="resendPhoneInput">
-          重新輸入手機電話號碼
-        </button>
-
+        <button class="text-button" @click="resendPhoneInput">重新輸入手機電話號碼</button>
         <button class="button" @click="sendsms">驗證</button>
       </div>
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+// 🔥 是否開啟 Demo 模式（展示用）
+const demoMode = true;
+
+// ----------------------
+// 欄位錯誤訊息
+// ----------------------
 const idError = ref("");
 const phoneError = ref("");
 const smsError = ref("");
 
-const router = useRouter();
-
-// 輸入資料
+// ----------------------
+// 表單欄位資料
+// ----------------------
 const idNumber = ref("");
 const phoneNumber = ref("");
 const smsCode = ref("");
 
-// 控制顯示
+const router = useRouter();
 const showIdPhone = ref(true);
 
-// 預設使用者資料
+// 🔥 Demo 用驗證碼顯示
+const demoSMSDisplay = ref("");
+
+// ----------------------
+// Demo 使用者資料
+// ----------------------
 const demoUser = {
   idNumber: "A123456789",
   phoneNumber: "0912345678",
@@ -87,7 +99,19 @@ const demoUser = {
   },
 };
 
-// 驗證身分證與手機號碼
+// ----------------------
+// ⭐ 產生 Demo 用的驗證碼
+// ----------------------
+const generateDemoSMS = () => {
+  const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6位數字
+  localStorage.setItem("demoSMSCode", code);
+  demoSMSDisplay.value = code;
+  return code;
+};
+
+// ----------------------
+// 送出驗證碼
+// ----------------------
 const verification = () => {
   idError.value = "";
   phoneError.value = "";
@@ -95,38 +119,41 @@ const verification = () => {
   const idPattern = /^[A-Z]{1}[1-2]{1}[0-9]{8}$/;
   const phonePattern = /^09\d{8}$/;
 
-  if (!idNumber.value) {
-    idError.value = "請輸入身分證字號";
-  } else if (!idPattern.test(idNumber.value)) {
-    idError.value = "身分證字號格式錯誤(例:A123456789)";
-  }
+  if (!idNumber.value) idError.value = "請輸入身分證字號";
+  else if (!idPattern.test(idNumber.value)) idError.value = "身分證字號格式錯誤(例:A123456789)";
 
-  if (!phoneNumber.value) {
-    phoneError.value = "請輸入手機號碼";
-  } else if (!phonePattern.test(phoneNumber.value)) {
-    phoneError.value = "手機號碼格式錯誤(例:0912345678)";
-  }
+  if (!phoneNumber.value) phoneError.value = "請輸入手機號碼";
+  else if (!phonePattern.test(phoneNumber.value)) phoneError.value = "手機號碼格式錯誤(例:0912345678)";
 
-  // 若有任何錯誤,不進入下一步
   if (idError.value || phoneError.value) return;
 
-  // 檢查是否為預設使用者
-  if (
-    idNumber.value === demoUser.idNumber &&
-    phoneNumber.value === demoUser.phoneNumber
-  ) {
+  // 檢查預設使用者
+  if (idNumber.value === demoUser.idNumber && phoneNumber.value === demoUser.phoneNumber) {
     showIdPhone.value = false;
+
+    if (demoMode) {
+      const code = generateDemoSMS();
+      alert(`驗證碼已寄送：${code}`);
+    }
+
   } else {
     alert("此身分證字號或手機號碼尚未註冊，請聯絡工作人員。");
   }
 };
 
-// 重新寄送簡訊
+// ----------------------
+// 重新寄送驗證碼
+// ----------------------
 const resendsms = () => {
-  alert("驗證碼已重新寄送！請注意查收簡訊");
+  if (demoMode) {
+    const code = generateDemoSMS();
+    alert(`【Demo 模式】驗證碼已重新寄送：${code}`);
+  }
 };
 
+// ----------------------
 // 驗證簡訊
+// ----------------------
 const sendsms = () => {
   smsError.value = "";
   const smsPattern = /^\d{6}$/;
@@ -137,38 +164,34 @@ const sendsms = () => {
   }
 
   if (!smsPattern.test(smsCode.value)) {
-    smsError.value = "驗證碼格式錯誤(六位數字,如 123456)";
+    smsError.value = "驗證碼格式錯誤(六位數字)";
     return;
   }
 
-  // 驗證是否為預設使用者的驗證碼
-  if (smsCode.value === demoUser.smsCode) {
-    // 儲存登入狀態和使用者資料
-    localStorage.setItem("loggedIn", "true");
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify({
-        name: demoUser.profile.name,
-        email: demoUser.profile.email,
-      })
-    );
-    localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
+  const savedCode = localStorage.getItem("demoSMSCode");
 
-    // 成功登入
+  if (smsCode.value === savedCode) {
+    localStorage.setItem("loggedIn", "true");
+    localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
     router.push("/home");
+
   } else {
     smsError.value = "驗證碼錯誤，請重新輸入";
   }
 };
 
-// 重新輸入手機號碼
+// ----------------------
+// 回到輸入手機
+// ----------------------
 const resendPhoneInput = () => {
   showIdPhone.value = true;
   idNumber.value = "";
   phoneNumber.value = "";
   smsCode.value = "";
+  demoSMSDisplay.value = "";
 };
 </script>
+
 
 <style scoped>
 .login-page {
@@ -179,6 +202,28 @@ const resendPhoneInput = () => {
   min-height: 100vh;
   background: #ffffff;
   font-family: Arial, sans-serif;
+
+  /*動畫 */
+  /* 1. 定義漸層背景 */
+  background: linear-gradient(120deg, #c6eedf, #65b1dd);
+
+  /* 2. 設定背景尺寸放大，為動畫提供空間 */
+  background-size: 300% 300%;
+
+  /* 4. 應用動畫 */
+  animation: my-animation 5s ease infinite; /* 動畫名稱、時間、時間函式、無限循環 */
+}
+/* 3. 定義動畫的關鍵影格 */
+@keyframes my-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 80% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 h1 {
@@ -189,7 +234,7 @@ h1 {
 }
 
 .login-box {
-  width: 380px;
+  width: 450px;
   background: #f1f5f9;
   border: 1px solid #d1d5db;
   padding: 30px;
@@ -199,7 +244,7 @@ h1 {
 
 label {
   display: block;
-  font-size: 14px;
+  font-size: 20px;
   margin-bottom: 6px;
   color: #374151;
 }
@@ -210,7 +255,7 @@ input {
   margin-bottom: 10px;
   border: 1px solid #cbd5e1;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 20px;
   box-sizing: border-box;
 }
 
