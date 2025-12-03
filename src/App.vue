@@ -17,12 +17,10 @@
         <router-link to="/home">首頁</router-link>
         <router-link to="/prenatal">產檢紀錄專區</router-link>
         <div class="dropdown">
-          <span class="dropbtn">衛教資訊專區 ⮟</span>
+          <router-link class="dropbtn">衛教資訊專區 ⮟</router-link>
           <div class="dropdown-content">
             <router-link to="/education/pregnancy">孕期衛教資訊</router-link>
-            <router-link to="/education/prenatal-checkup"
-              >產檢衛教資訊</router-link
-            >
+            <router-link to="/education/prenatal-checkup">產檢衛教資訊</router-link>
           </div>
         </div>
 
@@ -111,7 +109,7 @@
           role="button"
         >
           <div class="dot">
-            <i class="fi fi-sr-bell" style="color: #764ba2"></i>
+            <i class="fi fi-sr-bell" style="color: #57aee2"></i>
             <span
               v-if="notificationCount > 0"
               class="notification-badge-mobile"
@@ -396,6 +394,11 @@ const notificationCount = computed(() => {
   justify-content: center; /* 桌面版導覽列置中 */
 }
 
+.nav :hover {
+  cursor: pointer;
+  color: #999;
+}
+
 .nav a {
   color: #000;
   text-decoration: none;
@@ -415,7 +418,7 @@ const notificationCount = computed(() => {
   bottom: -6px;
   width: 0;
   height: 2px;
-  background: rgba(255, 255, 255, 0.9);
+  background: #888;
   transition: width 0.25s ease;
 }
 .nav a:hover::after,
@@ -632,7 +635,7 @@ const notificationCount = computed(() => {
   border-bottom: none;
 }
 .sidebar-nav-links a.router-link-exact-active {
-  color: #764ba2;
+  color: #006aa8;
   font-weight: 700;
   background: #f4f6ff;
   border-radius: 4px;
@@ -656,7 +659,7 @@ const notificationCount = computed(() => {
   width: 100%;
   padding: 12px;
   border: none;
-  background: #945dcb;
+  background: #57aee2;
   color: white;
   font-size: 1rem;
   border-radius: 8px;
