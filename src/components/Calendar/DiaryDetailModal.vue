@@ -247,6 +247,7 @@ function formatDateTime(datetime) {
   margin-bottom: 20px;
   border-radius: 8px;
   overflow: hidden;
+  
 }
 
 .diary-image img {
@@ -255,6 +256,8 @@ function formatDateTime(datetime) {
   max-height: 400px;
   object-fit: cover;
   display: block;
+
+
 }
 
 /* 內容 */
@@ -280,13 +283,17 @@ function formatDateTime(datetime) {
   border-top: 1px solid #e0e0e0;
   font-size: 15px;
   margin-bottom: 8px;
+  justify-content: center;
+  text-align: center;
 }
 
 .meta-item {
   margin-bottom: 10px;
+  justify-content: center;
+  text-align: center;
 }
 
-.meta-label {
+.meta-label  {
   color: #999;
 }
 
