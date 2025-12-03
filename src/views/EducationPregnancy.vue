@@ -1,8 +1,8 @@
 <template>
-  <SearchBar @search="handleSearch" />
   <div class="education-page">
     <div class="page-header">
       <h2>孕期衛教資訊</h2>
+      <SearchBar @search="handleSearch" />
       <div class="search-placeholder"></div>
     </div>
 
@@ -132,7 +132,8 @@ const handleSearch = (key) => {
 <style scoped>
 /* 整體容器 */
 .education-page {
-  max-width: 1100px;
+  width: 65%;
+  /* max-width: 1100px; */
   margin: 0 auto;
   padding: 20px;
   color: #333;
@@ -142,7 +143,7 @@ const handleSearch = (key) => {
   margin-bottom: 40px;
 }
 .page-header h2 {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: bold;
   color: #2c3e50;
 }
