@@ -117,13 +117,13 @@ const verification = () => {
   ) {
     showIdPhone.value = false;
   } else {
-    alert("此身分證字號或手機號碼尚未註冊,請聯絡系統管理員");
+    alert("此身分證字號或手機號碼尚未註冊，請聯絡工作人員。");
   }
 };
 
 // 重新寄送簡訊
 const resendsms = () => {
-  alert("驗證碼已重新寄送!");
+  alert("驗證碼已重新寄送！請注意查收簡訊");
 };
 
 // 驗證簡訊
