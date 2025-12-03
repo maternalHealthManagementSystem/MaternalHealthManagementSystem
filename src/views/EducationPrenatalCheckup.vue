@@ -1,7 +1,7 @@
 <template>
-  <SearchBar @search="handleSearch" />
   <div class="page-container">
       <h2 class="title">產檢衛教資訊</h2> 
+      <SearchBar @search="handleSearch" />
       <!-- 查有搜尋結果 -->
       <div v-if="hasResult" class="content-container">
         <!-- 產檢衛教區塊 -->
@@ -143,7 +143,7 @@ const handleSearch = (key) => {
 <style scoped>
 /* 容器設定 */
 .page-container {
-  width: 80%;
+  width: 65%;
   margin: 40px auto;
 }
 
@@ -155,7 +155,7 @@ const handleSearch = (key) => {
 }
 
 h2 {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   color: #333;
 }
