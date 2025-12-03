@@ -654,7 +654,7 @@ const notificationCount = computed(() => {
 .sidebar-nav-links a:last-of-type {
   border-bottom: none;
 }
-.sidebar-nav-links a.router-link-exact-active {
+.sidebar-nav-links a.router-link-active {
   color: #006aa8;
   font-weight: 700;
   background: #f4f6ff;
