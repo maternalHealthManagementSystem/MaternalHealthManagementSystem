@@ -43,7 +43,8 @@ const menuItems = ref([
 
 <style scoped>
 .assessment-page {
-  max-width: 1200px;
+  width: 65%;
+  /* max-width: 1200px; */
   margin: 0 auto;
   padding: 40px 20px;
 }
