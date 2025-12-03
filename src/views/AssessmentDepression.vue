@@ -144,8 +144,45 @@ const submitForm = () => {
     alert('您還有題目尚未完成，請檢查所有題目。');
     return;
   }else{
-    // 之後加入實際送出給後端 API 的程式碼
-    console.log('Form Data:', form);
+    // // 組裝要儲存的內容
+    // const record = {
+    //   id: Date.now(),  // 用 timestamp 當 id
+    //   title: "愛丁堡產後憂鬱量表",
+    //   date: new Date().toLocaleString(),
+    //   form: { ...form },   // 身分、日期
+    //   questions: JSON.parse(JSON.stringify(questions)), // 每一題回答
+    //   totalScore: totalScore.value
+    // };
+
+    // // 取出舊資料
+    // const historyData = JSON.parse(localStorage.getItem("assessmentHistory") || "[]");
+
+    // // 新的加入陣列前方
+    // historyData.unshift(record);
+
+    // // 儲存回 localStorage
+    // localStorage.setItem("assessmentHistory", JSON.stringify(historyData));
+
+    // 取得當下的結果評語
+    const currentMessage = resultMessage.value; 
+
+    // 組裝要儲存的內容
+    const record = {
+      id: Date.now(),
+      title: "愛丁堡產後憂鬱量表",
+      type: 'depression', // 標記這是憂鬱量表
+      date: new Date().toLocaleDateString(), // 格式化日期
+      
+      // 儲存表單資料
+      form: { ...form }, 
+      questions: JSON.parse(JSON.stringify(questions)), // 儲存答題內容
+      totalScore: totalScore.value, // 儲存總分
+      message: currentMessage // 把評語存起來
+    };
+    const historyData = JSON.parse(localStorage.getItem("assessment_history") || "[]");
+    
+    historyData.unshift(record);
+    localStorage.setItem("assessment_history", JSON.stringify(historyData));
     // 顯示結果彈窗
     showResultModal.value = true;
   }
