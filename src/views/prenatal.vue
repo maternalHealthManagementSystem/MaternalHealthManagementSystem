@@ -259,6 +259,7 @@ const clearSelection = () => {
 /* ------------------------------ */
 .checkup-list-panel {
   width: 260px;
+  height: fit-content;
   background: #fafafa;
   border-radius: 12px;
   border: 1px solid #ddd;
