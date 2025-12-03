@@ -19,18 +19,17 @@
               <h3>{{ section.title }}</h3>
               <div class="underline"></div>   
             </div> 
+            
             <div class="scroll-box">
               <ul class="link-list">
                 <li v-for="(item, index) in section.items" :key="index">            
-                  <a :href="item.link" target="_blank" class="resource-link">
-                    <span class="icon"></span>              
+                  <a :href="item.link" target="_blank" class="resource-link">              
                     {{ item.name }}
                   </a>           
                 </li>        
               </ul>       
             </div>    
           </div>
-                 
         </template>
         <!-- 查無搜尋結果 -->
         <div v-else class="no-result">
@@ -38,26 +37,26 @@
           <p>查無搜尋結果</p>
         </div>
       </div>
-    </div>
 
-    <aside v-if="!keyword" class="sidebar">
-      <div class="toc-container">
-        <h4 class="toc-title">目錄</h4>
-        <nav>
-          <ul>
-            <li v-for="section in sections" :key="section.id">
-              <a
-                href="#"
-                @click.prevent="scrollToSection(section.id)"
-                class="toc-link">
-              
-                {{ section.title }}
-              </a>
-            </li>
-          </ul>
-        </nav>
-      </div>
-    </aside>
+      <aside v-if="!keyword" class="sidebar">
+        <div class="toc-container">
+          <h4 class="toc-title">目錄</h4>
+          <nav>
+            <ul>
+              <li v-for="section in sections" :key="section.id">
+                <a
+                  href="#"
+                  @click.prevent="scrollToSection(section.id)"
+                  class="toc-link">
+                
+                  {{ section.title }}
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
+    </div>
   </div>
   <ScrollTop />
 </template>
@@ -182,12 +181,12 @@ h2 {
 /* 右側捲動框樣式 */
 .scroll-box {
   flex-grow: 1;
-  height: 200px; /* 固定高度 */
+  height: 240px; /* 固定高度 */
   overflow-y: auto; /* 超出則捲動 */
-  background-color: #f8f9fa; /* 淺灰底色，參考截圖 */
+  background-color: white;
   border: 1px solid #e0e0e0;
   border-radius: 4px;
-  padding: 15px;
+  padding: 5px;
   /* 自訂捲軸樣式 (Chrome/Safari) */
   scrollbar-width: thin;
   scrollbar-color: #ccc #f0f0f0;
@@ -209,8 +208,8 @@ h2 {
 }
 
 .link-list li {
-  margin-bottom: 12px;
-  padding-bottom: 8px;
+  margin-bottom: 0;
+  padding-bottom: 8px 0;
   border-bottom: 1px dashed #e0e0e0;
 }
 
@@ -231,11 +230,6 @@ h2 {
   color: #3498db;
 }
 
-.icon {
-  margin-right: 8px;
-  font-size: 14px;
-}
-
 /* --- 右側目錄區 (Sticky Sidebar) --- */
 .sidebar {
   width: 200px;
@@ -245,7 +239,7 @@ h2 {
 .toc-container {
   position: sticky; /* 關鍵：黏性定位 */
   top: 100px; /* 距離頂部的距離 */
-  background-color: #e3e9ef; /* 參考截圖的淡藍灰色背景 */
+  background-color: #e3e9ef; /* 淡藍灰色背景 */
   padding: 20px;
   border-radius: 4px;
 }
