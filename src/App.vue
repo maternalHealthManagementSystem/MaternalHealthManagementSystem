@@ -442,7 +442,7 @@ const notificationCount = computed(() => {
   transition: width 0.25s ease;
 }
 .nav a:hover::after,
-.nav a.router-link-exact-active::after {
+.nav a.router-link-active::after {
   width: 100%;
 }
 
