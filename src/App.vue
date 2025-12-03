@@ -20,7 +20,9 @@
           <router-link class="dropbtn">衛教資訊專區 ⮟</router-link>
           <div class="dropdown-content">
             <router-link to="/education/pregnancy">孕期衛教資訊</router-link>
-            <router-link to="/education/prenatal-checkup">產檢衛教資訊</router-link>
+            <router-link to="/education/prenatal-checkup"
+              >產檢衛教資訊</router-link
+            >
           </div>
         </div>
 
@@ -49,7 +51,12 @@
           aria-label="開啟個人資料側邊欄"
         >
           <!-- 如果有頭像就顯示頭像,沒有就顯示圖標 -->
-          <img v-if="userAvatar" :src="userAvatar" class="avatar-preview" alt="使用者頭像" />
+          <img
+            v-if="userAvatar"
+            :src="userAvatar"
+            class="avatar-preview"
+            alt="使用者頭像"
+          />
           <i v-else class="fi fi-sr-user"></i>
         </div>
       </div>
@@ -87,7 +94,12 @@
         <div class="sidebar-header">
           <div class="avatar">
             <!-- 如果有上傳頭像就顯示,沒有就顯示預設圖標 -->
-            <img v-if="userAvatar" :src="userAvatar" class="avatar-image" alt="使用者頭像" />
+            <img
+              v-if="userAvatar"
+              :src="userAvatar"
+              class="avatar-image"
+              alt="使用者頭像"
+            />
             <i v-else class="fi fi-sr-user" style="font-size: 30px"></i>
           </div>
           <div class="user-info">
@@ -127,16 +139,21 @@
           <router-link to="/prenatal" @click="closeSidebar"
             >產檢紀錄專區</router-link
           >
-          <router-link to="/education" @click="closeSidebar"
-            >衛教資訊專區</router-link
+          <div class="dropdown">
+            <router-link class="dropbtn" to="/education">衛教資訊專區 ⮟</router-link>
+            <div class="dropdown-content">
+              <router-link to="/education/pregnancy" @click="closeSidebar">孕期衛教資訊</router-link>
+              <router-link to="/education/prenatal-checkup" @click="closeSidebar"
+                >產檢衛教資訊</router-link>
+            </div>
+          </div>
+          <router-link to="/postpartum" @click="closeSidebar">
+            產後專區</router-link
           >
-          <router-link to="/postpartum" @click="closeSidebar"
-            >產後專區</router-link
-          >
-          <router-link to="/selftest" @click="closeSidebar"
+          <router-link to="/self-assessment" @click="closeSidebar"
             >自我評估專區</router-link
           >
-          <router-link to="/timeline" @click="closeSidebar"
+          <router-link to="/Calendar-Diary" @click="closeSidebar"
             >孕育時光表</router-link
           >
         </nav>
@@ -236,16 +253,19 @@ onMounted(() => {
 });
 
 // 監聽 localStorage 變化 (當使用者在 profile 頁面上傳頭像時)
-window.addEventListener('storage', (e) => {
-  if (e.key === 'userProfile') {
+window.addEventListener("storage", (e) => {
+  if (e.key === "userProfile") {
     loadUserData();
   }
 });
 
 // 監聽路由變化,重新載入使用者資料 (處理同頁面更新的情況)
-watch(() => route.path, () => {
-  loadUserData();
-});
+watch(
+  () => route.path,
+  () => {
+    loadUserData();
+  }
+);
 
 // 認證狀態
 const showLogoutConfirm = ref(false);
@@ -291,7 +311,7 @@ const handleNotificationClick = () => {
 const goProfile = () => {
   closeSidebar();
   console.log("導航到個人資料頁");
-  router.push('/profile') // 假設有 profile 頁面
+  router.push("/profile"); // 假設有 profile 頁面
 };
 
 const logout = () => {
@@ -700,7 +720,7 @@ const notificationCount = computed(() => {
    --------------------------- */
 .footer {
   margin-top: auto;
-  background: linear-gradient(135deg, #57aee2 );
+  background: linear-gradient(135deg, #57aee2);
   color: #fff;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
 }
@@ -854,7 +874,7 @@ const notificationCount = computed(() => {
   position: absolute;
   background-color: white;
   min-width: 160px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   border-radius: 6px;
   z-index: 10;
   padding: 10px 0;
