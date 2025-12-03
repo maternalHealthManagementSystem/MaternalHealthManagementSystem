@@ -305,8 +305,25 @@ const submitForm = () => {
     }else if (completionRate.value <  100) {  // 檢查完成度是否為 100%
         alert('您還有題目尚未完成，請檢查所有題目。');
     } else {
-        // 之後加入實際送出給後端 API 的程式碼
-        console.log('Form Data:', form);
+        // 讀取目前 localStorage 裡是否已經有舊資料
+        const historyData = JSON.parse(localStorage.getItem('assessment_history') || '[]');
+
+        // 建立一筆新紀錄物件
+        const newRecord = {
+            id: Date.now(), // 用時間戳記當作唯一 ID
+            title: '孕婦產前健康照護衛教指導紀錄表',
+            date: new Date().toLocaleDateString(), // 儲存當下日期
+            timestamp: new Date().getTime(), // 排序用
+            formData: JSON.parse(JSON.stringify(form)), // 深拷貝表單內容，避免參照問題
+            eduData: JSON.parse(JSON.stringify(educationTopics)) // 衛教題目的勾選狀態也要存
+        };
+
+        // 加入陣列並存回 localStorage
+        historyData.unshift(newRecord); // unshift 讓最新的排在最前面
+        localStorage.setItem('assessment_history', JSON.stringify(historyData));
+
+        console.log('Form Data Saved:', newRecord);
+
         // 顯示成功視窗
         showSuccessModal.value = true; 
     }
