@@ -1,140 +1,151 @@
 <template>
-  <AssessmentPanel title="歷史填寫紀錄">
+  <AssessmentPanel title="歷史填寫詳細內容">
     
-    <button class="btn-back" @click="$router.back()">← 返回列表</button>
+    <div v-if="!record" class="error-msg">找不到該筆資料或讀取錯誤</div>
+
+    <div v-else class="detail-container">
       
-    <div v-if="recordData" class="record-content-wrapper">
-      
-      <div class="record-summary">
-        <h3 class="record-title">{{ recordData.title }}</h3>
+      <div class="meta-header">
+        <div>
+          <h2 class="record-title">{{ record.title }}</h2>
+          <span class="record-date">填寫時間：{{ formatTime(record.id) }}</span>
+        </div>
+        <button class="back-btn" @click="router.back()">返回列表</button>
+      </div>
+
+      <div v-if="record.type === 'depression'" class="depression-detail">
         
-        <div class="record-meta">
-          <span>填寫日期：{{ recordData.date }}</span>
-          
-          <span v-if="recordData.type === 'depression'" class="score-badge">
-            分數：{{ recordData.score }}
-          </span>
-        </div>
-
-        <div v-if="recordData.type === 'depression'" class="advice-box">
-          <p class="advice-text" :class="adviceClass">
-            {{ scoreAdvice }}
-          </p>
-        </div>
-      </div>
-
-      <hr class="divider">
-
-      <div v-if="recordData.type === 'prenatal'" class="form-readonly">
-        <div class="section-block">
-          <h4 class="section-title">基本資料</h4>
-          <div class="info-grid">
-            <div class="info-item"><label>姓名：</label> {{ recordData.name }}</div>
-            <div class="info-item"><label>身分證字號：</label> {{ recordData.idNumber }}</div>
-            <div class="info-item"><label>出生日期：</label> {{ recordData.birthDate }}</div>
-            <div class="info-item"><label>聯絡地址：</label> {{ recordData.address }}</div>
-            <div class="info-item"><label>手機號碼：</label> {{ recordData.phone }}</div>
-            <div class="info-item"><label>住家電話：</label> {{ recordData.homePhone }}</div>
+        <div class="result-summary">
+          <div class="score-box" :class="getScoreClass(record.totalScore)">
+            <span class="score-val">{{ record.totalScore }}</span>
+            <span class="score-label">總分</span>
+          </div>
+          <div class="feedback-box">
+            <h4>評估結果建議：</h4>
+            <p>{{ record.message }}</p>
           </div>
         </div>
-        <div class="section-block">
-          <h4 class="section-title">健康行為</h4>
-          <ul class="readonly-list">
-            <li><label>吸菸習慣：</label> {{ optionMaps.smoking[recordData.behavior.smoking] }}</li>
-            <li><label>二手菸環境：</label> {{ optionMaps.secondhandSmoke[recordData.behavior.secondhandSmoke] }}</li>
-            <li><label>飲酒習慣：</label> {{ optionMaps.drinking[recordData.behavior.drinking] }}</li>
-            <li><label>嚼檳榔：</label> {{ optionMaps.betelNut[recordData.behavior.betelNut] }}</li>
-            <li><label>使用毒品：</label> {{ optionMaps.drugs[recordData.behavior.drugs] }}</li>
-            <li>
-              <label>憂鬱檢測：</label>
-              <div class="sub-list">
-                <p>1. 情緒低落：{{ optionMaps.depression[recordData.behavior.depression1] }}</p>
-                <p>2. 失去興趣：{{ optionMaps.depression[recordData.behavior.depression2] }}</p>
-              </div>
-            </li>
-          </ul>
-        </div>
-        <div class="section-block">
-          <h4 class="section-title">孕產婦醫療史</h4>
-          <div class="history-result">
-            <p class="history-main">是否有病史：
-              <span :class="recordData.medicalHistory.hasHistory ? 'text-red' : 'text-green'">
-                {{ recordData.medicalHistory.hasHistory ? '是' : '否' }}
-              </span>
-            </p>
-            
-            <div v-if="recordData.medicalHistory.hasHistory" class="selected-tags">
-              <span v-for="item in recordData.medicalHistory.selectedItems" :key="item" class="tag">
-                {{ medicalLabels[item] || '嚴重合併症' }}
-                <span v-if="item === '11'"> ({{ recordData.medicalHistory.otherNote }})</span>
-              </span>
-            </div>
+
+        <div class="form-card">
+          <div class="card-label">基本資料</div>
+          <div class="card-body">
+            <p><strong>身分：</strong> {{ record.form.identity == '1' ? '準媽媽' : '寶寶媽媽' }}</p>
+            <p><strong>預產期/寶寶生日：</strong> {{ record.form.date }}</p>
           </div>
         </div>
-        <div class="section-block">
-          <h4 class="section-title">衛教指導評估</h4>
-          
-          <div v-for="(topic, index) in recordData.educationResults" :key="index" class="edu-readonly-group">
-            <p class="edu-title">{{ topic.title }}</p>
-            
-            <div class="edu-list">
-              <div v-for="(point, pIndex) in topic.points" :key="pIndex" class="edu-detail-row">
-                
-                <div class="edu-question-text">
-                  {{ pIndex + 1 }}. {{ point.text }}
-                </div>
-                
-                <div class="edu-status-tag">
-                  <span class="status-badge" :class="point.value === 1 ? 'bg-blue' : 'bg-gray'">
-                    {{ optionMaps.education[point.value] }}
-                  </span>
-                </div>
 
+        <div class="form-card">
+          <div class="card-label">答題明細</div>
+          <div class="card-body">
+            <div v-for="q in record.questions" :key="q.id" class="qa-item">
+              <p class="qa-question">{{ q.id }}. {{ q.text }}</p>
+              <div class="qa-answer">
+                <span class="ans-label">您的回答：</span>
+                <span class="ans-text">{{ getSelectedText(q) }}</span>
+                <span class="ans-score">({{ q.selectedVal }}分)</span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-else-if="recordData.type === 'depression'" class="form-readonly">
-        <div class="info-row">
-          <label>身分：</label>
-          <span>{{ recordData.identity === '1' ? '準媽媽' : '寶寶媽媽' }}</span>
-        </div>
-        <div class="info-row">
-          <label>預產期或寶寶生日：</label>
-          <span>{{ recordData.dueDate }}</span>
-        </div>
-        <div class="question-list">
-          <div v-for="(q, index) in recordData.answers" :key="index" class="q-item">
-            <p class="q-text">{{ index + 1 }}. {{ q.question }}</p>
-            <div class="answer-display">
-              <span class="selected-option">● {{ q.answer }}</span>
+      <div v-else-if="record.type === 'prenatal' || !record.type" class="prenatal-detail">
+        
+        <div class="form-card">
+          <div class="card-label">基本資料</div>
+          <div class="card-body">
+            <div class="info-grid">
+              <div class="info-item"><label>姓名：</label> {{ record.formData.name }}</div>
+              <div class="info-item"><label>身分證：</label> {{ record.formData.idNumber }}</div>
+              <div class="info-item"><label>出生日期：</label> {{ record.formData.birthDate }}</div>
+              <div class="info-item"><label>地址：</label> {{ record.formData.address }}</div>
+              <div class="info-item"><label>手機號碼：</label> {{ record.formData.phone }}</div>
+              <div class="info-item"><label>住家電話：</label> {{ record.formData.homePhone }}</div>
             </div>
           </div>
         </div>
+
+        <div class="form-card" v-if="record.formData.behavior">
+          <div class="card-label">健康行為</div>
+          <div class="card-body">
+            <ul class="readonly-list">
+              <li><label>吸菸習慣：</label> {{ optionMaps.smoking[record.formData.behavior.smoking] }}</li>
+              <li><label>二手菸環境：</label> {{ optionMaps.secondhandSmoke[record.formData.behavior.secondhandSmoke] }}</li>
+              <li><label>飲酒習慣：</label> {{ optionMaps.drinking[record.formData.behavior.drinking] }}</li>
+              <li><label>嚼檳榔：</label> {{ optionMaps.betelNut[record.formData.behavior.betelNut] }}</li>
+              <li><label>使用毒品：</label> {{ optionMaps.drugs[record.formData.behavior.drugs] }}</li>
+              <li>
+                <label>憂鬱檢測：</label>
+                <div class="sub-list">
+                  <p>1. 情緒低落：{{ optionMaps.depression[record.formData.behavior.depression1] }}</p>
+                  <p>2. 失去興趣：{{ optionMaps.depression[record.formData.behavior.depression2] }}</p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="form-card" v-if="record.formData.medicalHistory">
+          <div class="card-label">醫療病史</div>
+          <div class="card-body">
+            <div class="history-result">
+              <p class="history-main">是否有病史：
+                <span :class="record.formData.medicalHistory.hasHistory ? 'text-alert' : 'text-safe'">
+                  {{ record.formData.medicalHistory.hasHistory ? '是' : '否' }}
+                </span>
+              </p>
+              
+              <div v-if="record.formData.medicalHistory.hasHistory" class="selected-tags">
+                <span v-for="item in record.formData.medicalHistory.selectedItems" :key="item" class="tag">
+                  {{ medicalLabels[item] || '其他' }}
+                  <span v-if="item === '11'"> ({{ record.formData.medicalHistory.otherNote }})</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div class="card-label">衛教指導</div>
+          <div class="card-body">
+            <div v-for="(topic, index) in record.eduData" :key="index" class="edu-readonly-group">
+              <p class="edu-sub-title">{{ topic.title }}</p>
+              
+              <div class="edu-list">
+                <div v-for="(point, pIndex) in topic.points" :key="pIndex" class="edu-detail-row">
+                  
+                  <div class="edu-question-text">
+                    {{ point.text }}
+                  </div>
+                  
+                  <div class="edu-status-tag">
+                    <span class="status-badge" :class="point.value === 1 ? 'bg-blue' : 'bg-red'">
+                      {{ optionMaps.education[point.value] }}
+                    </span>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
     </div>
-    
-    <div v-else class="loading">
-      載入資料中...
-    </div>
-
   </AssessmentPanel>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
-// 引入題目 JSON 檔案
-import prenatalQuestions from '../assets/data/prenatalQuestions.json';
-import depressionQuestions from '../assets/data/depressionQuestions.json';
-const route = useRoute();
-const recordData = ref(null);
 
-// --- 定義選項對照表 (Mapping) ---
+const route = useRoute();
+const router = useRouter();
+const record = ref(null);
+
+// --- 選項對照表 ---
 const optionMaps = {
   smoking: { 0: '否', 1: '偶爾或應酬才吸', 2: '平均一天約吸一包菸以下', 3: '平均一天約吸一包菸以上' },
   secondhandSmoke: { 0: '否', 1: '是', 2: '周遭環境沒有二手菸' },
@@ -145,11 +156,11 @@ const optionMaps = {
   education: { 1: '清楚', 0: '不清楚'}
 };
 
-// 醫療病史的選項標籤 (用於將 ID 轉為文字)
+// --- 醫療病史標籤 ---
 const medicalLabels = {
   '1': '妊娠期高血壓疾病', '2': '前置胎盤', '3': '羊水過多或過少',
   '4': '胎兒生長限制', '5': '胎盤功能異常', '6': '胎兒體重過重',
-  '7': '遺傳疾病', '9': '骨盆異常', '10': '子宮、產道異常',
+  '7': '遺傳疾病', '8': '嚴重合併症', '9': '骨盆異常', '10': '子宮、產道異常',
   '11': '其他', '8-1': '心臟病', '8-2': '腎臟疾病',
   '8-3': '血液系統疾病', '8-4': '肝臟疾病', '8-5': '活動性肺結核',
   '8-6': '糖尿病', '8-7': '甲狀腺功能亢進症', '8-8': '精神病或神經系統疾病',
@@ -157,240 +168,146 @@ const medicalLabels = {
   '8-11': '孕期感染性疾病', '8-12': '性傳染病'
 };
 
-// --- 前端模擬資料庫 (Mock Data) ---
-const mockDatabase = [
-  {
-    id: '1', // 對應列表頁的 ID
-    type: 'depression',
-    title: '愛丁堡產後憂鬱量表',
-    date: '2025 / 11 / 15',
-    score: 14,
-    identity: '1',
-    dueDate: '2026 / 01 / 23',
-    answers: [0, 1, 3, 2, 2, 1, 1, 2, 2, 0]
-  },
-  {
-    id: '2',
-    type: 'prenatal',
-    title: '孕婦產前健康照護衛教指導紀錄表',
-    date: '2025 / 11 / 10',
-    name: '陳小美',
-    idNumber: 'A223456789',
-    birthDate: '1995-08-15',
-    address: '台北市大安區信義路三段 150 號',
-    phone: '0912-345-678',
-    homePhone: '02-2700-1234',
-    behavior: {
-      smoking: 0,           // 0: 否
-      secondhandSmoke: 2,   // 2: 周遭環境沒有二手菸
-      drinking: 1,          // 1: 偶爾或應酬才喝
-      betelNut: 0,          // 0: 否
-      drugs: 0,             // 0: 否
-      depression1: 0,       // 0: 否 (情緒低落)
-      depression2: 1        // 1: 是 (失去興趣)
-    },
-    medicalHistory: {
-      hasHistory: true,     // 是，有病史
-      // 這裡模擬勾選了：妊娠高血壓(1)、糖尿病(8-6)、其他(11)
-      selectedItems: ['1', '8-6', '11'], 
-      otherNote: '輕微貧血症狀' // 當勾選 11 時的輸入內容
-    },
-    medicalHistory: {
-      hasHistory: true,     // 是，有病史
-      // 這裡模擬勾選了：妊娠高血壓(1)、糖尿病(8-6)、其他(11)
-      selectedItems: ['1', '8-6', '11'], 
-      otherNote: '輕微貧血症狀' // 當勾選 11 時的輸入內容
-    },
-    educationResults: [
-      { points: [1, 1] },       // 第1大題的答案
-      { points: [1, 1, 1, 0] }, // 第2大題的答案
-      { points: [1, 1] },
-      { points: [1, 1, 0, 1] },
-      { points: [1, 1, 1] },
-      { points: [1, 1, 1] }
-    ]
-  }
-  // ID 3, 4, 5 的假資料...
-];
-
-// 模擬 API 請求
-const fetchRecordDetail = (id) => {
-  console.log(`正在搜尋 ID: ${id} 的資料...`);
-
-  setTimeout(() => {
-    const foundData = mockDatabase.find(item => item.id == id);
-    
-    if (foundData) {
-      // 深拷貝一份資料，避免汙染原始 Mock Data
-      const mergedData = JSON.parse(JSON.stringify(foundData));
-
-      // --- 合併邏輯 A: 愛丁堡量表 ---
-      if (mergedData.type === 'depression') {
-        // 將 JSON 題目與使用者的 answer 結合
-        mergedData.answers = depressionQuestions.map((q, index) => {
-          const userVal = foundData.answers[index];
-          // 找出使用者選的那個選項文字
-          const selectedOpt = q.options.find(opt => opt.value === userVal);
-          
-          return {
-            question: q.text,
-            answer: selectedOpt ? selectedOpt.text : '未填答'
-          };
-        });
-      }
-      
-      // --- 合併邏輯 B: 產前紀錄表 ---
-      else if (mergedData.type === 'prenatal') {
-        // 合併衛教指導題目
-        mergedData.educationResults = prenatalQuestions.educationTopics.map((topic, i) => {
-          return {
-            title: topic.title,
-            points: topic.points.map((pt, j) => {
-              const userVal = foundData.educationResults[i]?.points[j];
-              return {
-                text: pt.text, // 從 JSON 拿題目
-                value: userVal // 從 Mock Data 拿答案
-              };
-            })
-          };
-        });
-      }
-
-      recordData.value = mergedData;
-    } else {
-      alert('查無此紀錄');
-    }
-  }, 0);
+// --- 愛丁堡 Helper ---
+const getScoreClass = (score) => {
+  if (score >= 13) return 'status-danger';
+  if (score >= 10) return 'status-warning';
+  return 'status-normal';
 };
 
-// 根據分數計算建議 (愛丁堡專用)
-const scoreAdvice = computed(() => {
-  if (!recordData.value || recordData.value.type !== 'depression') return '';
-  const score = recordData.value.score;
-  if (score >= 13) return '分數偏高，建議尋求專科醫師協助。';
-  if (score >= 10) return '情緒需注意，建議近期再次評估。';
-  return '情緒狀態穩定。';
-});
+const getSelectedText = (question) => {
+  const selected = question.options.find(opt => opt.value === question.selectedVal);
+  return selected ? selected.text : '未作答';
+};
 
-const adviceClass = computed(() => {
-  if (!recordData.value) return '';
-  const score = recordData.value.score;
-  if (score >= 13) return 'text-danger';
-  if (score >= 10) return 'text-warning';
-  return 'text-success';
-});
+const formatTime = (timestamp) => {
+  if (!timestamp) return '';
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) return timestamp;
+  return date.toLocaleString('zh-TW', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit'
+  });
+};
 
 onMounted(() => {
-  // 從網址參數 (route.params) 拿到 ID，並發動搜尋
-  fetchRecordDetail(route.params.id);
+  const id = route.params.id;
+  const allRecords = JSON.parse(localStorage.getItem('assessment_history') || '[]');
+  record.value = allRecords.find(r => r.id == id);
 });
 </script>
 
 <style scoped>
-/* 返回按鈕 */
-.btn-back {
-  background: none;
-  border: none;
-  color: #5a6b7c;
-  font-weight: bold;
-  cursor: pointer;
-  margin-bottom: 10px;
-}
-.btn-back:hover { text-decoration: underline; }
+/* =========================================
+   核心結構樣式 (Form Card) - 兩個量表共用
+   ========================================= */
+.meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
+.record-title { margin: 0; color: #2c3e50; font-size: 20px; }
+.record-date { color: #7f8c8d; font-size: 14px; }
+.back-btn { background: #95a5a6; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
+.back-btn:hover { background: #7f8c8d; }
 
-/* 標題與摘要 */
-.record-summary { padding: 0 10px; margin-bottom: 20px; }
-.record-title { color: #444; margin-bottom: 5px; }
-.record-meta { color: #666; font-size: 14px; }
-.score-badge { 
-  background-color: #7f9ab0; color: white; 
-  padding: 2px 8px; border-radius: 4px; margin-left: 10px; 
-}
-
-/* 分隔線 */
-.divider { border: 0; border-top: 1px dashed #ccc; margin: 20px 0; }
-
-/* 建議文字區塊 */
-.advice-box {
-  margin-top: 10px; padding: 10px;
-  background-color: #f9f9f9; border-left: 4px solid #ccc;
-}
-.text-danger { color: #c0392b; border-left-color: #c0392b; }
-.text-warning { color: #d35400; border-left-color: #d35400; }
-.text-success { color: #27ae60; border-left-color: #27ae60; }
-
-/* 表單樣式 */
-.section-block {
-  background: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;
-}
-.section-title {
-  border-left: 4px solid #5a6b7c; padding-left: 8px; margin-bottom: 10px; color: #333;
-}
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.info-item label { font-weight: bold; color: #555; }
-.info-row { margin-bottom: 15px; font-size: 16px; color: #444;}
-
-.q-item { 
-  margin-bottom: 20px;
-  background-color: rgba(255, 255, 255, 0.5); /* 半透明白底 */
-  padding: 10px;
-  border-radius: 4px; 
-}
-.selected-option { color: #3498db; font-weight: bold; }
-
-/* 衛教指導區塊 */
-.edu-readonly-group {
-  margin-bottom: 25px;
+/* 統一的卡片樣式 */
+.form-card { 
+  background: #fff; 
+  margin-bottom: 20px; 
+  border-radius: 6px; 
+  display: flex; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+  overflow: hidden; 
+  border: 1px solid #eef2f7;
 }
 
-.edu-title {
-  font-weight: bold;
-  color: #2c3e50;
-  margin-bottom: 10px;
-  font-size: 16px;
-  background-color: #f0f4f8; /* 標題加個淡底色區隔 */
-  padding: 8px;
-  border-radius: 4px;
+/* 左側標題 (垂直) */
+.card-label { 
+  background: #f0f4f8; 
+  width: 45px; 
+  writing-mode: vertical-lr; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-weight: bold; 
+  color: #5a6b7c; 
+  letter-spacing: 2px;
+  flex-shrink: 0; /* 防止被壓縮 */
+  padding: 10px 0; /* 上下留白避免文字貼邊 */
 }
 
+/* 右側內容區 */
+.card-body { flex: 1; padding: 20px; }
+
+
+/* =========================================
+   愛丁堡專用樣式
+   ========================================= */
+.result-summary { display: flex; gap: 20px; margin-bottom: 20px; background-color: #fcfcfc; padding: 20px; border-radius: 8px; border: 1px solid #eee; align-items: center; }
+.score-box { width: 80px; height: 80px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; flex-shrink: 0; }
+.score-val { font-size: 28px; font-weight: bold; line-height: 1; }
+.score-label { font-size: 12px; opacity: 0.9; }
+.status-normal { background-color: #27ae60; }
+.status-warning { background-color: #f39c12; }
+.status-danger { background-color: #c0392b; }
+.feedback-box h4 { margin: 0 0 5px 0; color: #333; }
+.feedback-box p { margin: 0; color: #666; line-height: 1.5; }
+.qa-item { border-bottom: 1px dashed #eee; padding: 10px 0; }
+.qa-item:last-child { border-bottom: none; }
+.qa-question { font-weight: bold; color: #444; margin: 0 0 5px 0; }
+.qa-answer { display: flex; align-items: center; font-size: 14px; }
+.ans-label { color: #888; margin-right: 5px; }
+.ans-text { color: #2980b9; font-weight: 500; margin-right: 8px; }
+.ans-score { color: #999; font-size: 12px; }
+
+/* =========================================
+   產前衛教內容樣式 (內嵌於 card-body)
+   ========================================= */
+
+/* 基本資料 Grid */
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.info-item { font-size: 15px; color: #444; }
+.info-item label { font-weight: bold; color: #555; margin-right: 5px; }
+
+/* 健康行為列表 */
+.readonly-list { list-style: none; padding: 0; margin: 0; }
+.readonly-list li { margin-bottom: 8px; font-size: 15px; color: #333; border-bottom: 1px dashed #f0f0f0; padding-bottom: 8px;}
+.readonly-list label { font-weight: bold; color: #666; display: inline-block; width: 100px; }
+.sub-list { margin-left: 100px; margin-top: 5px; color: #555; font-size: 14px; background: #fafafa; padding: 8px; border-radius: 4px;}
+.sub-list p { margin: 3px 0; }
+
+/* 醫療病史 */
+.text-alert { color: #c0392b; font-weight: bold; }
+.text-safe { color: #27ae60; font-weight: bold; }
+.selected-tags { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { background: #fdf2f2; color: #c0392b; padding: 4px 10px; border-radius: 15px; font-size: 13px; border: 1px solid #fadbd8; }
+
+/* 衛教指導 (內容層) */
+.edu-readonly-group { margin-bottom: 25px; }
+/* 這裡的副標題改為橫式，位於卡片內容內 */
+.edu-sub-title {
+  font-weight: bold; color: #3d4758; margin-bottom: 10px; font-size: 16px;
+  border-left: 4px solid #3d4758; padding-left: 8px;
+}
 .edu-detail-row {
-  display: flex; /* 左右排列 */
-  justify-content: space-between;
-  align-items: flex-start; /* 文字靠上對齊 */
-  padding: 10px 0;
-  border-bottom: 1px dashed #eee;
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px dashed #eee;
 }
+.edu-detail-row:last-child { border-bottom: none; }
+.edu-question-text { flex: 1; font-size: 15px; color: #555; line-height: 1.5; padding-right: 15px; }
+.edu-status-tag { flex-shrink: 0; }
 
-.edu-detail-row:last-child {
-  border-bottom: none;
-}
-
-/* 題目文字樣式 */
-.edu-question-text {
-  flex: 1; /* 佔滿剩餘空間 */
-  font-size: 15px;
-  color: #555;
-  line-height: 1.5;
-  padding-right: 15px; /* 與標籤的間距 */
-}
-
-/* 狀態標籤容器 */
-.edu-status-tag {
-  flex-shrink: 0; /* 防止標籤被壓縮 */
-}
-
-/* 標籤樣式 */
 .status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 13px;
-  color: white;
-  font-weight: 500;
-  min-width: 60px;
-  text-align: center;
+  display: inline-block; padding: 4px 12px; border-radius: 20px;
+  font-size: 13px; color: white; font-weight: 500; min-width: 60px; text-align: center;
 }
-
 .bg-blue { background-color: #3498db; }
-.bg-gray { background-color: #e85d44; }
+.bg-red { background-color: #e85d44; }
+
+/* RWD */
+@media (max-width: 768px) {
+  .result-summary { flex-direction: column; text-align: center; }
+  .form-card { flex-direction: column; }
+  .card-label { width: 100%; height: 35px; writing-mode: horizontal-tb; letter-spacing: 0; }
+  .info-grid { grid-template-columns: 1fr; }
+  .readonly-list label { display: block; margin-bottom: 3px; }
+  .sub-list { margin-left: 0; }
+}
 </style>
