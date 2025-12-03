@@ -29,7 +29,6 @@
 
       <div v-show="!showIdPhone">
 
-        <!-- 🔥 DEMO 用驗證碼顯示 -->
         <p v-if="demoMode && demoSMSDisplay" style="color: red; font-size: 14px; margin-bottom: 10px;">
           驗證碼：{{ demoSMSDisplay }}
         </p>
@@ -41,8 +40,15 @@
           placeholder="請輸入驗證碼"
         />
         <p class="error-text" v-if="smsError">{{ smsError }}</p>
-
-        <button class="text-button" @click="resendsms">重新寄送驗證碼</button>
+        
+        <button 
+          class="text-button" 
+          @click="resendsms" 
+          :disabled="isCounting"
+          :style="{ cursor: isCounting ? 'not-allowed' : 'pointer', color: isCounting ? '#aaa' : '#007bff' }"
+        >
+          {{ isCounting ? `${countdown} 秒後重新寄送` : '重新寄送驗證碼' }}
+        </button>
         <button class="text-button" @click="resendPhoneInput">重新輸入手機電話號碼</button>
         <button class="button" @click="sendsms">驗證</button>
       </div>
@@ -55,6 +61,14 @@ import { useRouter } from "vue-router";
 
 // 🔥 是否開啟 Demo 模式（展示用）
 const demoMode = true;
+
+// ----------------------
+// 倒數計時狀態 (新增)
+// ----------------------
+const initialTime = 60;
+const countdown = ref(initialTime);
+const isCounting = ref(false);
+let timer = null; // 用於儲存計時器
 
 // ----------------------
 // 欄位錯誤訊息
@@ -110,7 +124,28 @@ const generateDemoSMS = () => {
 };
 
 // ----------------------
-// 送出驗證碼
+// ⭐ 啟動倒數計時 (新增)
+// ----------------------
+const startCountdown = () => {
+  // 先清除舊的計時器
+  if (timer) clearInterval(timer);
+  
+  isCounting.value = true;
+  countdown.value = initialTime;
+
+  timer = setInterval(() => {
+    countdown.value--;
+
+    if (countdown.value <= 0) {
+      clearInterval(timer);
+      isCounting.value = false;
+    }
+  }, 1000);
+};
+
+
+// ----------------------
+// 送出驗證碼 (修改：成功後開始倒數)
 // ----------------------
 const verification = () => {
   idError.value = "";
@@ -130,6 +165,9 @@ const verification = () => {
   // 檢查預設使用者
   if (idNumber.value === demoUser.idNumber && phoneNumber.value === demoUser.phoneNumber) {
     showIdPhone.value = false;
+    
+    // ⭐ 成功發送後開始倒數
+    startCountdown();
 
     if (demoMode) {
       const code = generateDemoSMS();
@@ -142,13 +180,19 @@ const verification = () => {
 };
 
 // ----------------------
-// 重新寄送驗證碼
+// 重新寄送驗證碼 (修改：只有非倒數狀態下才能重新寄送)
 // ----------------------
 const resendsms = () => {
+  if (isCounting.value) {
+    return; // 正在倒數中，不執行任何操作
+  }
+  
+  // ⭐ 重新寄送並開始倒數
   if (demoMode) {
     const code = generateDemoSMS();
     alert(`【Demo 模式】驗證碼已重新寄送：${code}`);
   }
+  startCountdown();
 };
 
 // ----------------------
@@ -171,6 +215,9 @@ const sendsms = () => {
   const savedCode = localStorage.getItem("demoSMSCode");
 
   if (smsCode.value === savedCode) {
+    // 驗證成功時，可以清除計時器
+    if (timer) clearInterval(timer); 
+
     localStorage.setItem("loggedIn", "true");
     localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
     router.push("/home");
@@ -181,7 +228,7 @@ const sendsms = () => {
 };
 
 // ----------------------
-// 回到輸入手機
+// 回到輸入手機 (修改：清除計時器和狀態)
 // ----------------------
 const resendPhoneInput = () => {
   showIdPhone.value = true;
@@ -189,6 +236,11 @@ const resendPhoneInput = () => {
   phoneNumber.value = "";
   smsCode.value = "";
   demoSMSDisplay.value = "";
+  
+  // ⭐ 清除計時器狀態
+  if (timer) clearInterval(timer);
+  isCounting.value = false;
+  countdown.value = initialTime;
 };
 </script>
 
@@ -299,5 +351,12 @@ button:hover {
   font-size: 12px;
   margin-top: -5px;
   margin-bottom: 10px;
+}
+
+/* text-button 禁用狀態 */
+.text-button[disabled] {
+  color: #aaa !important; /* 灰色 */
+  cursor: not-allowed !important;
+  text-decoration: none !important; /* 移除底線 */
 }
 </style>
