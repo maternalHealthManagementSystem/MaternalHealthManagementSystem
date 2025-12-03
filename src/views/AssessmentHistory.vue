@@ -4,7 +4,7 @@
       <li v-for="record in records" :key="record.id" class="history-item" @click="viewRecord(record)">
         <div class="item-content">
           <span class="record-title">{{ record.title }}</span>
-          <span class="record-date">{{ record.date }}</span>
+          <span class="record-date">{{ formatTime(record.id) }}</span>
         </div>
       </li>
     </ul>
@@ -16,21 +16,39 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted} from 'vue';
 import { useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 
 const router = useRouter();
+const records = ref([]);
 
-// 模擬歷史資料
-// 之後這裡的資料會從 API 取得
-const records = ref([
-  { id: 1, title: '愛丁堡產後憂鬱量表', date: '2025 / 11 / 15', type: 'depression' },
-  { id: 2, title: '孕婦產前健康照護衛教指導紀錄表', date: '2025 / 11 / 10', type: 'prenatal' },
-  { id: 3, title: '愛丁堡產後憂鬱量表', date: '2025 / 09 / 10', type: 'depression' },
-  { id: 4, title: '孕婦產前健康照護衛教指導紀錄表', date: '2025 / 08 / 05', type: 'prenatal' },
-  { id: 5, title: '愛丁堡產後憂鬱量表', date: '2025 / 07 / 28', type: 'depression' }
-]);
+// 時間格式化函式
+const formatTime = (timestamp) => {
+  if (!timestamp) return '';
+  
+  // 將 timestamp (毫秒) 轉為 Date 物件
+  const date = new Date(timestamp);
+  
+  // 轉為中文格式 
+  return date.toLocaleString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    // hour12: false // 使用 24 小時制
+  });
+};
+
+// 當元件掛載時，從 localStorage 抓取資料
+onMounted(() => {
+  const storedData = localStorage.getItem('assessment_history');
+  if (storedData) {
+    records.value = JSON.parse(storedData);
+  }
+});
 
 // 點擊紀錄後查看詳細內容
 const viewRecord = (record) => {
