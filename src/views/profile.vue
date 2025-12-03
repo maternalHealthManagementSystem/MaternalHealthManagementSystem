@@ -612,7 +612,7 @@ const handleFileUpload = (event) => {
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border-left: 5px solid #667eea;
+  border-left: 5px solid #006aa8;
 }
 .due-date-card label {
   display: block;
@@ -697,11 +697,11 @@ const handleFileUpload = (event) => {
   color: #49555f;
 }
 .btn-save {
-  background-color: #764ba2;
+  background-color: #57aee2;
   color: white;
 }
 .btn-save:hover {
-  background-color: #6a4491;
+  background-color: #006aa8;
   transform: translateY(-2px);
 }
 .error-msg {
