@@ -381,13 +381,17 @@ background: rgba(255, 255, 255, 0.15);
   border-radius: 8px;
   overflow: hidden;
   border: 2px solid #e0e0e0;
-  max-width: 100%;
   display: inline-block;
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  display: block;
+
 }
 
 .image-preview-box img {
   display: block;
-  max-width: 100%;
+  width: 100%;
   max-height: 400px;
   object-fit: contain;
 }
@@ -416,14 +420,18 @@ background: rgba(255, 255, 255, 0.15);
 }
 
 .image-hint {
-  font-size: 12px;
+  font-size: 14px;
   color: #999;
   margin: 8px 0 0 0;
+  text-align: center;
+  margin-top:20px;
 }
 
 /* 上傳區域 */
 .upload-section {
   margin-top: 10px;
+  text-align: center;
+  width: 100%;
 }
 
 .upload-btn {
@@ -451,7 +459,7 @@ background: rgba(255, 255, 255, 0.15);
 }
 
 .upload-hint {
-  font-size: 12px;
+  font-size: 14px;
   color: #999;
   margin: 8px 0 0 0;
 }
