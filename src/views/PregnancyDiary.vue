@@ -181,24 +181,42 @@ const allEvents = computed(() => calendarStore.allEvents)
 
 // 在元件掛載後檢查是否有編輯行程的 ID
 onMounted(() => {
-    // 檢查是否有傳遞特定日期，並選中它（如果有需要的話）
-    if (route.query.date) {
-        // 如果 Home 頁面傳遞了日期，可以讓日曆定位到該月份，或讓日記表單選中該日期
-        newDiary.value.date = route.query.date
-        currentMonth.value = dayjs(route.query.date) // 讓日曆顯示該月份
-    }
+  // 檢查是否有傳遞特定日期，並選中它（如果有需要的話）
+  if (route.query.date) {
+      // 如果 Home 頁面傳遞了日期，可以讓日曆定位到該月份，或讓日記表單選中該日期
+      newDiary.value.date = route.query.date
+      currentMonth.value = dayjs(route.query.date) // 讓日曆顯示該月份
+  }
 
-    // 檢查是否有傳遞要編輯的 Event ID
-    if (route.query.editEventId) {
-        const eventId = parseInt(route.query.editEventId);
-        // 嘗試從 Store 的 events 陣列中找到該行程 (假設 ID 是數字)
-        const eventToEdit = calendarStore.events.find(e => e.id === eventId);
-        
-        if (eventToEdit) {
-            // 找到後，將其設置為 selectedEvent 並打開編輯表單
-            selectedEvent.value = { ...eventToEdit };
-            showEditForm.value = true;
-        }
+  // 檢查是否有傳遞要編輯的 Event ID
+  if (route.query.editEventId) {
+      const eventId = parseInt(route.query.editEventId);
+      // 嘗試從 Store 的 events 陣列中找到該行程 
+      const eventToEdit = calendarStore.events.find(e => e.id === eventId);
+      
+      if (eventToEdit) {
+          // 找到後，將其設置為 selectedEvent 並打開編輯表單
+          selectedEvent.value = { ...eventToEdit };
+          showEditForm.value = true;
+      }
+  }
+  
+  // 檢查日記編輯參數 
+  if (route.query.editDiaryId) {
+      const diaryId = parseInt(route.query.editDiaryId);
+      // 從 Store 的 diaries 陣列中找到該日記
+      const diaryToEdit = calendarStore.diaries.find(d => d.id === diaryId);
+      
+      if (diaryToEdit) {
+          // 找到後，設置為 selectedDiary 並打開【日記編輯】表單
+          selectedDiary.value = { ...diaryToEdit };
+          showDiaryEdit.value = true; 
+          
+          // 如果同時傳了日期，確保日記表單選中該日期
+          if (route.query.date) {
+              newDiary.value.date = route.query.date;
+          }
+      }
     }
 })
 
