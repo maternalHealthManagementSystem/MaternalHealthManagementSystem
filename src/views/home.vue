@@ -484,7 +484,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  height: 570px;
+  height: 600px;
   padding: 10px 10px 20px 10px;
 }
 
@@ -569,7 +569,7 @@ onMounted(() => {
 }
 
 .fruit-text {
-  margin-top: 15px;
+  margin-top: 30px;
   font-size: 20px; /* 放大文字 */
   color: #333;
   text-align: center;
