@@ -29,7 +29,7 @@ defineEmits(['click-more'])
 
 <style scoped>
 .card-section {
-  width: 80%;
+  width: 65%;
   margin: 40px auto;
   background: #fff;
   padding: 20px 30px;
@@ -65,13 +65,14 @@ h1 {
   position: absolute;
   bottom: 20px;
   right: 30px;
-  border: 1px solid #b4c2d3;
+  border: none;
   background: #fff;
-  padding: 6px 14px;
-  border-radius: 6px;
+  padding: 10px 24px;
+  font-size: 13px;
+  border-radius: 8px;
   cursor: pointer;
   margin-top: 15px;
-  background-color: #3498db;
+  background-color: #57aee2;
   color: white;
 }
 </style>
