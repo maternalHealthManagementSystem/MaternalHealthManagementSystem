@@ -17,7 +17,7 @@
         <router-link to="/home">首頁</router-link>
         <router-link to="/prenatal">產檢紀錄專區</router-link>
         <div class="dropdown">
-          <router-link class="dropbtn">衛教資訊專區 ⮟</router-link>
+          <router-link class="dropbtn" to="/education">衛教資訊專區 ⮟</router-link>
           <div class="dropdown-content">
             <router-link to="/education/pregnancy">孕期衛教資訊</router-link>
             <router-link to="/education/prenatal-checkup"
@@ -140,7 +140,7 @@
             >產檢紀錄專區</router-link
           >
           <div class="dropdown">
-            <router-link class="dropbtn" to="/education">衛教資訊專區 ⮟</router-link>
+            <router-link class="dropbtn" to="/education" @click="closeSidebar">衛教資訊專區 ⮟</router-link>
             <div class="dropdown-content">
               <router-link to="/education/pregnancy" @click="closeSidebar">孕期衛教資訊</router-link>
               <router-link to="/education/prenatal-checkup" @click="closeSidebar"
