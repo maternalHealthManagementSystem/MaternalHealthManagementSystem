@@ -496,7 +496,7 @@ onMounted(() => {
   flex-direction: column; /* 垂直排列子元素 */
   justify-content: center;
   align-items: center;
-  background-color: #f0f0f0;
+  background-color: none;
   border-radius: 15px;
   margin-bottom: 10px;
   margin-top: 10px;
@@ -505,7 +505,6 @@ onMounted(() => {
 .placeholder-icon {
   width: 100px;
   height: 100px;
-  color: #a0a0a0; /* 圖標顏色 */
 }
 
 .pregnancy-tracker {
@@ -589,8 +588,13 @@ onMounted(() => {
 }
 
 .calendar-section {
-  flex: 0 0 50%;
+  /* flex: 0 0 50%;
   min-width: 750px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex; */
+  flex: 1;
+  width: 100%;
+  min-width: 0; /* ⬅⬅⬅ 讓手機可縮小 */
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
 }
@@ -609,16 +613,113 @@ onMounted(() => {
   font-style: italic;
 }
 
-/* 媒體查詢：適用於較小的螢幕 */
-@media (max-width: 768px) {
+/* ======================== */
+/* 📱 手機版（寬度 ≤ 480px） */
+/* ======================== */
+@media (max-width: 480px) {
+  .maternal-dashboard {
+    padding: 10px;
+  }
+
+  .main-content-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* 左側改成自動高度，內容垂直排列 */
+  .left-panel {
+    height: auto;
+    padding: 15px;
+  }
+
+  .fruit-text {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+  .baby-size-info {
+    font-size: 14px;
+    max-width: 220px;
+  }
+
+  .baby-fruit-img {
+    width: 250px;
+    height: 200px;
+  }
+
+  .pregnancy-tracker {
+    font-size: 22px;
+    margin-top: 10px;
+  }
+
+  /* 右側 Calendar */
+  .right-panel {
+    padding: 0;
+  }
+
+  .calendar-section {
+    min-width: unset !important;
+    width: 100% !important;
+  }
+
+  .calendar-section > * {
+    padding: 10px;
+  }
+}
+
+/* ================================= */
+/* 📱 平板（481px ～ 768px） */
+/* ================================= */
+@media (min-width: 481px) and (max-width: 768px) {
   .main-content-container {
     grid-template-columns: 1fr;
   }
 
-  .left-panel,
-  .right-panel {
+  .left-panel {
     height: auto;
-    min-height: 300px;
+  }
+
+  .calendar-section {
+    min-width: unset;
+    width: 100%;
   }
 }
+
+/* ================================= */
+/* 💻 小筆電（769px ～ 1024px） */
+/* ================================= */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main-content-container {
+    grid-template-columns: 1fr 1.5fr;
+  }
+
+  .calendar-section {
+    min-width: 550px;
+  }
+
+  .left-panel {
+    height: auto !important;
+  }
+
+  .right-panel {
+    height: auto !important;
+  }
+}
+
+/* 桌機/大筆電（1025px 以上） */
+@media (min-width: 1025px) {
+  .calendar-section {
+    min-width: 750px; /* ⬅ 桌機才需要 750px */
+  }
+
+  .left-panel {
+    height: auto !important;
+  }
+
+  .right-panel {
+    height: auto !important;
+  }
+}
+
 </style>
