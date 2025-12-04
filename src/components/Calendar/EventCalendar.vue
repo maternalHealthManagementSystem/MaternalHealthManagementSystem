@@ -265,8 +265,13 @@ onMounted(() => {
   border-radius: 12px;
   background: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  flex: 1;
+  /* flex:  0 0 65%; */
   box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 800px; 
+  padding-bottom: 10px;
+  
 } 
 
 .calendar-header {
@@ -437,11 +442,18 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 1px;
+  /* flex: 0 0 45%; */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: none; 
+  padding: 0 15px;
 }
 
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: none; 
+  padding: 0 15px;
 }
 
 .weekday {
@@ -451,24 +463,32 @@ onMounted(() => {
   font-weight: 600;
   color: #666;
   font-size: 14px;
-  border-right: none; 
+  border-right: none;  /* 保持分隔線的處理 */
+  max-width: 100%;
 }
 
+/* 移除每行最右側的邊框，防止凸出 */
 .day-cell:nth-child(7n){
-  border-right: 1px solid #e0e0e0;
+  border-right:1px solid #e0e0e0  ;
 }
 
-.day-cell:nth-child(1n){
+/* 移除每行最左側的邊框) */
+.day-cell:nth-child(7n-6){
   border-left: 1px solid #e0e0e0;
 }
 
+/* 日期格子邊框修正：確保左右兩側邊緣的格子貼合容器邊緣 */
 .day-cell {
   background: white;
   min-height: 90px;
   padding: 6px;
   cursor: pointer;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
   flex-direction: column;
+  cursor: pointer;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
 }
 
 .day-cell:hover {
@@ -499,16 +519,21 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 500;
   color: #333;
+  flex-shrink: 0; 
+  margin-bottom: 4px;
   
 }
 
 .events {
-  margin-top: 4px;
+  margin-top: 0;
+  flex-grow: 1;
+  overflow-y: hidden;
+  overflow-x: hidden;
 }
 
 .event-item {
   font-size: 11px;
-  padding: 3px 6px;
+  padding: 2px 4px;
   margin-bottom: 2px;
   border-radius: 3px;
   white-space: nowrap;
@@ -517,6 +542,8 @@ onMounted(() => {
   color: white;
   cursor: pointer;
   transition: opacity 0.2s;
+  width: 100%;
+  box-sizing: border-box;       /* 確保 padding/border 不會使寬度溢出 */
 }
 
 .event-item:hover {
@@ -561,49 +588,56 @@ onMounted(() => {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* 響應式設計 */
-@media (max-width: 1024px) {
+/* iPhne 14 Pro Max iPhne 14 Pro Max  */
+@media (max-width: 450px) {
   .calendar-container {
-    padding: 15px;
-  }
-  .month-title {
-    font-size: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .calendar-container {
-    padding: 12px;
-  }
-  .month-title {
-    font-size: 22px;
+    min-width: 100%;
   }
   .day-cell {
-    min-height: 70px;
     padding: 4px;
+    min-height: 60px;
+    max-width: 47px;
   }
   .event-item {
-    font-size: 10px;
+    font-size: 11px;
     padding: 2px 4px;
+    margin-top: 2px;
+    max-width: 38px;
   }
+
+  .events {
+    margin-top: 2px;
+  }
+  
+  .more-events {
+    font-size: 11px;
+  }
+  .month-title{
+    font-size: 25px;
+  }
+
 }
 
-@media (max-width: 480px) {
+/* iPad Air*/
+@media (max-width: 850px) {
+  .calendar-container {
+    min-width: 100%;
+  }
   .calendar-header {
     flex-direction: column;
     gap: 8px;
   }
   .month-title {
-    font-size: 20px;
+    font-size: 25px;
   }
 
   .weekdays div {
-    font-size: 12px;
+    font-size: 15px;
     padding: 6px 0;
   }
 
   .day-cell {
-    min-height: 60px;
+    min-height: 65px;
   }
 
   .month-picker-popup {
