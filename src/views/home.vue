@@ -462,7 +462,7 @@ onMounted(() => {
 }
 
 .main-content-container {
-  display: grid;
+  display: flex;
   grid-template-columns: 1fr 2fr;
   gap: 20px;
   max-width: 1200px;
@@ -474,7 +474,6 @@ onMounted(() => {
   background-color: #ffffff;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   padding: 20px;
 }
 
@@ -485,7 +484,8 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   height: 600px;
-  padding: 10px 10px 20px 10px;
+  padding: 20px 10px 20px 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .image-placeholder {
@@ -588,10 +588,6 @@ onMounted(() => {
 }
 
 .calendar-section {
-  /* flex: 0 0 50%;
-  min-width: 750px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  display: flex; */
   flex: 1;
   width: 100%;
   min-width: 0; /* ⬅⬅⬅ 讓手機可縮小 */
@@ -672,38 +668,52 @@ onMounted(() => {
 /* 📱 平板（481px ～ 768px） */
 /* ================================= */
 @media (min-width: 481px) and (max-width: 768px) {
+  .maternal-dashboard {
+    padding: 10px;
+  }
+
   .main-content-container {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
 
   .left-panel {
     height: auto;
+    padding: 15px
+  }
+  .right-panel {
+    padding: 0;
+  }
+  .calendar-section {
+    width: 100% !important;
   }
 
-  .calendar-section {
-    min-width: unset;
-    width: 100%;
+  .calendar-section > * {
+    padding: 10px;
   }
 }
 
 /* ================================= */
 /* 💻 小筆電（769px ～ 1024px） */
 /* ================================= */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* @media (min-width: 769px) and (max-width: 1024px) */
+ @media (max-width: 850px) {
   .main-content-container {
-    grid-template-columns: 1fr 1.5fr;
-  }
-
-  .calendar-section {
-    min-width: 550px;
+    flex-direction: column;
+    flex-wrap: wrap;
+    padding: 15px;
   }
 
   .left-panel {
-    height: auto !important;
+    order: 1;
+    width: 98%; /* 確保佔滿整個容器寬度 */
+    margin-bottom: 20px; /* 增加與下方日曆的間距 */
   }
 
   .right-panel {
-    height: auto !important;
+    order: 2;
+    width: 100%;
   }
 }
 
