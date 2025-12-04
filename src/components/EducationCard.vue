@@ -75,4 +75,7 @@ h1 {
   background-color: #57aee2;
   color: white;
 }
+.more-btn:hover {
+  background-color: #83c3e8;
+}
 </style>
