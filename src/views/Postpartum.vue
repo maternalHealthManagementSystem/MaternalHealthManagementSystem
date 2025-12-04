@@ -3,7 +3,6 @@
     <div class="page-header">
       <h2>產後衛教資訊</h2>
       <SearchBar @search="handleSearch" />
-      <div class="search-placeholder"></div>
     </div>
 
     <div class="main-layout">
@@ -118,10 +117,11 @@ const handleSearch = (key) => {
 /* 頁面基本設定 */
 .postpartum-page {
   width: 65%;
-  /* max-width: 1200px; */
   margin: 0 auto;
   padding: 20px;
-  color: #5a6b7c;
+  color: #333;
+  background-color: #f9fbfd; /* 整個頁面給一個底色 */
+  min-height: 100vh; /* 確保背景色填滿 */
 }
 
 .page-header {
@@ -129,6 +129,10 @@ const handleSearch = (key) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background: linear-gradient(to right, #ffffff, #f0f4f8); /* 標題區塊微漸層 */
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);;
 }
 
 h2 {
@@ -277,32 +281,7 @@ h2 {
   border-bottom-color: #1e6091;
 }
 
-/* RWD 響應式：手機版將目錄隱藏或改為置頂 */
-@media (max-width: 768px) {
-  .main-layout {
-    flex-direction: column-reverse; /* 手機版內容在上 */
-  }
-
-  .sidebar {
-    width: 100%;
-    margin-bottom: 20px;
-  }
-
-  .toc-container {
-    position: static;
-  }
-
-  .info-section {
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .section-title-box {
-    width: 100%;
-    text-align: left;
-  }
-}
-
+/* No Result */
 .no-result {
   width: 100%;
   text-align: center;
@@ -316,5 +295,98 @@ h2 {
   width: 120px;
   opacity: 0.8;
   margin-bottom: 20px;
+}
+
+/* --- 平板尺寸 (Tablet: 768px ~ 1024px) --- */
+@media (max-width: 1024px) {
+  .postpartum-page {
+    width: 95%; /* 增加寬度佔比 */
+    padding: 15px;
+  }
+  
+  .main-layout {
+    gap: 20px; /* 縮小左右間距 */
+  }
+
+  .sidebar {
+    width: 180px; /* 稍微縮小側邊欄 */
+  }
+
+  .section-title-box {
+    width: 100px; /* 稍微縮小標題區 */
+  }
+}
+
+/* --- 手機尺寸 (Mobile: < 768px) --- */
+@media (max-width: 768px) {
+  .postpartum-page {
+    width: 100%;
+    padding: 15px 10px;
+  }
+
+  /* Header 垂直排列 */
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  h2 {
+    text-align: center;
+    font-size: 24px;
+  }
+
+  .main-layout {
+    display: flex;
+    flex-direction: column-reverse; 
+    gap: 30px; /* 目錄跟下方內容的距離 */
+  }
+
+  /* 目錄區調整 */
+  .sidebar {
+    width: 100%;
+    margin: 0;
+  }
+
+  .toc-container {
+    position: static; /* 手機版不需要黏性定位，讓它自然捲動 */
+    padding: 15px;
+    background-color: #eef3f7;
+    border-radius: 8px;
+  }
+
+  /* 內容區塊調整 */
+  .info-section {
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 40px;
+  }
+
+  .section-title-box {
+    width: 100%;
+    text-align: left;
+    padding-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .section-title-box h3 {
+    font-size: 18px;
+    font-weight: bold;
+    border-left: 5px solid #8faec6;
+    padding-left: 10px;
+  }
+
+  .underline {
+    display: none;
+  }
+
+  .scroll-box {
+    width: 100%;
+    height: auto;
+    max-height: 300px;
+  }
 }
 </style>
