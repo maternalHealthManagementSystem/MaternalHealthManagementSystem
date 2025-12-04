@@ -3,7 +3,6 @@
     <div class="page-header">
       <h2>孕期衛教資訊</h2>
       <SearchBar @search="handleSearch" />
-      <div class="search-placeholder"></div>
     </div>
 
     <div class="main-layout">
@@ -133,15 +132,31 @@ const handleSearch = (key) => {
 /* 整體容器 */
 .education-page {
   width: 65%;
-  /* max-width: 1100px; */
   margin: 0 auto;
   padding: 20px;
   color: #333;
+  background-color: #f9fbfd; /* 整個頁面給一個底色 */
+  min-height: 100vh; /* 確保背景色填滿 */
 }
+
+/* .page-header {
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+} */
 
 .page-header {
   margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(to right, #ffffff, #f0f4f8); /* 標題區塊微漸層 */
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);;
 }
+
 .page-header h2 {
   font-size: 28px;
   font-weight: bold;
@@ -280,6 +295,7 @@ const handleSearch = (key) => {
   border-bottom-color: #1e6091;
 }
 
+/* No Result */
 .no-result {
   width: 100%;
   text-align: center;
@@ -295,26 +311,112 @@ const handleSearch = (key) => {
   margin-bottom: 20px;
 }
 
-/* RWD */
+/* --- 平板尺寸 (Tablet: 768px ~ 1024px) --- */
+@media (max-width: 1024px) {
+  .education-page {
+    padding: 15px;
+  }
+  
+  .main-layout {
+    gap: 20px; /* 縮小欄位間距 */
+  }
+
+  .sidebar {
+    width: 180px; /* 縮小側邊欄 */
+  }
+  
+  .week-label {
+    width: 100px; /* 縮小標題寬度 */
+  }
+  
+  .checklist-container {
+    padding-left: 20px;
+  }
+}
+
+/* --- 手機尺寸 (Mobile: < 768px) --- */
 @media (max-width: 768px) {
+  .education-page {
+    width: 100%;
+    padding: 15px 10px;
+  }
+  
+  /* Header 垂直排列 */
+  .page-header {
+    flex-direction: column;
+    align-items: stretch; /* 讓搜尋框滿版 */
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .page-header h2 {
+    text-align: center;
+    font-size: 24px;
+  }
+
+  /* 反轉排列，讓 Sidebar 跑到最上面  */
   .main-layout {
     flex-direction: column-reverse;
+    gap: 30px;
   }
-  .section-row {
-    flex-direction: column;
-  }
-  .week-label {
-    margin-bottom: 10px;
-    border-bottom: 1px solid #eee;
-    width: 100%;
-  }
-  .checklist-container {
-    padding-left: 0;
-    border-left: none;
-  }
+
+  /* 目錄區調整 */
   .sidebar {
     width: 100%;
-    margin-bottom: 30px;
+    margin: 0;
+  }
+
+  .toc-box {
+    position: static; /* 手機版不黏貼 */
+    padding: 15px;
+    background-color: #eef3f7;
+    border-radius: 8px;
+  }
+
+  .toc-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  /* 內容區塊調整為垂直排列 */
+  .section-row {
+    flex-direction: column;
+    margin-bottom: 40px;
+    gap: 10px;
+  }
+
+  .week-label {
+    width: 100%;
+    padding-top: 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #8faec6; /* 改為底部裝飾線 */
+    margin-bottom: 5px;
+  }
+  
+  .week-label h3 {
+    font-size: 18px;
+    color: #3b4a5a;
+  }
+
+  .checklist-container {
+    padding-left: 0;
+    border-left: none; /* 移除左側分隔線 */
+    width: 100%;
+  }
+
+  .checklist-item {
+    padding: 12px 0;
+  }
+  
+  .item-link {
+    font-size: 16px; /* 手機版字體稍微縮小 */
+  }
+}
+
+/* 小手機優化 (Very Small Mobile) */
+@media (max-width: 400px) {
+  .toc-box li {
+    width: calc(50% - 4px); /* 螢幕太小時改為一行兩個 */
   }
 }
 </style>
