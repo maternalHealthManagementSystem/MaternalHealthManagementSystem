@@ -57,9 +57,11 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 
+const isMobile = ref(false);
+isMobile.value = window.innerWidth <= 768;
 // 一進入產檢資料專區就顯示最近一筆產檢報告
 onMounted(() => {
-  if (checkupRecords.value.length > 0) {
+  if (!isMobile.value && checkupRecords.value.length > 0) {
     activeIndex.value = 0; // 預設顯示最新一筆
   }
 });
