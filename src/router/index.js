@@ -56,7 +56,11 @@ const routes = [
     name: "EducationPrenatalCheckup",
     component: EducationPrenatalCheckup,
   },
-  { path: "/postpartum", name: "Postpartum", component: Postpartum },
+  { 
+    path: "/postpartum", 
+    name: "Postpartum", 
+    component: Postpartum 
+  },
   {
     path: "/self-assessment",
     component: SelfAssessment,
@@ -73,7 +77,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory('/MaternalHealthManagementSystem'),
   routes,
 });
 
