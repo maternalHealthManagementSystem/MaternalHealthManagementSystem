@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp } from 'vite'
 import App from './App.vue'
 import router from './router'
 import { createPinia } from 'pinia'
