@@ -5,7 +5,7 @@ import vue from '@vitejs/plugin-vue'
 const repoName = 'MaternalHealthManagementSystem'; 
 
 export default defineConfig({
-  base: `/${MaternalHealthManagementSystem}/`, // <-- 新增此行
+  base: `/${repoName}/`, // <-- 新增此行
   plugins: [
     vue(),
   ],
