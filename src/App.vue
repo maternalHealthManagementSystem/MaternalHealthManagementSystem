@@ -900,7 +900,7 @@ const isEducationActive = computed(() => {
 
 /* 滑鼠 hover 顯示下拉 */
 .dropdown:hover .dropdown-content {
-  display: block;
+  display: block; 
 }
 
 .dropdown:hover .dropbtn::after {
