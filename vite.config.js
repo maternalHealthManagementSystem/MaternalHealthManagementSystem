@@ -1,8 +1,18 @@
+import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-// https://vite.dev/config/
+const repoName = 'MaternalHealthManagementSystem'; 
+
 export default defineConfig({
-  plugins: [vue()],
-  base:'./'
+  base: `/${MaternalHealthManagementSystem}/`, // <-- 新增此行
+  plugins: [
+    vue(),
+  ],
+  // resolve: {
+  //   alias: {
+  //     // 設置 '@' 別名，指向專案的 'src' 資料夾
+  //     '@': fileURLToPath(new URL('./src', import.meta.url))
+  //   }
+  // }
 })
