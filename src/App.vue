@@ -17,7 +17,7 @@
         <router-link to="/home">首頁</router-link>
         <router-link to="/prenatal">產檢紀錄專區</router-link>
         <div class="dropdown">
-          <router-link class="dropbtn" to="/education">衛教資訊專區 ⮟</router-link>
+          <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }">衛教資訊專區 ⮟</router-link>
           <div class="dropdown-content">
             <router-link to="/education/pregnancy">孕期衛教資訊</router-link>
             <router-link to="/education/prenatal-checkup"
@@ -140,7 +140,7 @@
             >產檢紀錄專區</router-link
           >
           <div class="dropdown">
-            <router-link class="dropbtn" to="/education" @click="closeSidebar">衛教資訊專區 ⮟</router-link>
+            <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }" @click="closeSidebar">衛教資訊專區 ⮟</router-link>
             <div class="dropdown-content">
               <router-link to="/education/pregnancy" @click="closeSidebar">孕期衛教資訊</router-link>
               <router-link to="/education/prenatal-checkup" @click="closeSidebar"
@@ -354,6 +354,12 @@ const notifications = ref([
 const notificationCount = computed(() => {
   return notifications.value.filter((n) => !n.read).length;
 });
+
+// 衛教專區是否為當前頁面
+const isEducationActive = computed(() => {
+  return route.path.startsWith('/education');
+});
+
 </script>
 
 <style scoped>
@@ -423,10 +429,8 @@ const notificationCount = computed(() => {
   color: #000;
   text-decoration: none;
   font-weight: 500;
-  font-size: 0.95rem;
-  padding: 0.25rem 0.2rem;
+  font-size: 16px;
   position: relative;
-  transition: opacity 0.2s;
 }
 .nav a:hover {
   opacity: 0.9;
@@ -445,6 +449,7 @@ const notificationCount = computed(() => {
 .nav a.router-link-active::after {
   width: 100%;
 }
+
 
 /* icons group (桌機時靠右) */
 .icons-group {
@@ -863,7 +868,9 @@ const notificationCount = computed(() => {
   clear: both;
 }
 
-/* Dropdown 整體 */
+/* ------------
+  Dropdown 整體 
+  ---------------*/
 .dropdown {
   position: relative;
   display: inline-block;
@@ -887,12 +894,39 @@ const notificationCount = computed(() => {
   text-decoration: none;
   font-size: 16px;
 }
-.dropdown-content a:hover {
+/* .dropdown-content a:hover {
   background: #f0f0f0;
-}
+} */
+
 /* 滑鼠 hover 顯示下拉 */
 .dropdown:hover .dropdown-content {
   display: block;
+}
+
+.dropdown:hover .dropbtn::after {
+  width: 100%; /* 確保下拉選單展開時底線一直存在 */
+  background: #aaa; /* 可以使用與 router-link-active 不同的顏色來區分 */
+}
+
+/* 確保當 .dropbtn 已經是 active 時，:hover 樣式不會覆蓋它的顏色 */
+.dropdown:hover .dropbtn.active::after  {
+    /* 確保 active 狀態優先 */
+    background: #000; /* 假設您希望 active 顏色與 Logo 一致 */
+}
+
+/* 衛教資訊專區 - 強制 active*/
+.dropbtn.active {
+  font-weight: 600;
+}
+/* 讓dropbtn跟router-link-active一樣的底線效果 */
+.dropbtn.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 100%;
+  height: 2px;
+  background: #000;
 }
 
 /* =========================================================
