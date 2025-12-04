@@ -77,7 +77,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory('/MaternalHealthManagementSystem'),
+  history: createWebHashHistory(),
   routes,
 });
 
