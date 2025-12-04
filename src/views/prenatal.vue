@@ -55,7 +55,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, onMounted } from "vue";
+
+// 一進入產檢資料專區就顯示最近一筆產檢報告
+onMounted(() => {
+  if (checkupRecords.value.length > 0) {
+    activeIndex.value = 0; // 預設顯示最新一筆
+  }
+});
 
 /* -----------------------------
    欄位名稱中 → 中文對照表
@@ -199,6 +206,8 @@ const mockData = [
   },
 ];
 
+
+
 const filteredFields = computed(() => {
   if (!activeRecord.value) return [];
   return Object.keys(fieldLabels).filter(
@@ -206,11 +215,11 @@ const filteredFields = computed(() => {
   );
 });
 
-/* -----------------------------
-   Vue 狀態管理
------------------------------ */
+// 產檢紀錄倒敘排序
+const checkupRecords = ref(
+  [...mockData].sort((a, b) => new Date(b.date) - new Date(a.date))
+);
 
-const checkupRecords = ref(mockData);
 const tableHeaders = ref(["檢驗項目名稱", "檢驗結果", "單位", "參考值"]);
 const activeIndex = ref(null);
 
