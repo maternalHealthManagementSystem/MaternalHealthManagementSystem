@@ -77,7 +77,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHashHistory('/MaternalHealthManagementSystem/'), //加入儲存庫名稱
   routes,
 });
 
