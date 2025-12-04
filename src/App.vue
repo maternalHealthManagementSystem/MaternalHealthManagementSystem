@@ -926,7 +926,7 @@ const isEducationActive = computed(() => {
   bottom: -6px;
   width: 100%;
   height: 2px;
-  background: #000;
+  background: #888888;
 }
 
 /* =========================================================
