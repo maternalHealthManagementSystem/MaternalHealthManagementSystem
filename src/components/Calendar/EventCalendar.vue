@@ -588,8 +588,8 @@ onMounted(() => {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* iPhne 14 Pro Max iPhne 14 Pro Max  */
-@media (max-width: 450px) {
+/* iPhne 12 Pro   */
+@media (min-width: 350px) and (max-width: 400px) {
   .calendar-container {
     min-width: 100%;
   }
@@ -599,12 +599,11 @@ onMounted(() => {
     max-width: 47px;
   }
   .event-item {
-    font-size: 11px;
+    font-size: 10px;
     padding: 2px 4px;
     margin-top: 2px;
     max-width: 38px;
   }
-
   .events {
     margin-top: 2px;
   }
@@ -615,11 +614,38 @@ onMounted(() => {
   .month-title{
     font-size: 25px;
   }
+}
 
+/* iPhne 14 Pro Max   */
+@media (min-width: 400px) and (max-width: 450px) {
+  .calendar-container {
+    min-width: 100%;
+  }
+  .day-cell {
+    padding: 4px;
+    min-height: 60px;
+    max-width: 47px;
+  }
+  .event-item {
+    font-size: 10px;
+    padding: 2px 4px;
+    margin-top: 2px;
+    max-width: 38px;
+  }
+  .events {
+    margin-top: 2px;
+  }
+  
+  .more-events {
+    font-size: 11px;
+  }
+  .month-title{
+    font-size: 25px;
+  }
 }
 
 /* iPad Air*/
-@media (max-width: 850px) {
+@media (min-width: 750px) and (max-width: 820px){
   .calendar-container {
     min-width: 100%;
   }
@@ -628,7 +654,7 @@ onMounted(() => {
     gap: 8px;
   }
   .month-title {
-    font-size: 25px;
+    font-size: 30px;
   }
 
   .weekdays div {
@@ -642,6 +668,9 @@ onMounted(() => {
 
   .month-picker-popup {
     width: 95%;
+  }
+  .event-item{
+    font-size: 15px;
   }
 }
 </style>
