@@ -1,4 +1,5 @@
 <template>
+  <div class="calendar-dashboard">
     <div class="content-wrapper">
       <!-- 行事曆區域 -->
       <div class="calendar-section">
@@ -117,6 +118,7 @@
       @save="handleSaveDiary"
     />
   <CalendarSystem />
+  </div>
 </template>
 
 <script setup>
@@ -440,21 +442,37 @@ function handleSaveDiary(updatedDiary) {
 </script>
 
 <style scoped>
-.content-wrapper {
+.calendar-dashboard{
+  padding: 20px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 60px);
   display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+.content-wrapper {
+  /* display: flex;
   justify-content: center;   
   align-items: flex-start;
   gap: 20px;
   background: #f5f7fa;
   flex-wrap: nowrap;
-  margin: 30px auto;
+  margin: 30px auto; */
+  display: flex;
+  flex-wrap: nowrap;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  max-width: 1200px;
+  width: 100%;
 }
 
 .calendar-section {
-  flex: 0 0 50%;
-  min-width: 750px;
+  flex:  0 0 65%;
+  width: 100%;
+  min-width: 0;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
+  padding: 0;
 }
 
 .calendar-section > * {
@@ -465,13 +483,22 @@ function handleSaveDiary(updatedDiary) {
 }
 
 .diary-section {
-  flex: 0 0 30%;
-  min-width: 250px;
+  flex: 0 0 25%;
+  width: 100%;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   background: white;
   border-radius: 8px;
   padding: 20px;
+   min-width: 0;
 }
+
+.diary-section > * {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  padding: 15px;
+}
+
 
 .date-select {
   width: 100%;
@@ -490,12 +517,6 @@ function handleSaveDiary(updatedDiary) {
   text-align: center;
   font-weight: bold;
   margin-bottom: 5px;
-}
-
-.diary-form{
-  display: flex;
-  flex-direction: column;
-
 }
 
 .form-group {
@@ -648,32 +669,34 @@ border-radius: 6px;
   cursor: not-allowed;
 }
 
-/* 平板版（1024px 以下）*/
-@media (max-width: 1024px) {
+/* iPhne 14 Pro Max */
+@media (max-width: 450px) {
   .calendar-section {
-    flex: 0 0 60%;
     min-width: 380px;
-    min-height: 650px;
+    width: 90%;
   }
+}
 
+/* iPhne 12 Pro  */
+@media (max-width: 400px){
+  .calendar-section {
+    min-width: 340px;
+  }
   .diary-section {
-    flex: 0 0 40%;
-    min-width: 280px;
+    width: 90%;;
   }
 }
 
 
-/* 小平板 / 大手機（820px 以下)*/
-@media (max-width: 820px) {
+/* iPad Air*/
+@media (max-width: 850px)  {
   .content-wrapper {
     flex-direction: column;
     flex-wrap: wrap;
   }
 
-  .calendar-section,
-  .diary-section {
-    flex: 1 1 100%;
-    min-width: 100%;
+  .calendar-section {
+    width: 100%;
     min-height: auto;
   }
 
@@ -683,19 +706,15 @@ border-radius: 6px;
 
   .diary-section {
     order: 2; /* 日記下面 */
+    width: 95%;
   }
 }
 
 
-/* 手機版（600px 以下） */
-@media (max-width: 600px) {
-  .calendar-section > *,
-  .diary-section {
-    padding: 15px;
-  }
-
-  .calendar-section {
-    min-height: 550px; 
+/* 手機版（450px 以下） */
+@media (max-width: 450px) {
+  .diary-section{
+    width: 90%;
   }
 }
 </style>
