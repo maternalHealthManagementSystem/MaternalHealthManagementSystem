@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
-const repoName = 'MaternalHealthManagementSystem'; 
+const repoName = 'maternal-health-system'; 
 
 export default defineConfig({
   base: `/${repoName}/`, // <-- 新增此行
