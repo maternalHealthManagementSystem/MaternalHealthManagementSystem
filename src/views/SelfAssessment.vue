@@ -47,24 +47,29 @@ const menuItems = ref([
   max-width: 1400px; /* 增加最大寬度限制，避免在超大螢幕太寬 */
   margin: 0 auto;
   padding: 40px 20px;
+  box-sizing: border-box;
 }
 
 .layout-container {
   display: flex;
   gap: 50px; /* 左右區塊間距 */
   min-height: 600px;
+  align-items: flex-start; /* 防止側邊欄被內容撐高 */
 }
 
 /* --- 左側側邊欄樣式 --- */
 .sidebar {
   width: 250px;
   flex-shrink: 0;
+  position: sticky; /* 電腦版讓選單黏在螢幕上方 */
 }
 
 .menu-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  /* background: #fff; 
+  border-radius: 8px;  */
 }
 
 .menu-list li {
@@ -80,6 +85,7 @@ const menuItems = ref([
   line-height: 1.5;
   transition: color 0.3s;
   text-align: center;
+  border-left: 4px solid transparent; /* 電腦版用左側線條標示 */
 }
 
 .menu-link:hover {
@@ -95,6 +101,8 @@ const menuItems = ref([
 /* --- 右側內容區框架 --- */
 .content-wrapper {
   flex-grow: 1;
+  width: 100%; /* 確保內容區塊佔滿剩餘空間 */
+  min-width: 0; /* 防止 flex item 破版 */
 }
 
 /* 簡單的過場動畫 */
@@ -108,70 +116,78 @@ const menuItems = ref([
   opacity: 0;
 }
 
-/* --- 平板 (iPad Air, iPad Pro 等，寬度 <= 1024px) --- */
-@media (max-width: 1024px) {
+/* --- 1. iPad Air / 平板 / 窄螢幕筆電 (範圍: <= 1180px) --- */
+@media (max-width: 1180px) {
   .assessment-page {
-    width: 90%; /* 寬度放寬 */
-    padding: 30px 0;
+    width: 90%; /* 寬度拉大，善用平板空間 */
+    padding: 30px 20px;
   }
 
   .layout-container {
-    flex-direction: column; /* 改為上下排列 */
+    flex-direction: column; /* 改為垂直排列 */
     gap: 20px;
   }
 
-  /* 側邊欄變為頂部選單 */
+  /* 側邊欄變身為「上方橫向導覽列」 */
   .sidebar {
     width: 100%;
+    position: static; /* 取消 sticky */
     overflow-x: auto; /* 允許橫向滑動 */
     background: #fff;
-    padding-bottom: 10px;
-    /* 隱藏捲軸但保留功能 (Chrome, Safari) */
+    padding: 5px 0;
+    border-bottom: 1px solid #e0e0e0;
+    
+    /* 隱藏捲軸但保留功能 */
     scrollbar-width: none; 
+    -ms-overflow-style: none;
   }
   .sidebar::-webkit-scrollbar {
     display: none;
   }
 
   .menu-list {
-    display: flex; /* 選單變橫排 */
-    border-bottom: 2px solid #e0e0e0; /* 整個選單下方加線 */
+    display: flex; /* 變橫排 */
+    width: max-content; /* 讓內容撐開寬度，觸發滑動 */
   }
 
   .menu-list li {
-    border-bottom: none; /* 移除原本每個項目的底線 */
-    flex-shrink: 0; /* 防止文字擠壓 */
+    border-bottom: none;
+    flex-shrink: 0;
   }
 
   .menu-link {
-    padding: 15px 20px;
+    padding: 12px 20px;
     font-size: 16px;
+    text-align: left;
     white-space: nowrap; /* 文字不換行 */
-    border-bottom: 3px solid transparent; /* 預留 active 樣式的空間 */
+    border-left: none; /* 移除左側線條 */
+    border-bottom: 3px solid transparent; /* 改用底部線條 */
+    border-radius: 6px 6px 0 0;
   }
 
-  /* 平板手機版 Active 樣式改為底線標示 */
   .menu-link.active {
+    border-left-color: transparent;
+    border-bottom-color: #3498db;
+    background-color: transparent;
     color: #3498db;
-    border-bottom-color: #3498db; 
-    background-color: rgba(52, 152, 219, 0.05);
   }
 }
 
-/* --- 手機 (iPhone 12/14 Pro/Max 等，寬度 <= 768px) --- */
+/* --- 2. 手機版 (iPhone 12 Pro, 14 Pro Max 等) --- */
 @media (max-width: 768px) {
   .assessment-page {
-    width: 100%; /* 手機版滿版 */
-    padding: 10px;
+    width: 100%; /* 手機滿版 */
+    padding: 15px 10px; /* 邊距縮小 */
   }
   
-  .layout-container {
-    min-height: auto; /* 手機版不強制高度 */
-  }
-
   .menu-link {
     font-size: 15px;
-    padding: 12px 15px;
+    padding: 10px 15px; /* 按鈕稍微變小 */
+  }
+  
+  /* 讓導覽列在手機上更緊湊 */
+  .layout-container {
+    gap: 15px;
   }
 }
 </style>
