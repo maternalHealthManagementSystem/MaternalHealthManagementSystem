@@ -28,7 +28,7 @@ defineProps({
 .main-panel {
   flex: 1;
   background-color: #e3e9ef;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 30px;
   display: flex;
   flex-direction: column;
@@ -40,6 +40,7 @@ defineProps({
 .panel-header {
   text-align: center;
   margin-bottom: 20px; /* 增加底部間距，避免進度條擠到標題 */
+  flex-shrink: 0; /* 防止標題被壓縮 */
 }
 
 .panel-header h2 {
@@ -52,7 +53,8 @@ defineProps({
   height: 1px;
   background-color: #a0aec0;
   width: 90%;
-  margin: 0 auto 10px auto;
+  margin: 0 auto 15px auto;
+  border-radius: 2px;
 }
 
 .subtitle {
@@ -72,19 +74,33 @@ defineProps({
 }
 
 /* --- RWD 調整 --- */
+
+/* Tablet & Mobile */
+@media (max-width: 1024px) {
+  .main-panel {
+    min-height: 500px;
+    padding: 25px 20px;
+  }
+}
+
+/* Mobile specific */
 @media (max-width: 768px) {
   .main-panel {
-    padding: 20px 15px; /* 手機版減少內距 */
-    min-height: 400px; /* 手機版高度需求降低 */
+    padding: 20px 15px; 
+    min-height: 400px; /* 手機版不需要那麼高 */
+    border-radius: 8px;
   }
 
   .panel-header h2 {
-    font-size: 20px; /* 標題字體縮小 */
+    font-size: 22px; 
+  }
+
+  .subtitle {
+    font-size: 14px;
   }
 
   .scroll-content {
-    padding-right: 0; /* 手機版通常不需要右側留白給捲軸 */
-    max-height: 500px;
+    padding-right: 5px; /* 稍微減少右側留白 */
   }
 }
 </style>

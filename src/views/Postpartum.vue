@@ -361,7 +361,7 @@ h2 {
 
   .toc-container ul {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 一行三個 */
+    grid-template-columns: repeat(2, 1fr); /* 一行兩個 */
     gap: 10px; /* 按鈕之間的間距 */
   }
   
