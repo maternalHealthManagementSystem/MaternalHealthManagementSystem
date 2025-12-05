@@ -1,6 +1,5 @@
 <template>
   <div class="calendar-container">
-
     <!-- 月份標題和導航 -->
     <div class="calendar-header">
       <!-- 年月（點擊打開選單） -->
