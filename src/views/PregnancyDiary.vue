@@ -669,25 +669,6 @@ border-radius: 6px;
   cursor: not-allowed;
 }
 
-/* iPhne 14 Pro Max */
-@media (max-width: 450px) {
-  .calendar-section {
-    min-width: 380px;
-    width: 90%;
-  }
-}
-
-/* iPhne 12 Pro  */
-@media (max-width: 400px){
-  .calendar-section {
-    min-width: 340px;
-  }
-  .diary-section {
-    width: 90%;;
-  }
-}
-
-
 /* iPad Air*/
 @media (max-width: 850px)  {
   .content-wrapper {
@@ -708,13 +689,75 @@ border-radius: 6px;
     order: 2; /* 日記下面 */
     width: 95%;
   }
+  .date-select{
+    width: 100%;
+    font-size: 18px;
+  }
+  .form-group textarea{
+    width: 97%;
+    font-size: 18px;
+    padding-left: 15px;
+    padding-top: 15px;
+  }
+  .upload-placeholder span{
+    font-size: 35px;
+  }
+  .upload-placeholder p,
+  .upload-hint{
+    font-size: 20px;
+  }
+  .diary-form{
+    padding: 15px;
+  }
+  .diary-form h3{
+    font-size: 28px;
+  }
+  .btn-cancel,
+  .btn-save{
+    font-size: 18px;
+  }
 }
 
 
-/* 手機版（450px 以下） */
-@media (max-width: 450px) {
+/* iPhone 14 Pro Max  iPhone 12 Pro */
+@media  (max-width: 450px) {
+  .calendar-section {
+    width: 100%;
+  }
   .diary-section{
-    width: 90%;
+    width: 89%;
+  }
+  .diary-form{
+    padding: 5px;
+  }
+  .form-group textarea{
+    width: 93%;
+    font-size: 15px;
+    padding-left: 10px;
+    padding-top: 10px;
+  }
+  .date-select{
+    width: 100%;
+    font-size: 15px;
+  }
+  .upload-placeholder span{
+    font-size: 25px;
+  }
+  .upload-placeholder p{
+    font-size: 15px;
+  }
+  .upload-hint{
+    font-size: 13px;
+  }
+  .diary-form{
+    padding: 10px;
+  }
+  .diary-form h3{
+    font-size: 22px;
+  }
+  .btn-cancel,
+  .btn-save{
+    font-size: 15px;
   }
 }
 </style>
