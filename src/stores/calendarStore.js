@@ -156,7 +156,7 @@ const INITIAL_DIARIES = [
     date: '2025-11-29',
     title: '美食冒險',
     content: '今天突然想吃酸酸甜甜的水果，切了鳳梨和奇異果，滿足了味蕾。',
-    image: 'public/images/鳳梨奇異果.jpg',
+    image: "public/images/鳳梨奇異果.jpg",
     createdAt: '2025-11-29T12:45:00Z',
     updatedAt: ''
   },
@@ -165,7 +165,7 @@ const INITIAL_DIARIES = [
     date: '2025-11-30',
     title: '產檢的安心感',
     content: '今天去產檢，聽到寶寶的心跳聲，覺得很安心，醫生說一切正常。',
-    image: 'public/images/超音波小月份.jpg',
+    image: "public/images/超音波小月份.jpg",
     
     updatedAt: '2025-11-30T12:45:00Z'
   },
@@ -174,7 +174,7 @@ const INITIAL_DIARIES = [
     date: '2025-12-01',
     title: '孕婦的購物日',
     content: '今天去買了幾件孕婦裝，穿起來舒服又好看，心情大好。',
-    image: 'public/images/購物.jpg',
+    image: "public/images/購物.jpg",
     createdAt: '2025-12-01T18:20:00Z',
     updatedAt: ''
   },
@@ -183,7 +183,7 @@ const INITIAL_DIARIES = [
     date: '2025-12-03',
     title: '甜點時光',
     content: '今天做了黑糖紅豆湯，暖暖的甜味讓心情也變得溫柔。',
-    image: 'public/images/黑糖紅豆湯.jpg',
+    image: "public/images/黑糖紅豆湯.jpg",
     createdAt: '2025-12-03T16:00:00Z',
     updatedAt: ''
   },
@@ -192,7 +192,7 @@ const INITIAL_DIARIES = [
     date: '2025-12-05',
     title: '瑜伽練習',
     content: '跟著影片做孕婦瑜伽，伸展身體的同時覺得很放鬆，呼吸也更順暢。',
-    image: 'public/images/孕婦瑜伽.jpg',
+    image: "public/images/孕婦瑜伽.jpg",
     createdAt: '2025-12-05T19:00:00Z',
     updatedAt: ''
   }
