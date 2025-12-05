@@ -470,7 +470,7 @@ function saveEvent() {
 
 /* 平板版（1024px 以下）*/
 @media (max-width: 1024px) {
-  .modal-container {
+  /* .modal-container {
     border-radius: 10px;
     max-width: 700px;
   }
@@ -500,11 +500,11 @@ function saveEvent() {
   
   .modal-footer {
     padding: 22px;
-  }
+  } */
 }
 /* 小平板 / 大手機樣式 (Max-width: 820px) */
 @media (max-width: 820px) {
-  .modal-container {
+  /* .modal-container {
     max-width: 85vw;
   }
   
@@ -518,11 +518,11 @@ function saveEvent() {
 
   .modal-footer {
     padding: 18px;
-  }
+  } */
 }
 /* 手機版（600px 以下） */
 @media (max-width: 600px) {
-  .modal-overlay {
+  /* .modal-overlay {
     padding: 0; 
   }
   
@@ -578,6 +578,204 @@ function saveEvent() {
   .btn-save {
     padding: 10px; 
     font-size: 14px;
+  }*/
+}
+
+/* iPhne 12 Pro  */
+@media (max-width: 400px){
+.modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 18px;
+  }
+
+  .modal-title {
+    font-size: 120%; 
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .form-row,
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-row .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    font-size: 17px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 9px;
+    font-size: 14px;
+    width: 95%;
+  }
+  .form-select{
+    width: 100%;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-cancel,
+  .btn-save {
+    padding: 10px; 
+    font-size: 15px;
   }
 }
-</style>
+
+/* iPhne 14 Pro Max */
+@media(min-width: 410px) and (max-width: 450px){
+  .modal-overlay {
+      padding: 0; 
+    }
+    
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+
+  .modal-header {
+    padding: 20px;
+  }
+
+  .modal-title {
+    font-size: 130%; 
+  }
+
+  .modal-body {
+    padding: 22px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .form-row,
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-row .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    font-size: 18px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 9px;
+    font-size: 16px;
+    width: 95%;
+  }
+  .form-select{
+    width: 100%;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    padding: 10px; 
+    font-size: 17px;
+  }
+}
+
+/* iPad Air*/
+@media (min-width: 750px) and (max-width: 820px){
+    .modal-overlay {
+      padding: 0; 
+    }
+    
+  .modal-container {
+    max-width: 630px; 
+    max-height: 85vh; 
+    border-radius: 10px;
+  }
+
+  .modal-header {
+    padding: 25px;
+  }
+
+  .modal-title {
+    font-size: 150%; 
+  }
+
+  .modal-body {
+    padding: 22px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .form-row,
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-row .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    font-size: 22px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 9px;
+    font-size: 20px;
+    width: 95%;
+  }
+  .form-select{
+    width: 98%;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+
+  .btn-cancel,
+  .btn-save {
+    padding: 10px; 
+    font-size: 22px;
+  }
+}
+</style> 
