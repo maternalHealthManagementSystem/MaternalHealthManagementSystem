@@ -675,12 +675,12 @@ function saveEvent() {
   }
   
   .modal-container {
-    max-width: 650px; 
-    max-height: 100vh; 
+    max-width: 630px; 
+    max-height: 85vh; 
     border-radius: 10px;
   }
   .modal-header {
-    padding: 22px; 
+    padding: 25px; 
   }
   
   .modal-title {
