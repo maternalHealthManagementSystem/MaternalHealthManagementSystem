@@ -379,7 +379,7 @@ function saveEvent() {
 
 /* 表單樣式 */
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .form-label {
@@ -438,6 +438,7 @@ function saveEvent() {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
+  margin-bottom: 15px;
 }
 
 /* 錯誤訊息 */
@@ -521,90 +522,38 @@ function saveEvent() {
   transform: scale(0.9);
 }
 
-/* 平板版（1024px 以下）*/
-@media (max-width: 1024px) {
-  .modal-container {
-    border-radius: 10px;
-  }
-  
-  .modal-header {
-    padding: 15px 18px;
-  }
-
-  .modal-body {
-    padding: 25px;
-  }
-
-  .form-label {
-    font-size: 18px;
-  }
-  .form-input,
-  .form-select,
-  .form-textarea {
-    font-size: 18px;
-  }
-  
-  .modal-footer {
-    padding: 18px;
-  }
-}
-/* 小平板 / 大手機樣式 (Max-width: 820px) */
-@media (max-width: 820px) {
-  .modal-container {
-    max-width: 90vw;
-  }
-  
-  .modal-header {
-    padding: 12px 16px;
-  }
-
-  .modal-body {
-    padding: 20px;
-  }
-  
-  .form-row {
-    gap: 10px;
-  }
-
-  .modal-footer {
-    padding: 16px;
-  }
-}
-/* 手機版（600px 以下） */
-@media (max-width: 600px) {
+/* iPhne 12 Pro  */
+@media (max-width: 400px){
   .modal-overlay {
     padding: 0; 
   }
   
   .modal-container {
-    max-width: 100%; 
-    max-height: 100vh;
+    max-width: 500px; 
+    max-height: 100vh; 
     border-radius: 0;
   }
-  
   .modal-header {
-    padding: 10px 15px; 
+    padding: 15px; 
   }
   
   .modal-title {
-    font-size: 18px; 
+    font-size: 120%; 
   }
 
   .back-btn {
       padding: 6px 10px;
-      font-size: 13px;
-      margin-left: -5px;
+      font-size: 15px;
   }
 
   .close-btn {
     width: 40px;
     height: 40px;
-    font-size: 20px;
-    margin-right: -5px; 
+    font-size: 22px;
   }
 
   .modal-body {
-    padding: 15px;
+    padding: 20px;
   }
 
   .form-row {
@@ -629,7 +578,8 @@ function saveEvent() {
   .form-select,
   .form-textarea {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: 15px;
+
   }
 
   .modal-footer {
@@ -642,6 +592,152 @@ function saveEvent() {
   .btn-save {
     padding: 10px; 
     font-size: 14px;
+  }
+}
+
+/* iPhne 14 Pro Max */
+@media(min-width: 400px) and (max-width: 450px){
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+  .modal-header {
+    padding: 18px; 
+  }
+  
+  .modal-title {
+    font-size: 130%; 
+  }
+
+  .back-btn {
+    padding: 6px 12px;
+    font-size: 18px;
+  }
+
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .form-row .form-group {
+    margin-bottom: 22px;
+  }
+  
+  .form-row .form-group:last-child {
+      margin-bottom: 0;
+  }
+
+  .form-label {
+    font-size: 18px;
+    margin-bottom: 6px;
+  }
+  
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 10px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-cancel,
+  .btn-save {
+    padding: 10px; 
+    font-size: 16px;
+  }
+}
+
+/* iPad Air*/
+@media (min-width: 750px) and (max-width: 820px){
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 650px; 
+    max-height: 100vh; 
+    border-radius: 10px;
+  }
+  .modal-header {
+    padding: 22px; 
+  }
+  
+  .modal-title {
+    font-size: 28px; 
+  }
+
+  .back-btn {
+    padding: 6px 12px;
+    font-size: 22px;
+  }
+
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr; 
+    gap: 0; 
+  }
+
+  .form-row .form-group {
+    margin-bottom: 22px;
+  }
+  
+  .form-row .form-group:last-child {
+      margin-bottom: 0;
+  }
+
+  .form-label {
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+  
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 10px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-cancel,
+  .btn-save {
+    padding: 10px; 
+    font-size: 20px;
   }
 }
 </style>
