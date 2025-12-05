@@ -139,13 +139,6 @@ const handleSearch = (key) => {
   min-height: 100vh; /* 確保背景色填滿 */
 }
 
-/* .page-header {
-  margin-bottom: 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-} */
-
 .page-header {
   margin-bottom: 40px;
   display: flex;

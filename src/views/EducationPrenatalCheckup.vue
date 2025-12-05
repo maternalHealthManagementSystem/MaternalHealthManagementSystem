@@ -133,7 +133,6 @@ const handleSearch = (key) => {
 
 <style scoped>
 /* --- 全域變數概念 (CSS Variables) --- */
-/* 定義一些柔和的配色，方便統一管理 */
 .page-container {
   --primary-color: #6fa3d4;       /* 主色調：柔和藍 */
   --accent-color: #4a5568;        /* 強調色：溫暖黃 (用於箭頭或重點) */
@@ -404,6 +403,7 @@ h2 {
 .info-section {
   display: flex;
   flex-direction: column;
+  margin-bottom: 50px;
 }
 
 .section-label {

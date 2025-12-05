@@ -122,6 +122,7 @@ const handleSearch = (key) => {
   color: #333;
   background-color: #f9fbfd; /* 整個頁面給一個底色 */
   min-height: 100vh; /* 確保背景色填滿 */
+  box-sizing: border-box;
 }
 
 .page-header {
@@ -195,6 +196,7 @@ h2 {
   /* 自訂捲軸樣式 (Chrome/Safari) */
   scrollbar-width: thin;
   scrollbar-color: #ccc #f0f0f0;
+  box-sizing: border-box;
 }
 
 .scroll-box::-webkit-scrollbar {
@@ -229,6 +231,7 @@ h2 {
   display: flex;
   align-items: center;
   transition: color 0.2s;
+  display: block; /* 讓整行可點 */
 }
 
 .resource-link:hover {
@@ -354,6 +357,16 @@ h2 {
     padding: 15px;
     background-color: #eef3f7;
     border-radius: 8px;
+  }
+
+  .toc-container ul {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 一行三個 */
+    gap: 10px; /* 按鈕之間的間距 */
+  }
+  
+  .toc-container li {
+    margin: 0;
   }
 
   /* 內容區塊調整 */
