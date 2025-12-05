@@ -155,6 +155,7 @@ const handleSearch = (key) => {
   background-color: #f9fbfd; /* 整個頁面給一個底色 */
   min-height: 100vh; /* 確保背景色填滿 */
   font-family: 'Helvetica Neue', Arial, sans-serif;
+  box-sizing: border-box; /* 確保 padding 不會撐開寬度 */
 }
 
 /* Header */
@@ -253,6 +254,7 @@ h2 {
   height: 24px;
   background-color: #eff6ff; /* 淡藍色圓底 */
   border-radius: 50%;
+  flex-shrink: 0; /* 防止被擠壓 */
 }
 
 .arrow {
@@ -323,6 +325,7 @@ h2 {
   text-decoration: none;
   transition: all 0.3s ease;
   font-weight: 500;
+  justify-content: center; /* 確保內容置中 */
 }
 
 .link-container {
@@ -351,6 +354,7 @@ h2 {
   box-shadow: none; 
   flex-shrink: 0;            /* 禁止按鈕被壓縮 */
   white-space: nowrap;       /* 確保文字不換行 */
+  padding: 6px 14px; /* 稍微增加高度方便點擊 */
 }
 
 /* 大按鈕 Hover 效果：填滿顏色 */
@@ -385,6 +389,7 @@ h2 {
   align-items: center;
   padding: 12px 0;
   border-bottom: 1px dashed #edf2f7;
+  gap: 15px; /* 增加間距 */
 }
 
 /* --- 分隔線 --- */
@@ -505,29 +510,87 @@ h2 {
 }
 
 /* --- RWD --- */
+/* 平板 (iPad Air, iPad Mini) & 窄螢幕筆電 
+   範圍: 768px ~ 1180px 
+*/
+@media (max-width: 1180px) {
+  .page-container {
+    width: 90%; /* 加寬版面，iPad 上閱讀更舒適 */
+    padding: 30px 20px;
+  }
+}
+
+/* 手機版 (iPhone 12 Pro, 14 Pro Max) 
+   範圍: 768px 以下 
+*/
 @media (max-width: 768px) {
   .page-container {
-    width: 95%;
-    padding: 20px 10px;
+    width: 100%; /* 手機版滿寬 */
+    padding: 10px 15px; /* 縮小邊距 */
   }
   
+  /* Header 區塊 */
   .page-header {
-    flex-direction: column;
+    flex-direction: column; /* 垂直排列 */
+    align-items: stretch;   /* 讓搜尋框寬度填滿 */
     gap: 15px;
     padding: 20px;
-    background: #fff;
+    margin-bottom: 20px;
   }
   
+  .page-header h2 {
+    font-size: 24px;
+    text-align: center;
+  }
+  
+  /* 疫苗區塊：確保手機上是單欄顯示 */
   .section-body {
-    grid-template-columns: 1fr; /* 手機版變單欄 */
+    grid-template-columns: 1fr; 
   }
   
+  /* 手風琴 Header */
   .accordion-header {
-    padding: 15px;
+    padding: 15px; /* 減少內距 */
+    font-size: 16px; /* 字體微縮 */
   }
   
+  .week-title {
+    font-size: 1rem;
+  }
+  
+  /* 手風琴內容區 */
   .accordion-content {
-    padding: 20px;
+    padding: 20px 15px; /* 左右空間縮小 */
+  }
+
+  /* 手機版文字與按鈕的排列 */
+  .content-row {
+    flex-direction: column; 
+    align-items: flex-start; /* 文字靠左 */
+    gap: 12px;
+  }
+  
+  .content-text {
+    width: 100%;
+  }
+
+  /* 2. 修改按鈕樣式：改為適應寬度並靠右 */
+  .info-link {
+    width: auto;           /* 改回自動寬度 (不強制 100%) */
+    align-self: flex-end;  /* 讓按鈕靠右對齊 */
+    margin-top: 5px;
+    box-sizing: border-box; /* 確保邊框計算正確 */
+  }
+
+  /* 子項目的 RWD 處理 */
+  .sub-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .info-link-mini {
+    align-self: flex-end; /* 小按鈕靠右 */
   }
 }
 </style>

@@ -67,5 +67,13 @@ const goMore = (path) => {
 <style scoped>
 .page-container {
   padding-top: 40px; /* 頂部留白 */
+  padding-bottom: 40px;
+}
+
+/* 手機版調整 */
+@media (max-width: 768px) {
+  .page-container {
+    padding-top: 20px; /* 手機版頂部留白減少 */
+  }
 }
 </style>
