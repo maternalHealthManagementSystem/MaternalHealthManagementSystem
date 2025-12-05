@@ -347,14 +347,14 @@ const closeModal = () => {
 
 
 /* =========================================
-   2. iPad Air & Tablet (寬度 <= 1024px)
+   2. iPad Air & Tablet (寬度 769px ~ 1024px)
    ========================================= */
 @media (max-width: 1024px) {
   .info-section {
     padding: 0 10px;
   }
   
-  /* 選項改為兩欄排列 (比較整齊) */
+  /* 選項改為 Grid 雙欄排列，比較整齊 */
   .options-container {
     display: grid;
     grid-template-columns: 1fr 1fr; /* 左右各一個 */
@@ -362,8 +362,9 @@ const closeModal = () => {
   }
   
   .option-item {
-    margin-right: 0;
     justify-content: flex-start;
+    background-color: #f9fbfd; /* 給一個淡底色區分 */
+    padding: 10px;
   }
 }
 
@@ -384,16 +385,25 @@ const closeModal = () => {
     font-size: 16px;
   }
 
-  /* 身分選擇按鈕排版 */
+  /* 身分選擇按鈕排版：改為滿版按鈕 */
   .radio-group-inline {
     width: 100%;
-    gap: 10px;
+    gap: 12px;
   }
   
   .radio-pill {
     flex: 1; /* 兩個按鈕平分寬度 */
     justify-content: center; /* 文字置中 */
-    padding: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+  }
+  
+  /* 選中時增加邊框提示 */
+  .radio-pill:has(input:checked) {
+    background-color: #ebf8ff;
+    border-color: #bee3f8;
+    color: #2b6cb0;
   }
 
   /* 日期輸入框滿版 */
@@ -401,6 +411,7 @@ const closeModal = () => {
     width: 100%;
     font-size: 16px; /* 防止 iOS Safari 自動放大 */
     padding: 12px;
+    box-sizing: border-box; /* 確保 padding 不撐開 */
   }
 
   /* 題目卡片優化 */
@@ -408,9 +419,9 @@ const closeModal = () => {
     padding: 20px 15px; /* 左右內距縮小 */
   }
 
-  /* 選項改為單欄垂直排列 (手指好點) */
+  /* 選項改為單欄垂直堆疊 (手指好點) */
   .options-container {
-    display: flex; /* 或 grid-template-columns: 1fr; */
+    display: flex;
     flex-direction: column;
     gap: 10px;
   }
@@ -418,8 +429,16 @@ const closeModal = () => {
   .option-item {
     width: 100%;
     padding: 12px 15px; /* 增加觸控高度 */
-    background-color: #f7fafc;
-    border: 1px solid #edf2f7;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
+  
+  /* 選中時的效果 */
+  .option-item.selected {
+    background-color: #ebf8ff;
+    border-color: #3498db;
   }
 
   /* 選項文字大小 */
@@ -437,12 +456,8 @@ const closeModal = () => {
 
   /* 彈窗調整 */
   .modal-box {
+    width: 85%; /* 改為百分比寬度 */
     padding: 30px 20px;
-  }
-  
-  .score-circle {
-    width: 90px; height: 90px;
-    font-size: 36px;
   }
 }
 </style>

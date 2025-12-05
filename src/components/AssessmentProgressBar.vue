@@ -44,7 +44,7 @@ defineProps({
 /* 進度條軌道 (淺灰底) */
 .progress-track {
     width: 100%;
-    height: 12px;         
+    height: 10px;         
     background-color: #dbe2e8; 
     border-radius: 6px;    
     overflow: hidden;
@@ -59,7 +59,7 @@ defineProps({
 }
 
 /* =========================================
-   2. iPad Air (直向) & Tablet (寬度 <= 1024px)
+   iPad Air (直向) & Tablet (寬度 <= 1024px)
    ========================================= */
 @media (max-width: 1024px) {
   .progress-widget {
@@ -68,7 +68,7 @@ defineProps({
 }
 
 /* =========================================
-   3. iPhone 12/14 Pro/Max (手機版 <= 768px)
+   iPhone 12/14 Pro/Max (手機版 <= 768px)
    ========================================= */
 @media (max-width: 768px) {
   .progress-widget {
@@ -76,6 +76,7 @@ defineProps({
     width: 110px; 
     margin: 0; 
     align-items: flex-end; /* 內容靠右對齊 */
+    top: 4px;
   }
 
   .progress-text {
@@ -84,20 +85,8 @@ defineProps({
     white-space: nowrap; /* 防止文字換行 */
   }
 
-  /* 極小螢幕 (如 iPhone SE) 隱藏「填寫進度」四個字，只留 % */
-  @media (max-width: 380px) {
-    .label-text {
-      display: none;
-    }
-  }
-
-  .progress-num {
-    margin-left: 0;
-    font-size: 14px;
-  }
-
   .progress-track {
-    height: 6px; /* 進度條變細，更精緻 */
+    height: 6px;  
   }
 }
 </style>

@@ -73,7 +73,8 @@ const viewRecord = (record) => {
   border-bottom: 1px solid #cbd5e0; /* 分隔線 */
   padding: 15px 0;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
+  border-radius: 8px;
 }
 
 /* Hover 效果：讓使用者知道可以點擊 */
@@ -121,17 +122,88 @@ const viewRecord = (record) => {
   font-size: 16px;
 }
 
-/* RWD 手機版調整 */
-@media (max-width: 768px) {
-  .item-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+/* =========================================
+   iPad Air & Tablet (寬度 <= 1024px)
+   ========================================= */
+@media (max-width: 1024px) {
+  .history-list {
+    padding: 0;
   }
   
+  /* 平板上維持左右排列，但縮小間距 */
+  .history-item {
+    padding: 20px 10px;
+  }
+  
+  .record-title {
+    font-size: 16px;
+  }
+}
+
+/* =========================================
+   iPhone 12/14 Pro/Max (手機版 <= 768px)
+   ========================================= */
+@media (max-width: 768px) {
+  .history-list {
+    padding: 0;
+  }
+
+  /* 卡片式外觀 */
+  .history-item {
+    background-color: white;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    margin-bottom: 12px;
+    border-radius: 10px;
+    padding: 15px;
+    transition: transform 0.1s;
+  }
+  
+  .history-item:active {
+    transform: scale(0.98);
+    background-color: #f8fafc;
+  }
+
+  /* 內容容器：保持左右排列 (左邊文字群，右邊箭頭) */
+  .item-content {
+    display: flex;
+    justify-content: space-between; /* 文字靠左，箭頭靠右 */
+    align-items: center;            /* 垂直置中 */
+  }
+
+  /* 文字群組：改為垂直排列 */
+  .text-group {
+    display: flex;
+    flex-direction: column; /* 垂直堆疊：標題在上，日期在下 */
+    gap: 6px;               /* 兩行之間的間距 */
+    flex: 1;                /* 佔滿剩餘寬度 */
+    overflow: hidden;       /* 防止內容撐開 */
+  }
+
+  /* 標題樣式：第一行 */
+  .record-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    line-height: 1.3;
+    
+    /* 若標題太長，強制單行省略  */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  /* 日期時間樣式 */
   .record-date {
-    font-size: 12px;
-    align-self: flex-end; /* 手機版日期靠右下 */
+    font-size: 13px;
+    color: #94a3b8;
+    background-color: transparent; 
+    padding: 0;
+    
+    /* 讓日期時間在同一行 */
+    display: flex;
+    align-items: center;
   }
 }
 </style>
