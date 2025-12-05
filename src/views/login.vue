@@ -286,7 +286,7 @@ h1 {
 }
 
 .login-box {
-  width: 450px;
+  width: 380px;
   background: #f1f5f9;
   border: 1px solid #d1d5db;
   padding: 30px;
@@ -358,5 +358,21 @@ button:hover {
   color: #aaa !important; /* 灰色 */
   cursor: not-allowed !important;
   text-decoration: none !important; /* 移除底線 */
+}
+/* 手機響應式調整 */
+@media (max-width: 480px) {
+  .login-box {
+    width: 90%;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 28px;
+    margin-bottom: 30px;
+  }
+
+  label, input, button {
+    font-size: 18px;
+  }
 }
 </style>
