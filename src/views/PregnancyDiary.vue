@@ -451,13 +451,6 @@ function handleSaveDiary(updatedDiary) {
   align-items: flex-start;
 }
 .content-wrapper {
-  /* display: flex;
-  justify-content: center;   
-  align-items: flex-start;
-  gap: 20px;
-  background: #f5f7fa;
-  flex-wrap: nowrap;
-  margin: 30px auto; */
   display: flex;
   flex-wrap: nowrap;
   grid-template-columns: 1fr 2fr;
