@@ -347,7 +347,7 @@ onUnmounted(() => {
   background: white;
   border-radius: 12px;
   width: 100%;
-  max-width: 700px;
+  max-width: 600px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -413,7 +413,7 @@ onUnmounted(() => {
 }
 
 .event-title h1 {
-  font-size: 28px;
+  font-size: 24px;
   color: #333;
   margin: 10px 0;
   flex: 1;
@@ -700,75 +700,6 @@ onUnmounted(() => {
 .modal-leave-to .modal-container {
   transform: scale(0.9);
 }
-
-/* 平板版（1024px 以下）*/
-/* @media (max-width: 1024px) {
-  .modal-container {
-    max-width: 700px;
-    border-radius: 10px;
-  }
-
-  .modal-header {
-    padding: 18px;
-  }
-
-  .modal-body {
-    padding: 20px;
-  }
-
-  .event-title h1 {
-    font-size: 20px;
-  }
-  
-  .modal-footer {
-    padding: 20px;
-  }
-
-  .timeline-row {
-    grid-template-columns: 70px 1fr;
-    gap: 10px;
-  }
-
-  .time-label {
-    font-size: 15px;
-  }
-
-  .event-bar-title {
-    font-size: 16px;
-  }
-
-  .event-bar-time {
-    font-size: 16px;
-  }
-} */
-
-/* 小平板 / 大手機樣式 (Max-width: 820px) */
-/* @media (max-width: 820px) {
-  .modal-container {
-    max-width: 85vw;
-  }
-  
-  .modal-body {
-    padding: 20px;
-  }
-
-  .timeline-row {
-    grid-template-columns: 75px 1fr;
-    gap: 10px;
-  }
-
-  .map-container {
-    height: 250px;
-  }
-
-  .event-title h1 {
-    font-size: 26px;
-  }
-
-  .modal-footer {
-    padding: 18px;
-  }
-} */
 
 /* iPhne 12 Pro  */
 @media (max-width: 400px){
