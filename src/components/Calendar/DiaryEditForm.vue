@@ -48,7 +48,7 @@
               <textarea
                 v-model="formData.content"
                 class="form-textarea"
-                rows="8"
+                rows="6"
                 placeholder="把今天的心情和故事留在這裡～"
               ></textarea>
             </div>
@@ -543,76 +543,30 @@ background: rgba(255, 255, 255, 0.15);
   transform: scale(0.9);
 }
 
-/* 平板版（1024px 以下）*/
-@media (max-width: 1024px) {
+/* iPhne 12 Pro  */
+@media (max-width: 400px){
+  .modal-overlay {
+    padding: 0; 
+  }
+  
   .modal-container {
-    max-width: 700px;
-    border-radius: 10px;
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
   }
-
-  .modal-header {
-    padding: 18px;
-  }
-
-  .form-label {
-    font-size: 20px;
-  }
-
-  .form-input,
-  .form-textarea {
-    font-size: 18px;
-  }
-
-  .image-preview-box img {
-    max-height:100%;
-  }
-
-  .modal-footer {
-    padding: 20px;
-  }
-}
-/* 小平板 / 大手機樣式 (Max-width: 820px) */
-@media (max-width: 820px) {
-  .modal-container {
-    max-width: 85vw;
-  }
-
+  
   .modal-header {
     padding: 16px;
+  }
+
+  .modal-title {
+    font-size: 130%; 
   }
 
   .modal-body {
     padding: 20px;
   }
-  
-.image-preview-box img {
-    max-height: 100%;
-  }
-
-  .modal-footer {
-    padding: 16px;
-  }
-}
-/* 手機版（600px 以下） */
-@media (max-width: 600px) {
-  .modal-overlay {
-    padding: 0; 
-  }
-  .modal-container {
-    max-width: 500px; 
-    max-height: 100vh;
-    border-radius: 0;
-  }
-  
-  .modal-header {
-    padding: 12px 15px; 
-  }
-  
-  .modal-title {
-    font-size: 110%; 
-  }
-
-  .form-label {
+   .form-label {
     font-size: 16px;
   }
   
@@ -623,7 +577,7 @@ background: rgba(255, 255, 255, 0.15);
   }
   
   .form-group {
-    margin-bottom: 15px; 
+    margin-bottom: 10px; 
   }
 
   .image-preview-box img {
@@ -633,17 +587,17 @@ background: rgba(255, 255, 255, 0.15);
   .remove-image-btn {
     width: 30px;
     height: 30px;
-    top: 5px;
-    right: 5px;
+    top: 10px;
+    right: 10px;
     font-size: 16px;
   }
-  
   .upload-btn {
-      padding: 8px 15px;
-      font-size: 13px;
+    padding: 15px 15px;
+    font-size: 18px;
   }
-
-
+  .upload-icon{
+    font-size: 20px;
+  }
   .modal-footer {
     flex-direction: column;
     gap: 8px; 
@@ -654,6 +608,144 @@ background: rgba(255, 255, 255, 0.15);
   .btn-save {
     padding: 10px;
     font-size: 14px;
+  }
+}
+
+/* iPhne 14 Pro Max */
+@media(min-width: 400px) and (max-width: 450px){
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 18px;
+  }
+
+  .modal-title {
+    font-size: 130%; 
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+  .form-label {
+    font-size: 18px;
+  }
+  
+  .form-input,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 16px;
+  }
+  
+  .form-group {
+    margin-bottom: 10px; 
+  }
+
+  .image-preview-box img {
+    max-height: 100%;
+  }
+
+  .remove-image-btn {
+    width: 30px;
+    height: 30px;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+  }
+  .upload-btn {
+    padding: 15px 15px;
+  }
+  .upload-icon{
+    font-size: 20px;
+  }
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  
+  .btn-cancel,
+  .btn-save {
+    padding: 10px;
+    font-size: 16px;
+  }
+}
+
+/* iPad Air*/
+@media (min-width: 750px) and (max-width: 820px){
+  .modal-overlay {
+    padding: 0; 
+  }
+    
+  .modal-container {
+    max-width: 630px; 
+    max-height: 85vh; 
+    border-radius: 10px;
+  }
+
+  .modal-header {
+    padding: 25px;
+  }
+
+  .modal-title {
+    font-size: 150%; 
+  }
+
+  .modal-body {
+    padding: 22px;
+  }
+  .form-label {
+    font-size: 22px;
+  }
+  
+  .form-input,
+  .form-textarea {
+    padding: 8px 10px;
+    font-size: 20px;
+  }
+  
+  .form-group {
+    margin-bottom: 10px; 
+  }
+
+  .image-preview-box img {
+    max-height: 100%;
+  }
+
+  .remove-image-btn {
+    width: 45px;
+    height: 45px;
+    top: 10px;
+    right: 10px;
+    font-size: 16px;
+  }
+  .upload-btn {
+    padding: 20px 20px;
+  }
+  .upload-icon{
+    font-size: 22px;
+  }
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+    padding: 10px 15px;
+  }
+  .image-hint,
+  .upload-hint{
+    font-size: 18px;
+    margin: 10px;
+  }
+  .btn-cancel,
+  .btn-save {
+    padding: 15px;
+    font-size: 20px;
   }
 }
 </style>
