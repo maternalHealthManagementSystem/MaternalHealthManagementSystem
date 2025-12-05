@@ -463,8 +463,8 @@ onMounted(() => {
 
 .main-content-container {
   display: flex;
-  grid-template-columns: 1fr 2fr;
   gap: 20px;
+  height: fit-content;
   max-width: 1200px;
   width: 100%;
 }
@@ -475,6 +475,7 @@ onMounted(() => {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* --- 左側面板樣式 --- */
@@ -485,7 +486,7 @@ onMounted(() => {
   justify-content: space-between;
   height: 600px;
   padding: 20px 10px 20px 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  flex-grow: 1;
 }
 
 .image-placeholder {
@@ -583,8 +584,9 @@ onMounted(() => {
 .right-panel {
   display: flex;
   flex-direction: column;
-  height: 570px;
+  height: auto;
   padding: 0;
+  flex-grow: 2;
 }
 
 .calendar-section {
@@ -609,26 +611,35 @@ onMounted(() => {
   font-style: italic;
 }
 
-/* ======================== */
-/* 📱 手機版（寬度 ≤ 480px） */
-/* ======================== */
-@media (max-width: 480px) {
+@media (max-width: 850px) {
   .maternal-dashboard {
     padding: 10px;
   }
 
+  /* 垂直堆疊 */
   .main-content-container {
-    display: flex;
     flex-direction: column;
     gap: 15px;
   }
 
-  /* 左側改成自動高度，內容垂直排列 */
+  /* 確保左右面板在小螢幕上都佔滿 100% 寬度 */
   .left-panel {
-    height: auto;
+    /* 核心調整 */
+    width: 92%; 
+    height: auto; /* 讓高度隨著內容自動調整 */
     padding: 15px;
+    order: 1; /* 確保左面板在上方 */
+  }
+  
+  .right-panel {
+    /* 核心調整 */
+    width: 100%; 
+    height: auto;
+    padding: 0; /* right-panel 內層的 calendar-section 已經有 padding */
+    order: 2; /* 確保右面板在下方 */
   }
 
+  /* 調整左側內容 */
   .fruit-text {
     font-size: 16px;
     margin-top: 10px;
@@ -636,99 +647,50 @@ onMounted(() => {
 
   .baby-size-info {
     font-size: 14px;
-    max-width: 220px;
+    max-width: 90%; /* 在小螢幕上可以稍微放大一點 */
+    width: 90%;
   }
 
   .baby-fruit-img {
-    width: 250px;
-    height: 200px;
+    /* 限制圖片最大寬度，避免過大 */
+    max-width: 90%;
+    height: auto;
   }
 
   .pregnancy-tracker {
     font-size: 22px;
     margin-top: 10px;
+    margin-bottom: 15px;
   }
 
-  /* 右側 Calendar */
-  .right-panel {
-    padding: 0;
-  }
-
+  /* 調整右側日曆區塊 */
   .calendar-section {
-    min-width: unset !important;
-    width: 100% !important;
-  }
-
-  .calendar-section > * {
-    padding: 10px;
-  }
-}
-
-/* ================================= */
-/* 📱 平板（481px ～ 768px） */
-/* ================================= */
-@media (min-width: 481px) and (max-width: 768px) {
-  .maternal-dashboard {
-    padding: 10px;
-  }
-
-  .main-content-container {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-  }
-
-  .left-panel {
-    height: auto;
-    padding: 15px
-  }
-  .right-panel {
-    padding: 0;
-  }
-  .calendar-section {
-    width: 100% !important;
-  }
-
-  .calendar-section > * {
-    padding: 10px;
-  }
-}
-
-/* ================================= */
-/* 💻 小筆電（769px ～ 1024px） */
-/* ================================= */
-/* @media (min-width: 769px) and (max-width: 1024px) */
- @media (max-width: 850px) {
-  .main-content-container {
-    flex-direction: column;
-    flex-wrap: wrap;
-    padding: 15px;
-  }
-
-  .left-panel {
-    order: 1;
-    width: 98%; /* 確保佔滿整個容器寬度 */
-    margin-bottom: 20px; /* 增加與下方日曆的間距 */
-  }
-
-  .right-panel {
-    order: 2;
     width: 100%;
+    /* 移除 min-width 限制 */
+  }
+
+  .calendar-section > * {
+    padding: 10px;
   }
 }
 
-/* 桌機/大筆電（1025px 以上） */
+/* -------------------------------------
+   💻 大螢幕/桌機 (1025px 以上)
+------------------------------------- */
 @media (min-width: 1025px) {
-  .calendar-section {
-    min-width: 750px; /* ⬅ 桌機才需要 750px */
+  /* 恢復左右佈局 */
+  .main-content-container {
+    flex-direction: row;
   }
 
   .left-panel {
-    height: auto !important;
+    height: 600px; /* 恢復桌面固定高度 */
+    width: initial;
   }
 
   .right-panel {
-    height: auto !important;
+    height: 600px; /* 讓右側高度與左側對齊 */
+    width: initial;
   }
 }
 
