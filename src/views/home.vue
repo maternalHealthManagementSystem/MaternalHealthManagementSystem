@@ -254,7 +254,7 @@ const babySizeMap = {
   },
   12: {
     name: "青芒果",
-    img: "../fruitimg/greenmango.png", // 沿用
+    img: "public/fruitimg/greenmango.png", // 沿用
     length: "6.1 cm (頭臀長 CRL)",
     weight: "8~14 g",
   },
