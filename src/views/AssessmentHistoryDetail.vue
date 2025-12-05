@@ -6,11 +6,10 @@
     <div v-else class="detail-container">
       
       <div class="meta-header">
-        <div>
+        <div class="header-content">
           <h2 class="record-title">{{ record.title }}</h2>
           <span class="record-date">填寫時間：{{ formatTime(record.id) }}</span>
         </div>
-        <button class="back-btn" @click="router.back()">返回列表</button>
       </div>
 
       <div v-if="record.type === 'depression'" class="depression-detail">
@@ -132,6 +131,10 @@
 
       </div>
 
+      <div class="footer-action">
+        <button class="back-btn" @click="router.back()">返回</button>
+      </div>
+
     </div>
   </AssessmentPanel>
 </template>
@@ -204,8 +207,28 @@ onMounted(() => {
 .meta-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid #eee; padding-bottom: 15px; }
 .record-title { margin: 0; color: #2c3e50; font-size: 20px; }
 .record-date { color: #7f8c8d; font-size: 14px; }
-.back-btn { background: #95a5a6; color: white; border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; transition: 0.2s; }
-.back-btn:hover { background: #7f8c8d; }
+.footer-action {
+  text-align: right;
+  margin-top: 30px;
+  padding-top: 15px;
+  border-top: 1px solid #cbd5e0;
+}
+
+.back-btn {
+  background-color: #5a6b7c;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.back-btn:hover {
+  background-color: #3498db;
+}
+
 
 /* 統一的卡片樣式 */
 .form-card { 
