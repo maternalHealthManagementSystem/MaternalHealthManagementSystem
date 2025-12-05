@@ -345,7 +345,7 @@ const closeModal = () => {
 /* Form Card */
 .form-card {
   background-color: white;
-  border-radius: 6px;
+  border-radius: 8px;
   margin-bottom: 20px;
   display: flex;
   overflow: hidden;
@@ -532,14 +532,6 @@ const closeModal = () => {
     flex-wrap: wrap; /* 允許輸入框換行，避免手機版跑版 */
 }
 
-/* RWD */
-@media (max-width: 768px) {
-  .row { flex-direction: column; gap: 0; }
-  .history-grid { grid-template-columns: 1fr; }
-  .card-label { width: 100%; height: 40px; writing-mode: horizontal-tb; border-right: none; border-bottom: 1px solid #e2e8f0; }
-  .form-card { flex-direction: column; }
-}
-
 /* --- 彈窗內容樣式 --- */
 /* 全螢幕遮罩 */
 .modal-overlay {
@@ -619,5 +611,22 @@ const closeModal = () => {
     font-weight: bold;
     margin: 0;
     letter-spacing: 1px;
+}
+
+/* --- RWD 調整 --- */
+@media (max-width: 768px) {
+  .info-card {
+    padding: 15px 15px; /* 手機版卡片內距縮小 */
+  }
+
+  .info-card h3 {
+    font-size: 17px;
+    margin-bottom: 10px;
+  }
+
+  .card-content {
+    font-size: 14px; /* 字體稍微縮小以容納更多內容 */
+    line-height: 1.6;
+  }
 }
 </style>

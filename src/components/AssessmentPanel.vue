@@ -28,7 +28,7 @@ defineProps({
 .main-panel {
   flex: 1;
   background-color: #e3e9ef;
-  border-radius: 4px;
+  border-radius: 8px;
   padding: 30px;
   display: flex;
   flex-direction: column;
@@ -71,14 +71,20 @@ defineProps({
   scrollbar-color: #a0aec0 #edf2f7;
 }
 
-/* --- RWD 手機版適配 --- */
+/* --- RWD 調整 --- */
 @media (max-width: 768px) {
-    /* 手機版標題區塊不需要 relative，改回預設 */
-    .panel-header {
-        position: static;
-        display: flex;
-        flex-direction: column-reverse; /* 讓進度條跑到標題下方 */
-        gap: 15px;
-    }
+  .main-panel {
+    padding: 20px 15px; /* 手機版減少內距 */
+    min-height: 400px; /* 手機版高度需求降低 */
+  }
+
+  .panel-header h2 {
+    font-size: 20px; /* 標題字體縮小 */
+  }
+
+  .scroll-content {
+    padding-right: 0; /* 手機版通常不需要右側留白給捲軸 */
+    max-height: 500px;
+  }
 }
 </style>

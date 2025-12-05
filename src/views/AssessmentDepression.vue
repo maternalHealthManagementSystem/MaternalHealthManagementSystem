@@ -144,25 +144,6 @@ const submitForm = () => {
     alert('您還有題目尚未完成，請檢查所有題目。');
     return;
   }else{
-    // // 組裝要儲存的內容
-    // const record = {
-    //   id: Date.now(),  // 用 timestamp 當 id
-    //   title: "愛丁堡產後憂鬱量表",
-    //   date: new Date().toLocaleString(),
-    //   form: { ...form },   // 身分、日期
-    //   questions: JSON.parse(JSON.stringify(questions)), // 每一題回答
-    //   totalScore: totalScore.value
-    // };
-
-    // // 取出舊資料
-    // const historyData = JSON.parse(localStorage.getItem("assessmentHistory") || "[]");
-
-    // // 新的加入陣列前方
-    // historyData.unshift(record);
-
-    // // 儲存回 localStorage
-    // localStorage.setItem("assessmentHistory", JSON.stringify(historyData));
-
     // 取得當下的結果評語
     const currentMessage = resultMessage.value; 
 
@@ -170,7 +151,7 @@ const submitForm = () => {
     const record = {
       id: Date.now(),
       title: "愛丁堡產後憂鬱量表",
-      type: 'depression', // 標記這是憂鬱量表
+      type: 'depression', 
       date: new Date().toLocaleDateString(), // 格式化日期
       
       // 儲存表單資料
@@ -365,11 +346,103 @@ const closeModal = () => {
 }
 
 
-/* RWD */
-@media (max-width: 768px) {
+/* =========================================
+   2. iPad Air & Tablet (寬度 <= 1024px)
+   ========================================= */
+@media (max-width: 1024px) {
+  .info-section {
+    padding: 0 10px;
+  }
+  
+  /* 選項改為兩欄排列 (比較整齊) */
   .options-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 左右各一個 */
+    gap: 12px;
+  }
+  
+  .option-item {
+    margin-right: 0;
+    justify-content: flex-start;
+  }
+}
+
+/* =========================================
+   3. iPhone 12/14 Pro/Max & Mobile (寬度 <= 768px)
+   ========================================= */
+@media (max-width: 768px) {
+  /* 輸入列改為垂直堆疊 */
+  .input-row {
     flex-direction: column;
-    gap: 5px;
+    align-items: flex-start;
+    margin-bottom: 25px;
+  }
+
+  .field-label {
+    width: 100%;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+
+  /* 身分選擇按鈕排版 */
+  .radio-group-inline {
+    width: 100%;
+    gap: 10px;
+  }
+  
+  .radio-pill {
+    flex: 1; /* 兩個按鈕平分寬度 */
+    justify-content: center; /* 文字置中 */
+    padding: 10px;
+  }
+
+  /* 日期輸入框滿版 */
+  .date-input {
+    width: 100%;
+    font-size: 16px; /* 防止 iOS Safari 自動放大 */
+    padding: 12px;
+  }
+
+  /* 題目卡片優化 */
+  .question-card {
+    padding: 20px 15px; /* 左右內距縮小 */
+  }
+
+  /* 選項改為單欄垂直排列 (手指好點) */
+  .options-container {
+    display: flex; /* 或 grid-template-columns: 1fr; */
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .option-item {
+    width: 100%;
+    padding: 12px 15px; /* 增加觸控高度 */
+    background-color: #f7fafc;
+    border: 1px solid #edf2f7;
+  }
+
+  /* 選項文字大小 */
+  .opt-text {
+    font-size: 16px;
+    line-height: 1.4;
+  }
+
+  /* Radio 按鈕加大 */
+  .option-item input, .radio-pill input {
+    width: 22px;
+    height: 22px;
+    margin-right: 12px;
+  }
+
+  /* 彈窗調整 */
+  .modal-box {
+    padding: 30px 20px;
+  }
+  
+  .score-circle {
+    width: 90px; height: 90px;
+    font-size: 36px;
   }
 }
 </style>

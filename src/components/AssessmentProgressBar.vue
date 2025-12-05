@@ -58,13 +58,46 @@ defineProps({
     transition: width 0.5s ease; /* 平滑動畫 */
 }
 
-/* --- RWD 手機版適配 --- */
+/* =========================================
+   2. iPad Air (直向) & Tablet (寬度 <= 1024px)
+   ========================================= */
+@media (max-width: 1024px) {
+  .progress-widget {
+    width: 150px; /* 平板稍微縮小一點 */
+  }
+}
+
+/* =========================================
+   3. iPhone 12/14 Pro/Max (手機版 <= 768px)
+   ========================================= */
 @media (max-width: 768px) {
-    /* 手機版取消絕對定位，改為置中 */
-    .progress-widget {
-        position: static;
-        width: 100%;
-        margin-bottom: 15px;
+  .progress-widget {
+    /* 這裡非常關鍵：寬度要夠小才能跟標題並排 */
+    width: 110px; 
+    margin: 0; 
+    align-items: flex-end; /* 內容靠右對齊 */
+  }
+
+  .progress-text {
+    font-size: 13px; /* 字體縮小 */
+    margin-bottom: 4px;
+    white-space: nowrap; /* 防止文字換行 */
+  }
+
+  /* 極小螢幕 (如 iPhone SE) 隱藏「填寫進度」四個字，只留 % */
+  @media (max-width: 380px) {
+    .label-text {
+      display: none;
     }
+  }
+
+  .progress-num {
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .progress-track {
+    height: 6px; /* 進度條變細，更精緻 */
+  }
 }
 </style>

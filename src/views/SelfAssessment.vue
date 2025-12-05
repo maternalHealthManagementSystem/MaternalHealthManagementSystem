@@ -44,7 +44,7 @@ const menuItems = ref([
 <style scoped>
 .assessment-page {
   width: 65%;
-  /* max-width: 1200px; */
+  max-width: 1400px; /* 增加最大寬度限制，避免在超大螢幕太寬 */
   margin: 0 auto;
   padding: 40px 20px;
 }
@@ -106,5 +106,72 @@ const menuItems = ref([
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* --- 平板 (iPad Air, iPad Pro 等，寬度 <= 1024px) --- */
+@media (max-width: 1024px) {
+  .assessment-page {
+    width: 90%; /* 寬度放寬 */
+    padding: 30px 0;
+  }
+
+  .layout-container {
+    flex-direction: column; /* 改為上下排列 */
+    gap: 20px;
+  }
+
+  /* 側邊欄變為頂部選單 */
+  .sidebar {
+    width: 100%;
+    overflow-x: auto; /* 允許橫向滑動 */
+    background: #fff;
+    padding-bottom: 10px;
+    /* 隱藏捲軸但保留功能 (Chrome, Safari) */
+    scrollbar-width: none; 
+  }
+  .sidebar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-list {
+    display: flex; /* 選單變橫排 */
+    border-bottom: 2px solid #e0e0e0; /* 整個選單下方加線 */
+  }
+
+  .menu-list li {
+    border-bottom: none; /* 移除原本每個項目的底線 */
+    flex-shrink: 0; /* 防止文字擠壓 */
+  }
+
+  .menu-link {
+    padding: 15px 20px;
+    font-size: 16px;
+    white-space: nowrap; /* 文字不換行 */
+    border-bottom: 3px solid transparent; /* 預留 active 樣式的空間 */
+  }
+
+  /* 平板手機版 Active 樣式改為底線標示 */
+  .menu-link.active {
+    color: #3498db;
+    border-bottom-color: #3498db; 
+    background-color: rgba(52, 152, 219, 0.05);
+  }
+}
+
+/* --- 手機 (iPhone 12/14 Pro/Max 等，寬度 <= 768px) --- */
+@media (max-width: 768px) {
+  .assessment-page {
+    width: 100%; /* 手機版滿版 */
+    padding: 10px;
+  }
+  
+  .layout-container {
+    min-height: auto; /* 手機版不強制高度 */
+  }
+
+  .menu-link {
+    font-size: 15px;
+    padding: 12px 15px;
+  }
 }
 </style>
