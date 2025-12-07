@@ -122,7 +122,6 @@ const handleSearch = (key) => {
   color: #333;
   background-color: #f9fbfd; /* 整個頁面給一個底色 */
   min-height: 100vh; /* 確保背景色填滿 */
-  box-sizing: border-box;
 }
 
 .page-header {
@@ -138,8 +137,11 @@ const handleSearch = (key) => {
 
 h2 {
   font-size: 28px;
-  color: #3b4a5a;
+  color: #2c3e50;
   font-weight: bold;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0;
 }
 
 /* 主佈局：Flexbox 左右分割 */

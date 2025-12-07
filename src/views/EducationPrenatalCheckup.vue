@@ -154,7 +154,6 @@ const handleSearch = (key) => {
   background-color: #f9fbfd; /* 整個頁面給一個底色 */
   min-height: 100vh; /* 確保背景色填滿 */
   font-family: 'Helvetica Neue', Arial, sans-serif;
-  box-sizing: border-box; /* 確保 padding 不會撐開寬度 */
 }
 
 /* Header */

@@ -152,8 +152,9 @@ const handleSearch = (key) => {
 
 .page-header h2 {
   font-size: 28px;
-  font-weight: bold;
   color: #2c3e50;
+  font-weight: 700;
+  letter-spacing: 1px;
   margin: 0;
 }
 
