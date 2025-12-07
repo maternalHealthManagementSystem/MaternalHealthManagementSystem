@@ -517,6 +517,12 @@ h2 {
     width: 90%; /* 加寬版面，iPad 上閱讀更舒適 */
     padding: 30px 20px;
   }
+  .page-header h2 {
+    white-space: nowrap; /* 強制文字不換行 */
+    flex-shrink: 0;      /* 防止標題被右邊的搜尋框擠壓收縮 */
+    font-size: 24px;     /* 稍微縮小字體，讓空間更餘裕 */
+    margin-right: 20px;  /* 確保跟搜尋框保持距離 */
+  }
 }
 
 /* 手機版 (iPhone 12 Pro, 14 Pro Max) 
@@ -526,6 +532,7 @@ h2 {
   .page-container {
     width: 100%; /* 手機版滿寬 */
     padding: 10px 15px; /* 縮小邊距 */
+    box-sizing: border-box;
   }
   
   /* Header 區塊 */

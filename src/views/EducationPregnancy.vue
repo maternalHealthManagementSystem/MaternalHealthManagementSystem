@@ -325,6 +325,13 @@ const handleSearch = (key) => {
     gap: 30px; /* 縮小左右間距 */
   }
 
+  .page-header h2 {
+    white-space: nowrap; /* 強制文字不換行 */
+    flex-shrink: 0;      /* 防止標題被右邊的搜尋框擠壓收縮 */
+    font-size: 24px;     /* 稍微縮小字體，讓空間更餘裕 */
+    margin-right: 20px;  /* 確保跟搜尋框保持距離 */
+  }
+
   .sidebar {
     width: 180px; /* 縮小側邊欄 */
   }
@@ -416,7 +423,7 @@ const handleSearch = (key) => {
     display: inline-block;
     width: 5px; /* 稍微細一點 */
     height: 18px;
-    background-color: #57aee2;
+    background-color: #8faec6;
     margin-right: 8px; /* 文字離藍色豎條的距離 */
     border-radius: 3px;
   }
