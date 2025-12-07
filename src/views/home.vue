@@ -82,7 +82,7 @@ import EventCalendar from '../components/Calendar/EventCalendar.vue';
 import EventDetailModal from '../components/Calendar/EventDetailModal.vue';
 import EventAddForm from '../components/Calendar/EventAddForm.vue'; 
 import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue';
-import { useCalendarStore } from '../stores/calendarStore'; // 使用相對路徑避免別名問題
+import { useCalendarStore } from '../../stores/calendarStore.js' // 使用相對路徑避免別名問題
 import dayjs from 'dayjs';
 
 
@@ -201,6 +201,7 @@ function handleMonthChange(month) {
   console.log('Home Page - Month Changed:', month);
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
 const babySizeMap = {
   // --- 懷孕初期 (CRL) ---
   4: {
@@ -254,7 +255,7 @@ const babySizeMap = {
   },
   12: {
     name: "青芒果",
-    img: "public/fruitimg/greenmango.png", // 沿用
+    img: `${BASE_URL}fruitimg/greenmango.png`, // 沿用
     length: "6.1 cm (頭臀長 CRL)",
     weight: "8~14 g",
   },
