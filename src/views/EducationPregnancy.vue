@@ -289,7 +289,6 @@ const handleSearch = (key) => {
   font-size: 16px;
   transition: opacity 0.2s;
   border-bottom: 1px solid transparent;
-  display: block; /* 讓整行可點擊 */
 }
 
 .toc-link:hover {
