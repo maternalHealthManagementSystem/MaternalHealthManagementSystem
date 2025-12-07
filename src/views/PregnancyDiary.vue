@@ -132,7 +132,7 @@ import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue'
 import DiaryEditForm from '../components/Calendar/DiaryEditForm.vue'
 import dayjs from 'dayjs'
 
-import { useCalendarStore } from '../stores/calendarStore.js'
+import { useCalendarStore } from '../../stores/calendarStore.js'
 const calendarStore = useCalendarStore()
 
 // --- 新增路由實例 ---
