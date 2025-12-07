@@ -82,7 +82,7 @@ import EventCalendar from '../components/Calendar/EventCalendar.vue';
 import EventDetailModal from '../components/Calendar/EventDetailModal.vue';
 import EventAddForm from '../components/Calendar/EventAddForm.vue'; 
 import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue';
-import { useCalendarStore } from '../stores/calendarStore'; // 使用相對路徑避免別名問題
+import { useCalendarStore } from '../../stores/calendarStore.js' // 使用相對路徑避免別名問題
 import dayjs from 'dayjs';
 
 
@@ -201,6 +201,7 @@ function handleMonthChange(month) {
   console.log('Home Page - Month Changed:', month);
 }
 
+const BASE_URL = import.meta.env.BASE_URL;
 const babySizeMap = {
   // --- 懷孕初期 (CRL) ---
   4: {
@@ -254,7 +255,7 @@ const babySizeMap = {
   },
   12: {
     name: "青芒果",
-    img: "public/fruitimg/greenmango.png", // 沿用
+    img: `${BASE_URL}fruitimg/greenmango.png`, // 沿用
     length: "6.1 cm (頭臀長 CRL)",
     weight: "8~14 g",
   },
@@ -463,8 +464,8 @@ onMounted(() => {
 
 .main-content-container {
   display: flex;
+  grid-template-columns: 1fr 2fr;
   gap: 20px;
-  height: fit-content;
   max-width: 1200px;
   width: 100%;
 }
@@ -475,7 +476,6 @@ onMounted(() => {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* --- 左側面板樣式 --- */
@@ -486,7 +486,7 @@ onMounted(() => {
   justify-content: space-between;
   height: 600px;
   padding: 20px 10px 20px 10px;
-  flex-grow: 1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .image-placeholder {
@@ -584,9 +584,8 @@ onMounted(() => {
 .right-panel {
   display: flex;
   flex-direction: column;
-  height: auto;
+  height: 570px;
   padding: 0;
-  flex-grow: 2;
 }
 
 .calendar-section {
@@ -611,35 +610,26 @@ onMounted(() => {
   font-style: italic;
 }
 
-@media (max-width: 850px) {
+/* ======================== */
+/* 📱 手機版（寬度 ≤ 480px） */
+/* ======================== */
+@media (max-width: 480px) {
   .maternal-dashboard {
     padding: 10px;
   }
 
-  /* 垂直堆疊 */
   .main-content-container {
+    display: flex;
     flex-direction: column;
     gap: 15px;
   }
 
-  /* 確保左右面板在小螢幕上都佔滿 100% 寬度 */
+  /* 左側改成自動高度，內容垂直排列 */
   .left-panel {
-    /* 核心調整 */
-    width: 92%; 
-    height: auto; /* 讓高度隨著內容自動調整 */
-    padding: 15px;
-    order: 1; /* 確保左面板在上方 */
-  }
-  
-  .right-panel {
-    /* 核心調整 */
-    width: 100%; 
     height: auto;
-    padding: 0; /* right-panel 內層的 calendar-section 已經有 padding */
-    order: 2; /* 確保右面板在下方 */
+    padding: 15px;
   }
 
-  /* 調整左側內容 */
   .fruit-text {
     font-size: 16px;
     margin-top: 10px;
@@ -647,26 +637,27 @@ onMounted(() => {
 
   .baby-size-info {
     font-size: 14px;
-    max-width: 90%; /* 在小螢幕上可以稍微放大一點 */
-    width: 90%;
+    max-width: 220px;
   }
 
   .baby-fruit-img {
-    /* 限制圖片最大寬度，避免過大 */
-    max-width: 90%;
-    height: auto;
+    width: 250px;
+    height: 200px;
   }
 
   .pregnancy-tracker {
     font-size: 22px;
     margin-top: 10px;
-    margin-bottom: 15px;
   }
 
-  /* 調整右側日曆區塊 */
+  /* 右側 Calendar */
+  .right-panel {
+    padding: 0;
+  }
+
   .calendar-section {
-    width: 100%;
-    /* 移除 min-width 限制 */
+    min-width: unset !important;
+    width: 100% !important;
   }
 
   .calendar-section > * {
@@ -674,23 +665,71 @@ onMounted(() => {
   }
 }
 
-/* -------------------------------------
-   💻 大螢幕/桌機 (1025px 以上)
-------------------------------------- */
-@media (min-width: 1025px) {
-  /* 恢復左右佈局 */
+/* ================================= */
+/* 📱 平板（481px ～ 768px） */
+/* ================================= */
+@media (min-width: 481px) and (max-width: 768px) {
+  .maternal-dashboard {
+    padding: 10px;
+  }
+
   .main-content-container {
-    flex-direction: row;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
   }
 
   .left-panel {
-    height: 600px; /* 恢復桌面固定高度 */
-    width: initial;
+    height: auto;
+    padding: 15px
+  }
+  .right-panel {
+    padding: 0;
+  }
+  .calendar-section {
+    width: 100% !important;
+  }
+
+  .calendar-section > * {
+    padding: 10px;
+  }
+}
+
+/* ================================= */
+/* 💻 小筆電（769px ～ 1024px） */
+/* ================================= */
+/* @media (min-width: 769px) and (max-width: 1024px) */
+ @media (max-width: 850px) {
+  .main-content-container {
+    flex-direction: column;
+    flex-wrap: wrap;
+    padding: 15px;
+  }
+
+  .left-panel {
+    order: 1;
+    width: 98%; /* 確保佔滿整個容器寬度 */
+    margin-bottom: 20px; /* 增加與下方日曆的間距 */
   }
 
   .right-panel {
-    height: 600px; /* 讓右側高度與左側對齊 */
-    width: initial;
+    order: 2;
+    width: 100%;
+  }
+}
+
+/* 桌機/大筆電（1025px 以上） */
+@media (min-width: 1025px) {
+  .calendar-section {
+    min-width: 750px; /* ⬅ 桌機才需要 750px */
+  }
+
+  .left-panel {
+    height: auto !important;
+  }
+
+  .right-panel {
+    height: auto !important;
   }
 }
 
