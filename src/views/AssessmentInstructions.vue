@@ -53,7 +53,6 @@ import AssessmentPanel from '../components/AssessmentPanel.vue';
 }
 
 /* --- RWD 調整 --- */
-/* --- RWD 調整 --- */
 @media (max-width: 768px) {
   .info-card {
     padding: 20px; /* 手機版內距縮小 */
