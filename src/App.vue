@@ -361,11 +361,23 @@ const cancelLogout = () => {
 
 watch(
   () => route.path,
-  () => {
-    // 只需要關閉右側側邊欄
+  (newPath) => {
+    // ---- 每次登入後第一次進 /home 就跳通知 ----
+    if (newPath === "/home") {
+      const justLoggedIn = localStorage.getItem("justLoggedIn");
+
+      if (justLoggedIn) {
+        showNotificationModal.value = true;
+        localStorage.removeItem("justLoggedIn"); // 第一次跳完後移除
+      }
+    }
+
+    // ---- 換頁自動關 sidebar ----
     closeSidebar();
-  }
+  },
+  { immediate: true }
 );
+
 
 /*通知數量控制 */
 // 通知列表(未來可從 API / localStorage 取得)
