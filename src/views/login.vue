@@ -106,6 +106,7 @@ const demoUser = {
     bloodType: "A型",
     height: "165",
     weight: "58",
+    address: "台北市中正區仁愛路一段100號4樓",
     dueDate: "2026/05/05",
     emergencyContact: "王大明",
     emergencyRelation: "配偶",
@@ -190,7 +191,7 @@ const resendsms = () => {
   // ⭐ 重新寄送並開始倒數
   if (demoMode) {
     const code = generateDemoSMS();
-    alert(`【Demo 模式】驗證碼已重新寄送：${code}`);
+    alert(`驗證碼已重新寄送：${code}`);
   }
   startCountdown();
 };
