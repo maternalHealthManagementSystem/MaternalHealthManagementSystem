@@ -156,7 +156,7 @@
               type="text"
               v-model="profileData.address"
               placeholder="請輸入地址"
-              class="input-field full-width"
+              class="input-field"
             />
           </div>
         </div>
@@ -237,6 +237,7 @@ const profileData = reactive({
   height: "",
   weight: "",
   dueDate: "",
+  address: "",
   avatar: "",
 });
 
@@ -640,14 +641,7 @@ const handleFileUpload = (event) => {
   color: #49555f;
   margin-bottom: 10px;
 }
-.date-label {
-  display: block;
-  text-align: right;
-  font-size: 0.85rem;
-  color: #945dcb;
-  font-weight: 500;
-  margin-top: 5px;
-} /* 表單群組 (左右兩欄) */
+ /* 表單群組 (左右兩欄) */
 .form-group-half {
   display: flex;
   gap: 20px;
