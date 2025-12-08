@@ -99,9 +99,5 @@ defineProps({
   .subtitle {
     font-size: 14px;
   }
-
-  .scroll-content {
-    padding-right: 5px; /* 稍微減少右側留白 */
-  }
 }
 </style>
