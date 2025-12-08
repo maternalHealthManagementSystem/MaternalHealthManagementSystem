@@ -1,9 +1,8 @@
 <template>
   <!-- 載入 Flaticon CSS for icons (fi fi-sr-*) -->
-  <link
-    rel="stylesheet"
-    href="https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css"
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css"
   />
+  <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
 
   <div class="app-container font-inter">
     <!-- 登入頁不顯示導覽列 -->
@@ -17,7 +16,10 @@
         <router-link to="/home">首頁</router-link>
         <router-link to="/prenatal">產檢紀錄專區</router-link>
         <div class="dropdown">
-          <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }">衛教資訊專區 ⮟</router-link>
+          <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }">衛教資訊專區 
+            <i class="fi fi-rr-angle-small-down"></i>
+            
+          </router-link>
           <div class="dropdown-content">
             <router-link to="/education/pregnancy">孕期衛教資訊</router-link>
             <router-link to="/education/prenatal-checkup"
@@ -140,7 +142,9 @@
             >產檢紀錄專區</router-link
           >
           <div class="dropdown">
-            <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }" @click="closeSidebar">衛教資訊專區 ⮟</router-link>
+            <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }" @click="closeSidebar">衛教資訊專區
+              <i class="fi fi-rr-angle-small-down"></i>
+            </router-link>
             <div class="dropdown-content">
               <router-link to="/education/pregnancy" @click="closeSidebar">孕期衛教資訊</router-link>
               <router-link to="/education/prenatal-checkup" @click="closeSidebar"
