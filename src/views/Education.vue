@@ -2,7 +2,7 @@
   <div class="page-container">
     
     <EducationCard 
-      v-for="item in infoList" 
+      v-for="item in formattedInfoList" 
       :key="item.id"
       :title="item.title"
       :desc="item.desc"
@@ -14,57 +14,101 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import EducationCard from '../components/EducationCard.vue';
 import ScrollTop from '../components/ScrollTop.vue';
-
+// 引入JSON 資料
+import pregnancyData from '../assets/data/pregnancyData.json';
+import prenatalData from '../assets/data/prenatalData.json';
+import vaccineData from '../assets/data/vaccineData.json';
 const router = useRouter();
 
-// 模擬目前的懷孕週數 (之後資料會從 Pinia 或 API 取得)
-const currentWeek = ref(12); 
+// 模擬目前的懷孕週數為18週 (之後資料會從 Pinia 或 API 取得)
+const currentWeek = ref(18); 
 
-// 資料列表 (模擬依照週數產生不同的推薦文字)
-const infoList = ref([
-  {
-    id: 'pregnancy',
-    title: '孕期衛教資訊',
-    path: '/education/pregnancy',
-    desc: [
-      // { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：` },
-      { text: `目前懷孕第18週，以下為推薦內容：` },
-      { text: '早產防治、須立即就醫之危險徵兆', link: 'https://ihealth.vghtc.gov.tw/media/605' },
-      { text: '哺餵母乳衛教', link: 'https://ihealth.vghtc.gov.tw/media/648' },
-      { text: '認識妊娠高血壓', link: 'https://ihealth.vghtc.gov.tw/media/449' }
-    ]
-  },
-  {
-    id: 'prenatal-checkup',
-    title: '產檢衛教資訊',
-    path: '/education/prenatal-checkup',
-    desc: [
-      // { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：` },
-      { text: `目前懷孕第18週，以下為推薦內容：` },
-      { text: '早期子癇前症篩檢 + 子宮動脈血流量測', 
-        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=6136e0c5-61e2-4e29-9254-65c942d2ca82&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
-      },
-      { text: '第一孕期母血唐氏症篩檢', 
-        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=610672ce-8b46-472e-87fd-a2d5b670a5b0&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
-      },
-      { text: '非侵入性染色體篩檢NIPS', 
-        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=03d10c24-5549-42b9-81ec-11116af79a42&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
-      },
-      { text: '第二孕期母血唐氏症篩檢', 
-        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=617d2450-e735-4925-a510-329d2967eccc&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
-      },
-      { text: '羊膜穿刺(需預約)、羊水晶片檢測(Array CGH)', 
-        link: 'https://www.vghtc.gov.tw/UnitPage/UnitContentView?WebMenuID=4fb5d8c2-3896-4353-8507-836bb762f0f9&UnitID=adaf167e-fe3e-4956-8ba5-6571087eed85&UnitDefaultTemplate=1' 
-      }
-
-
-    ]
+// --- 核心邏輯 1: 純數字比對 ---
+// 只要項目沒有 minWeek，或是週數不符，就回傳 false
+const isWeekMatch = (item, current) => {
+  // 1. 過濾掉沒有設定 minWeek 的資料
+  // 這會自動排除 "所有週數" (id:12) 和 "依臨床需求" (id:13)，因為它們沒有 minWeek 欄位
+  if (item.minWeek === undefined || item.minWeek === null) {
+    return false;
   }
-]);
+
+  // 2. 取得範圍數字
+  const min = item.minWeek;
+  // 如果沒有 maxWeek，預設為 999 (代表一直顯示到最後)
+  const max = (item.maxWeek !== undefined && item.maxWeek !== null) ? item.maxWeek : 999;
+
+  // 3. 比對是否在範圍內
+  return current >= min && current <= max;
+};
+
+// --- 核心邏輯 2: 將複雜的產檢資料轉平 (處理 subItems) ---
+const flattenPrenatalItem = (item) => {
+  if (item.subItems && item.subItems.length > 0) {
+    return item.subItems.map(sub => ({
+      text: sub.title,
+      link: sub.url
+    }));
+  }
+  return [{
+    text: item.content,
+    link: item.link
+  }];
+};
+
+// --- 核心邏輯 3: Computed 自動計算顯示內容 ---
+const formattedInfoList = computed(() => {
+  // 1. 處理【孕期衛教資訊】
+  const pregnancyRecommendations = pregnancyData
+    .filter(item => isWeekMatch(item, currentWeek.value)) 
+    .flatMap(item => item.items)
+    .map(item => ({
+      text: item.title,
+      link: item.link
+    }));
+
+  // 2. 處理【產檢衛教資訊】
+  const prenatalRecommendations = prenatalData
+    .filter(item => isWeekMatch(item, currentWeek.value)) 
+    .flatMap(item => flattenPrenatalItem(item));
+  
+  // 3. 處理【疫苗接種】
+  const vaccineRecommendations = vaccineData
+    .filter(item => isWeekMatch(item, currentWeek.value))
+    .map(item => ({
+      // 因為疫苗沒有連結，只顯示文字
+      // 這裡將「疫苗名稱」和「描述」組合成一段文字顯示
+      text: `${item.name}：${item.desc}`, 
+      link: '', // 沒有連結傳空字串，EducationCard 會自動處理成純文字
+      isVaccine: true  // 標記它是疫苗，需要變色
+    }));
+
+  // 3. 組裝回 EducationCard 需要的格式
+  return [
+    {
+      id: 'pregnancy',
+      title: '孕期衛教資訊',
+      path: '/education/pregnancy',
+      desc: [
+        { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：`, link: '' },
+        ...pregnancyRecommendations
+      ]
+    },
+    {
+      id: 'prenatal-checkup',
+      title: '產檢衛教資訊',
+      path: '/education/prenatal-checkup',
+      desc: [
+        { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：`, link: '' },
+        ...prenatalRecommendations,
+        ...vaccineRecommendations
+      ]
+    }
+  ];
+});
 
 // 跳轉功能
 const goMore = (path) => {
@@ -80,7 +124,8 @@ const goMore = (path) => {
 
 <style scoped>
 .page-container {
-  padding-top: 40px; /* 頂部留白 */
+  /* 頂部留白 */
+  /* padding-top: 5px;  */
   padding-bottom: 40px;
 }
 
