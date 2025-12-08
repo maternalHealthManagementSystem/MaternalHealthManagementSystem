@@ -483,14 +483,13 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  height: 600px;
+  min-height: 600px; /* min-height 確保高度，但允許內容超出 */
   padding: 20px 10px 20px 10px;
   flex-grow: 1;
 }
 
-.image-placeholder {
-  /* 讓圖、文字和尺寸資訊區塊都能垂直居中 */
-  flex-grow: 1;
+.image-placeholder { 
+  flex-grow: 0; 
   width: 100%;
   display: flex;
   flex-direction: column; /* 垂直排列子元素 */
@@ -498,8 +497,7 @@ onMounted(() => {
   align-items: center;
   background-color: none;
   border-radius: 15px;
-  margin-bottom: 10px;
-  margin-top: 10px;
+  margin-bottom: 0; /* 確保底部沒有多餘的邊距推開 pregnancy-tracker */
 }
 
 .placeholder-icon {
@@ -513,7 +511,6 @@ onMounted(() => {
   font-size: 28px;
   font-weight: 500;
   color: #333;
-  margin-bottom: 10px;
 }
 
 .divider {
@@ -695,30 +692,19 @@ onMounted(() => {
     padding: 15px;
   }
 }
-
-/* =====================================
-   🖥️ 桌機：>1180px → 左右排列（保持你原本的樣式）
-===================================== */
-@media (min-width: 1180px) {
-  .left-panel,
-  .right-panel {
-    flex: 1 1 0;     
-    max-width: 50%;  
+@media (max-width: 1180px) {
+  .left-panel {
+    min-height: auto !important;
+    justify-content: flex-start; 
+    gap: 20px; /* 讓元素保持間距但不撐開 */
   }
 
   .image-placeholder {
-    width: 100%; /* 避免撐爆 panel */
-  }
-
-  .baby-fruit-img {
-    max-width: 100%;
-    height: auto;
-  }
-
-  .baby-size-info {
-    width: 100%;
-    max-width: 100%;
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 }
+
+
 
 </style>
