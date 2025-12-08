@@ -49,10 +49,7 @@
               class="input-field"
               :class="{ 'input-error': errors.name }"
             />
-            <p
-              v-if="errors.name"
-              class="error-msg"
-            >
+            <p v-if="errors.name" class="error-msg">
               {{ errors.name }}
             </p>
           </div>
@@ -95,7 +92,9 @@
                 {{ type }}
               </option>
             </select>
-            <p v-if="errors.bloodType" class="error-msg">{{ errors.bloodType }}</p>
+            <p v-if="errors.bloodType" class="error-msg">
+              {{ errors.bloodType }}
+            </p>
           </div>
         </div>
         <div class="form-group-half">
@@ -145,11 +144,23 @@
               placeholder="單位:公斤"
               v-model="profileData.weight"
               class="input-field"
-              :class="{ 'input-error': errors.weight }"
-            />
+              :class="{ 'input-error': errors.weight }"/>
             <p v-if="errors.weight" class="error-msg">{{ errors.weight }}</p>
           </div>
         </div>
+        <div class="form-group-full">
+          <div class="field-item">
+            <label for="address"> 地址 </label>
+            <input
+              id="address"
+              type="text"
+              v-model="profileData.address"
+              placeholder="請輸入地址"
+              class="input-field full-width"
+            />
+          </div>
+        </div>
+
         <h3 class="emergency-title">緊急聯絡人資料</h3>
         <div class="form-group-full">
           <div class="field-item">
@@ -234,20 +245,20 @@ const errors = reactive({});
 
 // 格式統一函式:YYYY/MM/DD 或其他 → YYYY-MM-DD
 const toStandardDate = (dateStr) => {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
   // 將所有斜線替換成破折號
-  let formatted = dateStr.replace(/\//g, '-');
+  let formatted = dateStr.replace(/\//g, "-");
   // 符合 YYYY-MM-DD 的格式才回傳
   const validPattern = /^\d{4}-\d{2}-\d{2}$/;
   if (validPattern.test(formatted)) {
     return formatted;
   }
-  return ''; // 格式錯誤則不回傳
+  return ""; // 格式錯誤則不回傳
 };
 
 // onMounted 載入資料並修正格式
 onMounted(() => {
-  const savedProfile = localStorage.getItem('userProfile');
+  const savedProfile = localStorage.getItem("userProfile");
   if (savedProfile) {
     const profile = JSON.parse(savedProfile);
 
@@ -269,7 +280,7 @@ onMounted(() => {
 const validateProfile = () => {
   let valid = true;
   // 清空舊錯誤
-  Object.keys(errors).forEach(k => (errors[k] = ''));
+  Object.keys(errors).forEach((k) => (errors[k] = ""));
 
   // ----------------------------- // 姓名(必填) // -----------------------------
   if (!profileData.name || !profileData.name.trim()) {
@@ -300,7 +311,9 @@ const validateProfile = () => {
   // ----------------------------- // 手機號碼(必填、09 開頭 + 8 碼) // -----------------------------
   const mobilePattern = /^09\d{8}$/;
   // 清除非數字字元 (例如:空格、破折號等)
-  const mobileInput = profileData.mobile ? profileData.mobile.replace(/\D/g, "") : '';
+  const mobileInput = profileData.mobile
+    ? profileData.mobile.replace(/\D/g, "")
+    : "";
 
   if (!profileData.mobile || !profileData.mobile.trim()) {
     errors.mobile = "手機不可空白";
@@ -354,12 +367,16 @@ const validateProfile = () => {
       valid = false;
     }
   }
+  // ----------------------------- // 地址 // -----------------------------
+  // 地址目前不做驗證
 
   // ----------------------------- // 緊急聯絡人姓名(必填) // -----------------------------
   if (!profileData.emergencyContact || !profileData.emergencyContact.trim()) {
     errors.emergencyContact = "緊急聯絡人姓名不可空白";
     valid = false;
-  } else if (!/^[\u4E00-\u9FA5A-Za-z\s]{1,30}$/.test(profileData.emergencyContact)) {
+  } else if (
+    !/^[\u4E00-\u9FA5A-Za-z\s]{1,30}$/.test(profileData.emergencyContact)
+  ) {
     errors.emergencyContact = "姓名僅能包含中文或英文";
     valid = false;
   }
@@ -372,7 +389,9 @@ const validateProfile = () => {
 
   // ----------------------------- // 緊急聯絡人手機(必填) // -----------------------------
   // 清除非數字字元
-  const emergencyPhoneInput = profileData.emergencyPhone ? profileData.emergencyPhone.replace(/\D/g, "") : '';
+  const emergencyPhoneInput = profileData.emergencyPhone
+    ? profileData.emergencyPhone.replace(/\D/g, "")
+    : "";
 
   if (!profileData.emergencyPhone) {
     errors.emergencyPhone = "緊急聯絡人手機不可空白";
@@ -387,11 +406,11 @@ const validateProfile = () => {
 
 // 儲存前統一格式
 const saveProfile = () => {
-  console.log('開始儲存,當前資料:', profileData); // 除錯用
-  
+  console.log("開始儲存,當前資料:", profileData); // 除錯用
+
   if (!validateProfile()) {
-    console.log('驗證失敗,錯誤:', errors); // 除錯用
-    customAlert('資料格式有誤,請檢查!');
+    console.log("驗證失敗,錯誤:", errors); // 除錯用
+    customAlert("資料格式有誤,請檢查!");
     return;
   }
 
@@ -400,11 +419,11 @@ const saveProfile = () => {
     const output = {
       ...profileData,
       dob: toStandardDate(profileData.dob),
-      dueDate: profileData.dueDate ? toStandardDate(profileData.dueDate) : '',
-      avatar: profileData.avatar || '', // 確保頭像被保存
+      dueDate: profileData.dueDate ? toStandardDate(profileData.dueDate) : "",
+      avatar: profileData.avatar || "", // 確保頭像被保存
     };
 
-    console.log('準備儲存的資料:', output); // 除錯用
+    console.log("準備儲存的資料:", output); // 除錯用
 
     localStorage.setItem("userProfile", JSON.stringify(output));
     localStorage.setItem(
@@ -415,17 +434,17 @@ const saveProfile = () => {
       })
     );
 
-    console.log('儲存成功!'); // 除錯用
+    console.log("儲存成功!"); // 除錯用
     customAlert("資料已儲存!");
   } catch (error) {
-    console.error('儲存時發生錯誤:', error);
-    customAlert('儲存失敗,請稍後再試!');
+    console.error("儲存時發生錯誤:", error);
+    customAlert("儲存失敗,請稍後再試!");
   }
 };
 
 const backbtn = () => router.back();
-const clean = () => { 
-  Object.keys(profileData).forEach(k => profileData[k] = ''); 
+const clean = () => {
+  Object.keys(profileData).forEach((k) => (profileData[k] = ""));
 };
 
 const customAlert = (message) => {
@@ -481,14 +500,14 @@ const handleFileUpload = (event) => {
     const img = new Image();
     img.onload = () => {
       // 建立 canvas 來壓縮圖片
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
       // 限制最大尺寸為 300x300 (符合你的頭像顯示大小)
       const maxSize = 300;
       let width = img.width;
       let height = img.height;
-      
+
       if (width > height) {
         if (width > maxSize) {
           height = (height * maxSize) / width;
@@ -500,25 +519,25 @@ const handleFileUpload = (event) => {
           height = maxSize;
         }
       }
-      
+
       canvas.width = width;
       canvas.height = height;
-      
+
       // 繪製壓縮後的圖片
       ctx.drawImage(img, 0, 0, width, height);
-      
+
       // 轉換為 Base64,品質設為 0.7 (可調整 0.1-1.0)
-      const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-      
+      const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
+
       // 檢查壓縮後大小
       const sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024);
       console.log(`圖片壓縮後大小: ${sizeInMB.toFixed(2)} MB`);
-      
+
       if (sizeInMB > 2) {
         customAlert("圖片仍然太大,請選擇較小的圖片!");
         return;
       }
-      
+
       profileData.avatar = compressedBase64;
       customAlert("頭像上傳成功!");
     };
@@ -544,17 +563,17 @@ const handleFileUpload = (event) => {
   color: #3e4c59; /* 深灰色,與 App.vue 的主色調搭配 */
   margin-bottom: 30px;
   padding-bottom: 10px;
-  border-bottom: 3px solid #667eea; /* 主題色下劃線 */
+  border-bottom: 3px solid #006aa8; /* 主題色下劃線 */
   display: inline-block;
 } /* 緊急聯絡人標題 */
 .emergency-title {
   font-size: 1.1rem;
   font-weight: 600;
-  color: #764ba2;
+  color: #006aa8;
   margin-top: 25px;
   margin-bottom: 15px;
   padding-left: 5px;
-  border-left: 4px solid #764ba2;
+  border-left: 4px solid #006aa8;
 } /* 主內容網格佈局 */
 .content-grid {
   display: flex;
@@ -642,26 +661,21 @@ const handleFileUpload = (event) => {
 }
 .field-item label {
   display: block;
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 500;
   color: #6b7a8c;
   margin-bottom: 5px;
 }
 .input-field {
-  width: 90%;
-  padding: 10px 15px;
-  border: 1px solid #ccd2da;
-  border-radius: 6px;
-  font-size: 1rem;
-  color: #333;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05); /* 只有 input 需要內陰影 */
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 .input-field:focus {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
   outline: none;
-} /* 底部操作按鈕 */
+}
+ /* 底部操作按鈕 */
 .action-buttons {
   display: flex;
   justify-content: space-between;
@@ -708,72 +722,38 @@ const handleFileUpload = (event) => {
   color: #e63946;
   font-size: 0.85rem;
   margin-top: 4px;
-} /* 下拉式選單 */
+}
+
+.input-field,
 .select-field {
-  width: 95%;
+  width: 100%;
   padding: 10px 15px;
   border: 1px solid #ccd2da;
   border-radius: 6px;
   font-size: 1rem;
   color: #333;
-} /* 欄位紅框 */
+  box-sizing: border-box;
+}
+.select-field {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: white;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2349555f%22%20d%3D%22M287%2064.6l-138.8%20139c-3.7%203.7-9.8%203.7-13.5%200L4.7%2064.6c-3.7-3.7-3.7-9.8%200-13.5l13.5-13.5c3.7-3.7%209.8-3.7%2013.5%200l111.8%20111.8%20111.8-111.8c3.7-3.7%209.8-3.7%2013.5%200l13.5%2013.5c3.7%203.6%203.7%209.8%200%2013.5z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat, repeat;
+  background-position: right .7em top 50%, 0 0;
+  background-size: .65em auto, 100%;
+}
+
+/* 欄位紅框 */
 .input-error {
   border-color: #e63946 !important;
   box-shadow: 0 0 0 2px rgba(230, 57, 70, 0.25);
-} /* 響應式設計 */
-@media (max-width: 900px) {
-  .content-grid {
-    flex-direction: column;
-    gap: 20px;
-  }
-  .left-panel {
-    flex: none;
-    width: 100%;
-    align-items: center;
-  } /* 讓預產期卡片在小螢幕上可以佔滿寬度 */
-  .due-date-card {
-    width: 100%;
-    max-width: 400px;
-    margin-top: 20px;
-  }
-  .avatar-section {
-    margin-bottom: 10px;
-  }
-  .right-panel {
-    width: 100%;
-  }
+
+
 }
-@media (max-width: 600px) {
-  .profile-container {
-    padding: 20px;
-  }
-  .title {
-    font-size: 1.8rem;
-    margin-bottom: 20px;
-  }
-  .form-group-half {
-    flex-direction: column;
-    gap: 0;
-  }
-  .action-buttons {
-    flex-direction: column;
-    gap: 15px;
-  }
-  .btn {
-    width: 100%;
-  }
-  .btn-back {
-    order: 1; /* 讓 返回 按鈕在中間 */
-  }
-  .btn-save {
-    order: 2; /* 讓 儲存 按鈕在下方 */
-  }
-  .btn-logout {
-    order: 3; /* 讓 登出 按鈕在最上方 (或按需調整) */
-  }
-} /*RWD*/
+/*RWD*/
 /* =========================================================
-📱📱📱 完整優化版 RWD for profile.vue 
+📱📱📱 完整優化版 RWD for profile.vue
 ========================================================= */
 /* =============================
  🔵 平板（max-width: 900px）
@@ -812,7 +792,7 @@ const handleFileUpload = (event) => {
   }
 }
 
-/* ============================= 
+/* =============================
 🔵 小型手機（max-width: 600px）
 ============================= */
 @media (max-width: 600px) {
@@ -856,7 +836,7 @@ const handleFileUpload = (event) => {
   }
 }
 
-/* ================================== 
+/* ==================================
 🔵 超小螢幕（max-width: 420px）
  ================================== */
 @media (max-width: 420px) {
@@ -876,8 +856,8 @@ const handleFileUpload = (event) => {
   }
   .input-field,
   .select-field {
-    font-size: 0.95rem;
-    padding: 10px 12px;
+    font-size: 1rem;
+    padding: 12px 14px;
   }
 }
 </style>
