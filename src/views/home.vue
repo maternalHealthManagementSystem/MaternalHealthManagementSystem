@@ -7,7 +7,10 @@
             你的寶寶大約和 <strong>{{ currentData.name }}</strong> 一樣大
           </p>
 
-          <div class="baby-size-info"  v-if="currentData.length || currentData.weight">
+          <div
+            class="baby-size-info"
+            v-if="currentData.length || currentData.weight"
+          >
             <p class="size-item">
               <span class="label">平均長度:</span>
               <strong>{{ currentData.length }}</strong>
@@ -37,7 +40,7 @@
 
       <div class="right-panel">
         <div class="calendar-section">
-          <EventCalendar 
+          <EventCalendar
             :events="allEvents"
             @dayClick="handleDayClick"
             @monthChange="handleMonthChange"
@@ -48,7 +51,7 @@
       </div>
     </div>
   </div>
-  
+
   <!-- 行程詳細資訊彈窗 -->
   <EventDetailModal
     :show="showEventDetail"
@@ -76,19 +79,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'; 
-import { useRouter } from 'vue-router'; 
-import EventCalendar from '../components/Calendar/EventCalendar.vue';
-import EventDetailModal from '../components/Calendar/EventDetailModal.vue';
-import EventAddForm from '../components/Calendar/EventAddForm.vue'; 
-import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue';
-import { useCalendarStore } from '../../stores/calendarStore.js' // 使用相對路徑避免別名問題
-import dayjs from 'dayjs';
-
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import EventCalendar from "../components/Calendar/EventCalendar.vue";
+import EventDetailModal from "../components/Calendar/EventDetailModal.vue";
+import EventAddForm from "../components/Calendar/EventAddForm.vue";
+import DiaryDetailModal from "../components/Calendar/DiaryDetailModal.vue";
+import { useCalendarStore } from "../../stores/calendarStore.js"; // 使用相對路徑避免別名問題
+import dayjs from "dayjs";
 
 const calendarStore = useCalendarStore();
-const router = useRouter(); 
-
+const router = useRouter();
 
 // 彈窗狀態
 const showEventDetail = ref(false);
@@ -99,7 +100,7 @@ const defaultAddDate = ref("");
 // 選中的事件
 const selectedEvent = ref({});
 
-// 選中的日記 
+// 選中的日記
 const selectedDiary = ref({});
 
 // --- Computed ---
@@ -113,322 +114,319 @@ onMounted(() => {
 
 // 處理日曆事件點擊
 function handleEventClick(event) {
-  console.log('Home Page: Event Clicked', event);
+  console.log("Home Page: Event Clicked", event);
 
-  if (event.isDiary) {
-  // 必須從 Store 中找到最新的完整日記資料，因為 event 可能是合併後的簡化版
-  const fullDiary = calendarStore.diaries.find(d => d.id === event.id);
-  selectedDiary.value = { ...fullDiary };
-  showDiaryDetail.value = true;
-  } else {
-  // 點擊行程：顯示行程詳細資訊彈窗
-  selectedEvent.value = { ...event };
-  showEventDetail.value = true;
-  }
+  if (event.isDiary) {
+    // 必須從 Store 中找到最新的完整日記資料，因為 event 可能是合併後的簡化版
+    const fullDiary = calendarStore.diaries.find((d) => d.id === event.id);
+    selectedDiary.value = { ...fullDiary };
+    showDiaryDetail.value = true;
+  } else {
+    // 點擊行程：顯示行程詳細資訊彈窗
+    selectedEvent.value = { ...event };
+    showEventDetail.value = true;
+  }
 }
 
 // 關閉行程詳細資訊視窗
 function closeEventDetail() {
- showEventDetail.value = false;
+  showEventDetail.value = false;
 }
 
 // 關閉日記詳細資訊視窗
 function closeDiaryDetail() {
- showDiaryDetail.value = false;
+  showDiaryDetail.value = false;
 }
 
 // 處理新增行程按鈕點擊
 function handleAddEvent() {
-  console.log('開啟新增行程表單');
-  defaultAddDate.value = dayjs().format('YYYY-MM-DD');
-  showAddForm.value = true;
+  console.log("開啟新增行程表單");
+  defaultAddDate.value = dayjs().format("YYYY-MM-DD");
+  showAddForm.value = true;
 }
 
 // 處理新增新行程
 function handleAddNewEvent(newEvent) {
-  console.log('Home Page - 新增行程:', newEvent);
-  calendarStore.addEvent(newEvent); 
-  showAddForm.value = false;
+  console.log("Home Page - 新增行程:", newEvent);
+  calendarStore.addEvent(newEvent);
+  showAddForm.value = false;
 }
 
 // 處理刪除事件 (行程)
 function handleDeleteEvent(eventId) {
-  console.log('Home Page - 刪除事件 ID:', eventId);
-  calendarStore.deleteEvent(eventId); 
-  showEventDetail.value = false;
-  alert('行程已刪除');
+  console.log("Home Page - 刪除事件 ID:", eventId);
+  calendarStore.deleteEvent(eventId);
+  showEventDetail.value = false;
+  alert("行程已刪除");
 }
 
-// 處理刪除日記 
+// 處理刪除日記
 function handleDeleteDiary(diaryId) {
-  console.log('Home Page - 刪除日記 ID:', diaryId);
-  calendarStore.deleteDiary(diaryId);
-  showDiaryDetail.value = false;
-  alert('日記已刪除');
+  console.log("Home Page - 刪除日記 ID:", diaryId);
+  calendarStore.deleteDiary(diaryId);
+  showDiaryDetail.value = false;
+  alert("日記已刪除");
 }
 
 // 處理編輯行程 - 導航
 function handleEditEvent(event) {
- console.log('Home Page - 編輯行程，導航至 PregnancyDiary');
- showEventDetail.value = false;
- router.push({ 
-   name: 'PregnancyDiary', 
-   query: { 
-   editEventId: event.id 
-    } 
-  });
+  console.log("Home Page - 編輯行程，導航至 PregnancyDiary");
+  showEventDetail.value = false;
+  router.push({
+    name: "PregnancyDiary",
+    query: {
+      editEventId: event.id,
+    },
+  });
 }
 
-// 處理編輯日記 - 導航 
+// 處理編輯日記 - 導航
 function handleEditDiary(diary) {
- console.log('Home Page - 編輯日記，導航至 PregnancyDiary');
- showDiaryDetail.value = false;
- router.push({ 
-   name: 'PregnancyDiary', 
-   query: { 
-   editDiaryId: diary.id, // 使用不同的參數名稱區分行程和日記
-   date: diary.date
-    } 
-  });
+  console.log("Home Page - 編輯日記，導航至 PregnancyDiary");
+  showDiaryDetail.value = false;
+  router.push({
+    name: "PregnancyDiary",
+    query: {
+      editDiaryId: diary.id, // 使用不同的參數名稱區分行程和日記
+      date: diary.date,
+    },
+  });
 }
 
-
-// 只需要處理日曆需要的回調 
-function handleDayClick(day) { 
-  console.log('Home Page - Date Clicked:', day.fullDate);
+// 只需要處理日曆需要的回調
+function handleDayClick(day) {
+  console.log("Home Page - Date Clicked:", day.fullDate);
 }
-function handleMonthChange(month) { 
-  console.log('Home Page - Month Changed:', month);
+function handleMonthChange(month) {
+  console.log("Home Page - Month Changed:", month);
 }
 
 const BASE_URL = import.meta.env.BASE_URL;
 const babySizeMap = {
-  // --- 懷孕初期 (CRL) ---
-  4: {
-    name: "芝麻",
-    img: "https://i.imgur.com/YbNw0q8.png",
-    length: "~0.2 cm (頭臀長 CRL)",
-    weight: "極微小 (<1g)",
-  },
-  5: {
-    name: "葡萄籽",
-    img: "https://i.imgur.com/0zoY9Zj.png",
-    length: "~0.4 cm (頭臀長 CRL)",
-    weight: "極微小 (<1g)",
-  },
-  6: {
-    name: "豌豆",
-    img: "https://i.imgur.com/qsYt5sY.png",
-    length: "~0.5 cm (頭臀長 CRL)",
-    weight: "極微小 (<1g)",
-  },
-  7: {
-    name: "藍莓",
-    img: "https://i.imgur.com/MQbleR9.png",
-    length: "~1.3 cm (頭臀長 CRL)",
-    weight: "~1 g",
-  },
-  8: {
-    name: "覆盆子",
-    img: "https://i.imgur.com/EhDfIB5.png",
-    length: "~1.6 cm (頭臀長 CRL)",
-    weight: "~1 g",
-  },
-  9: {
-    name: "櫻桃",
-    img: "https://i.imgur.com/Lz4ckTl.png",
-    length: "~2.3 cm (頭臀長 CRL)",
-    weight: "~2 g",
-  },
+  // --- 懷孕初期 (CRL) ---
+  4: {
+    name: "芝麻",
+    img: "https://i.imgur.com/YbNw0q8.png",
+    length: "~0.2 cm (頭臀長 CRL)",
+    weight: "極微小 (<1g)",
+  },
+  5: {
+    name: "葡萄籽",
+    img: "https://i.imgur.com/0zoY9Zj.png",
+    length: "~0.4 cm (頭臀長 CRL)",
+    weight: "極微小 (<1g)",
+  },
+  6: {
+    name: "豌豆",
+    img: "https://i.imgur.com/qsYt5sY.png",
+    length: "~0.5 cm (頭臀長 CRL)",
+    weight: "極微小 (<1g)",
+  },
+  7: {
+    name: "藍莓",
+    img: "https://i.imgur.com/MQbleR9.png",
+    length: "~1.3 cm (頭臀長 CRL)",
+    weight: "~1 g",
+  },
+  8: {
+    name: "覆盆子",
+    img: "https://i.imgur.com/EhDfIB5.png",
+    length: "~1.6 cm (頭臀長 CRL)",
+    weight: "~1 g",
+  },
+  9: {
+    name: "櫻桃",
+    img: "https://i.imgur.com/Lz4ckTl.png",
+    length: "~2.3 cm (頭臀長 CRL)",
+    weight: "~2 g",
+  },
 
-  10: {
-    name: "草莓",
-    img: "https://i.imgur.com/5kEjX5O.png",
-    length: "3.1~4.2 cm (頭臀長 CRL)",
-    weight: "5 g",
-  },
-  11: {
-    name: "金桔",
-    img: "https://i.imgur.com/nQxGgUe.png", // 沿用
-    length: "4.4~6.0 cm (頭臀長 CRL)",
-    weight: "8 g",
-  },
-  12: {
-    name: "青芒果",
-    img: `${BASE_URL}fruitimg/greenmango.png`, // 沿用
-    length: "6.1 cm (頭臀長 CRL)",
-    weight: "8~14 g",
-  },
-  // --- 懷孕中期 (CHL / 總身長) ---
-  13: {
-    name: "百香果",
-    img: "https://i.imgur.com/zKAwx04.png", // 沿用
-    length: "6.5~7.8 cm (頭臀長)", // 13週常仍用CRL
-    weight: "13~20 g",
-  },
-  14: {
-    name: "檸檬",
-    img: "https://i.imgur.com/biQXoWj.png", // 沿用
-    length: "8.0~9.3 cm",
-    weight: "25 g",
-  },
-  15: {
-    name: "酪梨 (中型)",
-    img: "https://i.imgur.com/ePAmbSg.png", // 沿用
-    length: "9.3~10.3 cm",
-    weight: "50 g",
-  },
-  16: {
-    name: "甜橙/橘子",
-    img: "https://i.imgur.com/x5WqYeC.png", // 沿用
-    length: "10.8~11.6 cm",
-    weight: "80 g",
-  },
-  17: {
-    name: "洋蔥",
-    img: "https://i.imgur.com/vF2kPHL.png", // 沿用
-    length: "11.0~12.0 cm",
-    weight: "100 g",
-  },
-  18: {
-    name: "甜椒",
-    img: `${BASE_URL}fruitimg/sweetpepper.png`, // 沿用
-    length: "12.5~14.0 cm",
-    weight: "150 g",
-  },
-  19: {
-    name: "大芒果",
-    img: "https://i.imgur.com/VTFJjOz.png", // 沿用
-    length: "13.0~15.0 cm",
-    weight: "200 g",
-  },
-  20: {
-    name: "香蕉 (整根)",
-    img: "https://i.imgur.com/QDPuNQb.png", // 沿用
-    length: "14.0~16.0 cm",
-    weight: "260 g",
-  },
-  21: {
-    name: "絲瓜",
-    img: "https://i.imgur.com/WrxHadF.png", // 沿用
-    length: "18.0 cm (頭腳長)",
-    weight: "300 g",
-  },
-  22: {
-    name: "茄子 (長型)",
-    img: "https://i.imgur.com/1m2CNmV.png", // 沿用
-    length: "19.0 cm (頭腳長)",
-    weight: "350 g",
-  },
-  23: {
-    name: "文旦/葡萄柚",
-    img: "https://i.imgur.com/LF0Jk0C.png", // 沿用
-    length: "20.0 cm (頭腳長)",
-    weight: "455 g",
-  },
-  24: {
-    name: "玉米筍 (連殼)",
-    img: "https://i.imgur.com/e7xJngZ.png", // 沿用
-    length: "21.0 cm (頭腳長)",
-    weight: "540 g",
-  },
-  25: {
-    name: "高麗菜 (小顆)",
-    img: "https://i.imgur.com/W0yWS4W.png", // 沿用
-    length: "22.0 cm (頭腳長)",
-    weight: "700 g",
-  },
-  26: {
-    name: "紅蘿蔔 (大根)",
-    img: "https://i.imgur.com/lzCcXqC.png", // 沿用
-    length: "23.0 cm (頭腳長)",
-    weight: "910 g",
-  },
-  27: {
-    name: "花椰菜 (整顆)",
-    img: "https://i.imgur.com/fj0sYw1.png", // 沿用
-    length: "24.0 cm (總身長約34.0 cm)",
-    weight: "1000 g (1 公斤)",
-  },
-  // --- 懷孕後期 (總身長) ---
-  28: {
-    name: "大頭菜",
-    img: "https://i.imgur.com/cTIX3HH.png", // 沿用
-    length: "25.0 cm (總身長約35.0 cm)",
-    weight: "1100 g (1.1 公斤)",
-  },
-  29: {
-    name: "鳳梨 (小顆)",
-    img: "https://i.imgur.com/NYLoj1R.png", // 沿用
-    length: "26.0 cm (總身長約37.0 cm)",
-    weight: "1250 g (1.25 公斤)",
-  },
-  30: {
-    name: "冬瓜 (小段)",
-    img: "https://i.imgur.com/BK0S2xg.png", // 沿用
-    length: "27.0 cm (總身長約38.0 cm)",
-    weight: "1350 g (1.35 公斤)",
-  },
-  31: {
-    name: "釋迦 (大顆)",
-    img: "https://i.imgur.com/0KQEBYd.png", // 沿用
-    length: "28.0 cm (總身長約40.0 cm)",
-    weight: "1600 g (1.6 公斤)",
-  },
-  32: {
-    name: "高麗菜 (大顆)",
-    img: "https://i.imgur.com/DJzvXj7.png", // 沿用
-    length: "29.0 cm (總身長約42.0 cm)",
-    weight: "1800 g (1.8 公斤)",
-  },
-  33: {
-    name: "木瓜 (大顆)",
-    img: "https://i.imgur.com/cpYXTxA.png", // 沿用
-    length: "30.0 cm (總身長約43.0 cm)",
-    weight: "2000 g (2 公斤)",
-  },
-  34: {
-    name: "哈密瓜",
-    img: "https://i.imgur.com/NYLoj1R.png", // 沿用
-    length: "32.0 cm (總身長約44.0 cm)",
-    weight: "2280 g (2.28 公斤)",
-  },
-  35: {
-    name: "甜瓜 (整顆)",
-    img: "https://i.imgur.com/nNWRqsu.png", // 沿用
-    length: "33.0 cm (總身長約45.0 cm)",
-    weight: "2500 g (2.5 公斤)",
-  },
-  36: {
-    name: "小玉西瓜",
-    img: "https://i.imgur.com/BK0S2xg.png", // 沿用
-    length: "34.0 cm (總身長約46.0 cm)",
-    weight: "2750 g (2.75 公斤)",
-  },
-  37: {
-    name: "大白菜 (一顆)",
-    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
-    length: "35.0 cm (總身長約47.0 cm)",
-    weight: "2950 g (2.95 公斤)",
-  },
-  38: {
-    name: "南瓜 (小型)",
-    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
-    length: "35.0 cm (總身長約47.0 cm)",
-    weight: "3100 g (3.1 公斤)",
-  },
-  39: {
-    name: "西瓜 (中型)",
-    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
-    length: "36.0 cm (總身長約48.0 cm)",
-    weight: "3250 g (3.25 公斤)",
-  },
-  40: {
-    name: "西瓜 (大顆)",
-    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
-    length: "37.0~38.0 cm (總身長約48.0~50.0 cm)",
-    weight: "3400 g (3.4 公斤)",
-  },
+  10: {
+    name: "草莓",
+    img: "https://i.imgur.com/5kEjX5O.png",
+    length: "3.1~4.2 cm (頭臀長 CRL)",
+    weight: "5 g",
+  },
+  11: {
+    name: "金桔",
+    img: "https://i.imgur.com/nQxGgUe.png", // 沿用
+    length: "4.4~6.0 cm (頭臀長 CRL)",
+    weight: "8 g",
+  },
+  12: {
+    name: "青芒果",
+    img: `${BASE_URL}fruitimg/greenmango.png`, // 沿用
+    length: "6.1 cm (頭臀長 CRL)",
+    weight: "8~14 g",
+  }, // --- 懷孕中期 (CHL / 總身長) ---
+  13: {
+    name: "百香果",
+    img: "https://i.imgur.com/zKAwx04.png", // 沿用
+    length: "6.5~7.8 cm (頭臀長)", // 13週常仍用CRL
+    weight: "13~20 g",
+  },
+  14: {
+    name: "檸檬",
+    img: "https://i.imgur.com/biQXoWj.png", // 沿用
+    length: "8.0~9.3 cm",
+    weight: "25 g",
+  },
+  15: {
+    name: "酪梨 (中型)",
+    img: "https://i.imgur.com/ePAmbSg.png", // 沿用
+    length: "9.3~10.3 cm",
+    weight: "50 g",
+  },
+  16: {
+    name: "甜橙/橘子",
+    img: "https://i.imgur.com/x5WqYeC.png", // 沿用
+    length: "10.8~11.6 cm",
+    weight: "80 g",
+  },
+  17: {
+    name: "洋蔥",
+    img: "https://i.imgur.com/vF2kPHL.png", // 沿用
+    length: "11.0~12.0 cm",
+    weight: "100 g",
+  },
+  18: {
+    name: "甜椒",
+    img: `${BASE_URL}fruitimg/sweetpepper.png`, // 沿用
+    length: "12.5~14.0 cm",
+    weight: "150 g",
+  },
+  19: {
+    name: "大芒果",
+    img: "https://i.imgur.com/VTFJjOz.png", // 沿用
+    length: "13.0~15.0 cm",
+    weight: "200 g",
+  },
+  20: {
+    name: "香蕉 (整根)",
+    img: "https://i.imgur.com/QDPuNQb.png", // 沿用
+    length: "14.0~16.0 cm",
+    weight: "260 g",
+  },
+  21: {
+    name: "絲瓜",
+    img: "https://i.imgur.com/WrxHadF.png", // 沿用
+    length: "18.0 cm (頭腳長)",
+    weight: "300 g",
+  },
+  22: {
+    name: "茄子 (長型)",
+    img: "https://i.imgur.com/1m2CNmV.png", // 沿用
+    length: "19.0 cm (頭腳長)",
+    weight: "350 g",
+  },
+  23: {
+    name: "文旦/葡萄柚",
+    img: "https://i.imgur.com/LF0Jk0C.png", // 沿用
+    length: "20.0 cm (頭腳長)",
+    weight: "455 g",
+  },
+  24: {
+    name: "玉米筍 (連殼)",
+    img: "https://i.imgur.com/e7xJngZ.png", // 沿用
+    length: "21.0 cm (頭腳長)",
+    weight: "540 g",
+  },
+  25: {
+    name: "高麗菜 (小顆)",
+    img: "https://i.imgur.com/W0yWS4W.png", // 沿用
+    length: "22.0 cm (頭腳長)",
+    weight: "700 g",
+  },
+  26: {
+    name: "紅蘿蔔 (大根)",
+    img: "https://i.imgur.com/lzCcXqC.png", // 沿用
+    length: "23.0 cm (頭腳長)",
+    weight: "910 g",
+  },
+  27: {
+    name: "花椰菜 (整顆)",
+    img: "https://i.imgur.com/fj0sYw1.png", // 沿用
+    length: "24.0 cm (總身長約34.0 cm)",
+    weight: "1000 g (1 公斤)",
+  }, // --- 懷孕後期 (總身長) ---
+  28: {
+    name: "大頭菜",
+    img: "https://i.imgur.com/cTIX3HH.png", // 沿用
+    length: "25.0 cm (總身長約35.0 cm)",
+    weight: "1100 g (1.1 公斤)",
+  },
+  29: {
+    name: "鳳梨 (小顆)",
+    img: "https://i.imgur.com/NYLoj1R.png", // 沿用
+    length: "26.0 cm (總身長約37.0 cm)",
+    weight: "1250 g (1.25 公斤)",
+  },
+  30: {
+    name: "冬瓜 (小段)",
+    img: "https://i.imgur.com/BK0S2xg.png", // 沿用
+    length: "27.0 cm (總身長約38.0 cm)",
+    weight: "1350 g (1.35 公斤)",
+  },
+  31: {
+    name: "釋迦 (大顆)",
+    img: "https://i.imgur.com/0KQEBYd.png", // 沿用
+    length: "28.0 cm (總身長約40.0 cm)",
+    weight: "1600 g (1.6 公斤)",
+  },
+  32: {
+    name: "高麗菜 (大顆)",
+    img: "https://i.imgur.com/DJzvXj7.png", // 沿用
+    length: "29.0 cm (總身長約42.0 cm)",
+    weight: "1800 g (1.8 公斤)",
+  },
+  33: {
+    name: "木瓜 (大顆)",
+    img: "https://i.imgur.com/cpYXTxA.png", // 沿用
+    length: "30.0 cm (總身長約43.0 cm)",
+    weight: "2000 g (2 公斤)",
+  },
+  34: {
+    name: "哈密瓜",
+    img: "https://i.imgur.com/NYLoj1R.png", // 沿用
+    length: "32.0 cm (總身長約44.0 cm)",
+    weight: "2280 g (2.28 公斤)",
+  },
+  35: {
+    name: "甜瓜 (整顆)",
+    img: "https://i.imgur.com/nNWRqsu.png", // 沿用
+    length: "33.0 cm (總身長約45.0 cm)",
+    weight: "2500 g (2.5 公斤)",
+  },
+  36: {
+    name: "小玉西瓜",
+    img: "https://i.imgur.com/BK0S2xg.png", // 沿用
+    length: "34.0 cm (總身長約46.0 cm)",
+    weight: "2750 g (2.75 公斤)",
+  },
+  37: {
+    name: "大白菜 (一顆)",
+    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
+    length: "35.0 cm (總身長約47.0 cm)",
+    weight: "2950 g (2.95 公斤)",
+  },
+  38: {
+    name: "南瓜 (小型)",
+    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
+    length: "35.0 cm (總身長約47.0 cm)",
+    weight: "3100 g (3.1 公斤)",
+  },
+  39: {
+    name: "西瓜 (中型)",
+    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
+    length: "36.0 cm (總身長約48.0 cm)",
+    weight: "3250 g (3.25 公斤)",
+  },
+  40: {
+    name: "西瓜 (大顆)",
+    img: "https://i.imgur.com/Y4wYwUf.png", // 沿用
+    length: "37.0~38.0 cm (總身長約48.0~50.0 cm)",
+    weight: "3400 g (3.4 公斤)",
+  },
 };
 
 // === 2️⃣ 假設資料庫會給週 & 天 ===
@@ -455,7 +453,7 @@ onMounted(() => {
 
 <style scoped>
 .maternal-dashboard {
-  padding: 20px;
+  padding: 10px;
   background-color: #f8f9fa;
   min-height: calc(100vh - 60px);
   display: flex;
@@ -476,7 +474,7 @@ onMounted(() => {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* --- 左側面板樣式 --- */
@@ -493,7 +491,7 @@ onMounted(() => {
 .image-placeholder {
   /* 讓圖、文字和尺寸資訊區塊都能垂直居中 */
   flex-grow: 1;
-  width: fit-content;
+  width: 100%;
   display: flex;
   flex-direction: column; /* 垂直排列子元素 */
   justify-content: center;
@@ -516,7 +514,6 @@ onMounted(() => {
   font-weight: 500;
   color: #333;
   margin-bottom: 10px;
-  
 }
 
 .divider {
@@ -526,7 +523,6 @@ onMounted(() => {
 
 .week-day-text {
   border-bottom: 2px solid #006aa8; /* 底部綠色線條 */
-
 }
 
 /* 寶寶尺寸資訊區塊的樣式 */
@@ -545,7 +541,7 @@ onMounted(() => {
 .size-item {
   margin: 0;
   display: flex;
-  justify-content:flex-start; /* 文字靠左 */
+  justify-content: flex-start; /* 文字靠左 */
   align-items: center;
   width: 100%;
 }
@@ -563,10 +559,8 @@ onMounted(() => {
 
 /* 水果示意圖 */
 .baby-fruit-img {
-  width:fit-content;
-  height:fit-content;
-  object-fit: contain;
-  border-radius: 15px;
+  max-width: 100%;
+  height: auto;
 }
 
 .fruit-text {
@@ -593,8 +587,8 @@ onMounted(() => {
 .calendar-section {
   flex: 1;
   width: 100%;
-  min-width: 0; /* ⬅⬅⬅ 讓手機可縮小 */
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  min-width: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
 }
 
@@ -612,64 +606,52 @@ onMounted(() => {
   font-style: italic;
 }
 
-/* ======================== */
-/* 📱 手機版（寬度 ≤ 480px） */
-/* ======================== */
-@media (max-width: 850px) {
-  .maternal-dashboard {
-    padding: 10px;
-  }
+*,
+*::before,
+*::after {
+  box-sizing: border-box; /* 讓 padding 和 border 包含在 width 內 */
+}
 
+/* =====================================
+   📱 手機版：< 768px  → 上下排列
+===================================== */
+@media (max-width: 768px) {
   .main-content-container {
     flex-direction: column;
     gap: 15px;
   }
 
-  /* 確保左右面板在小螢幕上都佔滿 100% 寬度 */
-  .left-panel {
-    /* 核心調整 */
-    width: 92%; 
-    height: auto; /* 讓高度隨著內容自動調整 */
-    padding: 15px;
-    order: 1; /* 確保左面板在上方 */
-  }
-
+  .left-panel,
   .right-panel {
-    /* 核心調整 */
-    width: 100%; 
+    width: 100%;
+    padding: 15px;
+  }
+
+  .left-panel {
     height: auto;
-    padding: 0; /* right-panel 內層的 calendar-section 已經有 padding */
-    order: 2; /* 確保右面板在下方 */
-  }
-
-  /* 調整左側內容 */
-  .fruit-text {
-    font-size: 16px;
-    margin-top: 10px;
-  }
-
-  .baby-size-info {
-    font-size: 14px;
-    max-width: 90%; /* 在小螢幕上可以稍微放大一點 */
-    width: 90%;
   }
 
   .baby-fruit-img {
-    /* 限制圖片最大寬度，避免過大 */
-    max-width: 90%;
+    width: 130px;
     height: auto;
+  }
+
+  .fruit-text {
+    font-size: 18px;
   }
 
   .pregnancy-tracker {
     font-size: 22px;
-    margin-top: 10px;
-    margin-bottom: 15px;
   }
 
-  /* 調整右側日曆區塊 */
-  .calendar-section {
+  .baby-size-info {
     width: 100%;
-    /* 移除 min-width 限制 */
+    max-width: 100%; /* 讓它不要比 panel 還大 */
+  }
+
+  .calendar-section {
+    padding: 0;
+    box-shadow: none;
   }
 
   .calendar-section > * {
@@ -677,24 +659,65 @@ onMounted(() => {
   }
 }
 
-
-/* -------------------------------------
-   💻 大螢幕/桌機 (1025px 以上)
-------------------------------------- */
-@media (min-width: 1025px) {
-  /* 恢復左右佈局 */
+/* =====================================
+   📟 平板版：768px ~ 1180px → 上下排列
+===================================== */
+@media (min-width: 768px) and (max-width: 1180px) {
   .main-content-container {
-    flex-direction: row;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .left-panel,
+  .right-panel {
+    width: 100%;
   }
 
   .left-panel {
-    height: 600px; /* 恢復桌面固定高度 */
-    width: initial;
+    height: auto;
+    padding: 20px;
   }
 
+  .baby-fruit-img {
+    width: 170px;
+    height: auto;
+  }
+
+  .fruit-text {
+    font-size: 20px;
+  }
+
+  .pregnancy-tracker {
+    font-size: 26px;
+  }
+
+  .calendar-section > * {
+    padding: 15px;
+  }
+}
+
+/* =====================================
+   🖥️ 桌機：>1180px → 左右排列（保持你原本的樣式）
+===================================== */
+@media (min-width: 1180px) {
+  .left-panel,
   .right-panel {
-    height: 600px; /* 讓右側高度與左側對齊 */
-    width: initial;
+    flex: 1 1 0;     
+    max-width: 50%;  
+  }
+
+  .image-placeholder {
+    width: 100%; /* 避免撐爆 panel */
+  }
+
+  .baby-fruit-img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .baby-size-info {
+    width: 100%;
+    max-width: 100%;
   }
 }
 
