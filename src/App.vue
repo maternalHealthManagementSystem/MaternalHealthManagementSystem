@@ -197,10 +197,10 @@
         <span class="close" @click="closeNotificationModal">×</span>
 
         <h2>🔔 近期行程提醒</h2>
-        <p>這裡放你的行程內容...</p>
+        <p>1. 下一次產檢是2025年12月17日（第四次產檢）。<br>　將進行例行檢查項目、第二次超音波檢查。<br>　請攜帶健保卡！</p>
 
         <h2>📝 待辦事項</h2>
-        <p>這裡放你的待辦內容...</p>
+        <p>1. 您尚未閱讀「16~20週」的孕期衛教資訊！<br>　請盡快參閱。</p>
 
         <button class="confirm-btn" @click="closeNotificationModal">
           確認
@@ -347,12 +347,13 @@ watch(
 /*通知數量控制 */
 // 通知列表(未來可從 API / localStorage 取得)
 const notifications = ref([
-  { id: 1, title: "今日產檢提醒", read: false },
-  { id: 2, title: "產後填寫問卷提醒", read: true },
+  { id: 1, title: "今日產檢提醒", read: false }, 
+  { id: 2, title: "產後填寫問卷提醒", read: false }, // <--- 修正：將此項設為未讀
 ]);
 // 計算未讀通知數量
 const notificationCount = computed(() => {
-  return notifications.value.filter((n) => !n.read).length;
+  // 現在 count 會是 2
+  return notifications.value.filter((n) => !n.read).length; 
 });
 
 // 衛教專區是否為當前頁面
