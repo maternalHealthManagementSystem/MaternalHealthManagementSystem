@@ -93,7 +93,7 @@ const formattedInfoList = computed(() => {
       title: '孕期衛教資訊',
       path: '/education/pregnancy',
       desc: [
-        { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：`, link: '' },
+        { text: `目前懷孕第 ${currentWeek.value} 週，以下為推薦內容：`, link: '' },
         ...pregnancyRecommendations
       ]
     },
@@ -102,7 +102,7 @@ const formattedInfoList = computed(() => {
       title: '產檢衛教資訊',
       path: '/education/prenatal-checkup',
       desc: [
-        { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：`, link: '' },
+        { text: `目前懷孕第 ${currentWeek.value} 週，以下為推薦內容：`, link: '' },
         ...prenatalRecommendations,
         ...vaccineRecommendations
       ]
