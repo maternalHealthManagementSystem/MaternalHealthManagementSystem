@@ -58,10 +58,9 @@
 import { ref, computed, onMounted } from "vue";
 
 const isMobile = ref(false);
-isMobile.value = window.innerWidth <= 768;
 // 一進入產檢資料專區就顯示最近一筆產檢報告
 onMounted(() => {
-  if (!isMobile.value && checkupRecords.value.length > 0) {
+  if (checkupRecords.value.length > 0) {
     activeIndex.value = 0; // 預設顯示最新一筆
   }
 });
@@ -125,11 +124,11 @@ const fieldDetails = {
 ----------------------------- */
 const mockData = [
   {
-    date: "2025/10/15",
+    date: "2025/9/24",
     checkupNumber: 1,
     details: {
-      gestational_age_wks: 12,
-      gestational_age_days: 3,
+      gestational_age_wks: 8,
+      gestational_age_days: 1,
       gravida: 1,
       para: 0,
       SA: 0,
@@ -153,11 +152,11 @@ const mockData = [
   },
 
   {
-    date: "2025/11/12",
+    date: "2025/10/24",
     checkupNumber: 2,
     details: {
-      gestational_age_wks: 16,
-      gestational_age_days: 1,
+      gestational_age_wks: 12,
+      gestational_age_days: 2,
       gravida: 1,
       para: 0,
       SA: 0,
@@ -180,11 +179,11 @@ const mockData = [
     },
   },
   {
-    date: "2025/12/16",
+    date: "2025/11/19",
     checkupNumber: 3,
     details: {
-      gestational_age_wks: 20,
-      gestational_age_days: 1,
+      gestational_age_wks: 16,
+      gestational_age_days: 0,
       gravida: 1,
       para: 0,
       SA: 0,
@@ -394,62 +393,109 @@ td {
 
 /* RWD */
 
-/* 手機：左側列表全寬，右側改為滑入式抽屜 */
 @media (max-width: 768px) {
-  .dashboard-container {
-    flex-direction: column;
-    margin: 10px auto;
-    padding: 0 10px;
-  }
+    /* -------------------------------------- */
+    /* 📌 容器設定 (維持垂直堆疊) */
+    /* -------------------------------------- */
+    .dashboard-container {
+        flex-direction: column;
+        margin: 0 auto;
+        padding: 0 0;
+    }
+    
+    .dashboard-container.expanded {
+        /* 在手機模式下，expanded 不再需要調整 justify-content */
+        justify-content: initial; 
+    }
 
-  .checkup-list-panel {
-    width: 100%;
-    margin-bottom: 15px;
-  }
+    /* -------------------------------------- */
+    /* 📌 列表面板 - 橫向滾動 & 頂部固定 (手機置頂) */
+    /* -------------------------------------- */
+    .checkup-list-panel {
+        width: 100%;
+        margin-bottom: 0;
+        border-radius: 0;
+        border: none;
+        border-bottom: 1px solid #ddd;
+        padding: 8px 0;
+        overflow-x: auto;
+        white-space: nowrap;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        
+        /* 🔥 確保列表固定在頂部 (sticky 效果很好，但不需要 z-index 這麼高) */
+        position: sticky; 
+        top: 0; 
+        z-index: 10; /* 設一個中等 z-index */
+        background: #fafafa;
+    }
+    
+    .checkup-list-panel.centered {
+        margin: 0;
+    }
 
-  /* 右側報告改為覆蓋式 */
-  .report-area {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100vh;
-    background: #ffffff;
-    padding: 0;
-    z-index: 999;
-    overflow-y: auto;
+    .checkup-item {
+        display: inline-block;
+        white-space: normal;
+        border-left: none;
+        border-bottom: 3px solid transparent;
+        padding: 8px 12px;
+        margin: 0 4px;
+    }
 
-    /* 從右邊滑入 */
-    transform: translateX(100%);
-    transition: transform 0.35s ease;
-  }
+    .checkup-item.is-active {
+        border-left: none;
+        border-bottom: 3px solid #1677ff;
+        background-color: transparent;
+    }
+    
+    .indicator-icon {
+        display: none;
+    }
 
-  /* 有 activeRecord 時滑進來 */
-  .dashboard-container.expanded .report-area {
-    transform: translateX(0);
-  }
+    .item-text {
+        text-decoration: none;
+        font-size: 14px;
+    }
+    
+    /* -------------------------------------- */
+    /* 📌 右側報告 - 內嵌顯示 (不再覆蓋) */
+    /* -------------------------------------- */
+    .report-area {
+        /* 🔥 移除所有固定定位和全屏樣式 */
+        position: relative; /* 改為相對定位 */
+        flex: none; /* 讓它根據內容佔用空間 */
+        width: 100%; /* 佔滿下方寬度 */
+        padding: 10px; /* 增加與左右兩側的空間 */
+        z-index: 5; /* 低於列表面板 */
+        
+        /* 由於報告是內嵌在流式佈局中，不再需要 transform: translateX(100%) */
+        /* 移除 padding-left: 25px; 讓它貼齊手機邊緣 */
+    }
 
-  .report-card {
-    border-radius: 0;
-    height: auto;
-    min-height: 100vh;
-    padding: 18px;
-  }
+    .report-card {
+        border-radius: 8px; /* 恢復圓角 */
+        min-height: auto; /* 移除 min-height: 100vh */
+        padding: 15px; /* 調整內邊距 */
+    }
+    
+    .report-header {
+        margin-bottom: 10px;
+    }
 
-  /* 關閉按鈕放大 */
-  .close-btn {
-    font-size: 2rem;
-    padding: 4px 10px;
-  }
+    /* 隱藏關閉按鈕（因為不再是抽屜模式，點擊清單項目即可切換或關閉） */
+    .close-btn {
+        display: none; 
+    }
 
-  /* 📌 表格可以左右滑 */
-  .report-table-container {
-    overflow-x: auto;
-  }
+    /* 表格可以左右滑 */
+    .report-table-container {
+        overflow-x: auto;
+    }
 
-  table {
-    min-width: 500px;
-  }
+    table {
+        min-width: 500px;
+        font-size: 14px;
+    }
 }
 
 /* 平板：微調左右欄位比例 */
