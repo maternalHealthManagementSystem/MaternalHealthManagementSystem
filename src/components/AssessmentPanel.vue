@@ -67,6 +67,7 @@ defineProps({
   flex-grow: 1;
   overflow-y: auto;
   padding-right: 10px;
+  padding-left: 10px;
   max-height: 600px;
   /* 自訂捲軸 */
   scrollbar-width: thin;
