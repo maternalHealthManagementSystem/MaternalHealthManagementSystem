@@ -1,205 +1,271 @@
-// src/stores/calendarStore.js
+//stores/calendarStore.js
 
 import { defineStore } from 'pinia';
 import dayjs from 'dayjs';
 
 const INITIAL_EVENTS = [
-    {
+  {
     id: 1,
-    date: '2025-11-30',
-    startDate: '2025-11-30',
-    title: '第一次產檢',
+    date: '2025-09-24',
+    startDate: '2025-09-24',
+    title: '第一次產檢（第8週）',
     type: 'checkup',
     startTime: '09:00',
     endTime: '10:00',
     location: '台中榮總',
-    description: '確認懷孕週數、抽血檢驗、超音波檢查'
+    description: '例行檢查、問診、尿液檢查、首次超音波、流產徵兆與營養衛教'
   },
   {
     id: 2,
-    date: '2025-12-07',
-    startDate: '2025-12-07',
-    title: '第二次產檢',
+    date: '2025-10-22',
+    startDate: '2025-10-22',
+    title: '第二次產檢（第12週）',
     type: 'checkup',
     startTime: '09:00',
     endTime: '10:00',
     location: '台中榮總',
-    description: '例行產檢、胎心音監測'
+    description: '問診、全身檢查、抽血、梅毒檢驗、尿液檢查、德國麻疹抗體檢查'
   },
   {
     id: 3,
-    date: '2025-12-21',
-    startDate: '2025-12-21',
-    title: '第三次產檢',
+    date: '2025-11-19',
+    startDate: '2025-11-19',
+    title: '第三次產檢（第16週）',
     type: 'checkup',
     startTime: '09:00',
     endTime: '10:00',
     location: '台中榮總',
-    description: '唐氏症篩檢、超音波檢查'
+    description: '例行檢查、早產防治衛教'
   },
   {
     id: 4,
-    date: '2026-01-04',
-    startDate: '2026-01-04',
-    title: '第四次產檢',
+    date: '2025-12-17',
+    startDate: '2025-12-17',
+    title: '第四次產檢（第20週）',
     type: 'checkup',
     startTime: '09:00',
     endTime: '10:00',
     location: '台中榮總',
-    description: '例行產檢、胎兒發育監測'
+    description: '例行檢查、第二次超音波、早產防治衛教'
   },
   {
     id: 5,
-    date: '2026-01-18',
-    startDate: '2026-01-18',
-    title: '第五次產檢',
+    date: '2026-01-14',
+    startDate: '2026-01-14',
+    title: '第五次產檢（第24週）',
     type: 'checkup',
     startTime: '09:00',
     endTime: '10:00',
     location: '台中榮總',
-    description: '妊娠糖尿病篩檢、血壓監測'
+    description: '例行檢查、血液常規、妊娠糖尿病篩檢、營養與早產徵兆衛教'
   },
   {
     id: 6,
-    date: '2026-02-01',
-    startDate: '2026-02-01',
-    title: '第六次產檢',
+    date: '2026-02-11',
+    startDate: '2026-02-11',
+    title: '第六次產檢（第28週）',
     type: 'checkup',
     startTime: '09:00',
     endTime: '10:00',
     location: '台中榮總',
-    description: '例行產檢、胎動與羊水量檢查'
+    description: '例行檢查'
   },
   {
     id: 7,
-    date: '2026-02-15',
-    startDate: '2026-02-15',
-    title: '第七次產檢',
+    date: '2026-02-25',
+    startDate: '2026-02-25',
+    title: '第七次產檢（第30週）',
     type: 'checkup',
     startTime: '09:00',
     endTime: '10:00',
     location: '台中榮總',
-    description: '超音波檢查、胎兒位置確認'
+    description: '例行檢查'
   },
   {
     id: 8,
-    date: '2026-03-01',
-    startDate: '2026-03-01',
-    title: '第八次產檢',
+    date: '2026-03-11',
+    startDate: '2026-03-11',
+    title: '第八次產檢（第32週）',
     type: 'checkup',
     startTime: '09:00',
-    endTime: '10:00',
+    endTimeTime: '10:00',
     location: '台中榮總',
-    description: '例行產檢、胎心音監測'
+    description: '例行檢查、第三次超音波、VDRL檢驗、必要時做愛滋病毒檢查'
   },
   {
     id: 9,
-    date: '2026-03-15',
-    startDate: '2026-03-15',
-    title: '第九次產檢',
+    date: '2026-03-25',
+    startDate: '2026-03-25',
+    title: '第九次產檢（第34週）',
     type: 'checkup',
     startTime: '09:00',
-    endTime: '10:00',
+    endTimeTime: '10:00',
     location: '台中榮總',
-    description: '胎兒發育監測、血壓與體重檢查'
+    description: '例行檢查'
   },
   {
     id: 10,
-    date: '2026-03-29',
-    startDate: '2026-03-29',
-    title: '第十次產檢',
+    date: '2026-04-08',
+    startDate: '2026-04-08',
+    title: '第十次產檢（第36週）',
     type: 'checkup',
     startTime: '09:00',
-    endTime: '10:00',
+    endTimeTime: '10:00',
     location: '台中榮總',
-    description: '例行產檢、胎兒位置與羊水量檢查'
+    description: '例行檢查、乙型鏈球菌（GBS）篩檢'
   },
   {
     id: 11,
-    date: '2026-04-05',
-    startDate: '2026-04-05',
-    title: '第十一至十四次產檢',
+    date: '2026-04-15',
+    startDate: '2026-04-15',
+    title: '第十一週產檢（第37週）',
     type: 'checkup',
     startTime: '09:00',
-    endTime: '10:00',
+    endTimeTime: '10:00',
     location: '台中榮總',
-    description: '每週一次例行產檢，監測胎兒狀況直到臨盆'
+    description: '例行檢查'
   },
   {
     id: 12,
-    date: '2026-03-20',
-    startDate: '2026-03-20',
-    title: '待產包準備提醒',
-    type: 'reminder',
-    startTime: '20:00',
-    endTime: '21:00',
-    location: '家中',
-    description: '準備待產包：證件、換洗衣物、嬰兒用品'
+    date: '2026-04-22',
+    startDate: '2026-04-22',
+    title: '第十二次產檢（第38週）',
+    type: 'checkup',
+    startTime: '09:00',
+    endTimeTime: '10:00',
+    location: '台中榮總',
+    description: '例行檢查'
   },
   {
     id: 13,
-    date: '2025-12-05',
-    startDate: '2025-12-05',
-    title: '產檢後運動提醒',
-    type: 'reminder',
-    startTime: '18:00',
-    endTime: '18:30',
-    location: '社區公園',
-    description: '輕鬆散步 30 分鐘，促進血液循環'
+    date: '2026-04-29',
+    startDate: '2026-04-29',
+    title: '第十三次產檢（第39週）',
+    type: 'checkup',
+    startTime: '09:00',
+    endTimeTime: '10:00',
+    location: '台中榮總',
+    description: '例行檢查'
+  },
+  {
+    id: 14,
+    date: '2026-05-05',
+    startDate: '2026-05-05',
+    title: '第十四次產檢（第40週）',
+    type: 'checkup',
+    startTime: '09:00',
+    endTimeTime: '10:00',
+    location: '台中榮總',
+    description: '例行檢查，胎兒狀況確認，生產準備'
+  },
+  {
+    id: 15,
+    date: '2026-05-05',
+    startDate: '2026-05-05',
+    title: '預產期!!!',
+    type: 'other',
+    startTime: '00:00',
+    endTimeTime: '24:00',
+    location: '台中榮總',
+    description: '準備跟寶寶見面啦!!!'
   }
 ];
 
-
+const BASE_URL = import.meta.env.BASE_URL;
 const INITIAL_DIARIES = [
-    {
-    id: 201,
-    date: '2025-11-29',
-    title: '美食冒險',
-    content: '今天突然想吃酸酸甜甜的水果，切了鳳梨和奇異果，滿足了味蕾。',
-    image: "public/images/鳳梨奇異果.jpg",
-    createdAt: '2025-11-29T12:45:00Z',
+  {
+    id: 301,
+    date: '2025-09-25',
+    title: '第一次聽到心跳',
+    content: '昨天做了第一次產檢，看到小小豆子在跳動，還聽到了心跳聲，瞬間覺得好神奇。',
+    image: `${BASE_URL}images/Ultrasoundsmall.jpg`,
+    createdAt: '2025-09-25T10:20:00Z',
     updatedAt: ''
   },
   {
-    id: 202,
-    date: '2025-11-30',
-    title: '產檢的安心感',
-    content: '今天去產檢，聽到寶寶的心跳聲，覺得很安心，醫生說一切正常。',
-    image: "public/images/超音波小月份.jpg",
-    
-    updatedAt: '2025-11-30T12:45:00Z'
-  },
-  {
-    id: 203,
-    date: '2025-12-01',
-    title: '孕婦的購物日',
-    content: '今天去買了幾件孕婦裝，穿起來舒服又好看，心情大好。',
-    image: "public/images/購物.jpg",
-    createdAt: '2025-12-01T18:20:00Z',
+    id: 302,
+    date: '2025-10-03',
+    title: '開始有點孕吐了',
+    content: '最近早上起床都有點反胃，但喝溫水後好很多，希望之後能慢慢改善。',
+    image: `${BASE_URL}images/hotwater.png`,
+    createdAt: '2025-10-03T08:45:00Z',
     updatedAt: ''
   },
   {
-    id: 204,
-    date: '2025-12-03',
+    id: 303,
+    date: '2025-10-20',
+    title: '想吃清爽的東西',
+    content: '今天突然超想吃涼麵和水果，可能是最近胃口變清淡了。',
+    image: `${BASE_URL}images/noddle.png`,
+    createdAt: '2025-10-20T14:20:00Z',
+    updatedAt: ''
+  },
+  // {
+  //   id: 304,
+  //   date: '2025-10-22',
+  //   title: '第二次產檢',
+  //   content: '今天做了抽血和例行檢查，醫生說寶寶發育正常，聽到覺得安心多了。',
+  //   image: `${BASE_URL}`,
+  //   createdAt: '2025-10-22T13:00:00Z',
+  //   updatedAt: '2025-10-22T13:08:00Z'
+  // },
+  {
+    id: 305,
+    date: '2025-11-05',
     title: '甜點時光',
     content: '今天做了黑糖紅豆湯，暖暖的甜味讓心情也變得溫柔。',
-    image: "public/images/黑糖紅豆湯.jpg",
-    createdAt: '2025-12-03T16:00:00Z',
+    image: `${BASE_URL}images/sweetsoup.jpg`,
+    createdAt: '2025-11-05T09:30:00Z',
     updatedAt: ''
   },
   {
-    id: 205,
-    date: '2025-12-05',
-    title: '瑜伽練習',
-    content: '跟著影片做孕婦瑜伽，伸展身體的同時覺得很放鬆，呼吸也更順暢。',
-    image: "public/images/孕婦瑜伽.jpg",
-    createdAt: '2025-12-05T19:00:00Z',
+    id: 306,
+    date: '2025-11-12',
+    title: '午睡變得很重要',
+    content: '最近一下班就覺得超累，每天都要小睡一下才有精神恢復。',
+    image: `${BASE_URL}images/nap.png`,
+    createdAt: '2025-11-12T16:10:00Z',
+    updatedAt: ''
+  },
+  {
+    id: 307,
+    date: '2025-11-19',
+    title: '第三次產檢，小寶貝平安',
+    content: '今天是16週產檢，雖然肚子還不大，但超音波上寶寶動來動去，好可愛！',
+    image: `${BASE_URL}images/Ultrasound16.jpg`,
+    createdAt: '2025-11-19T11:20:00Z',
+    updatedAt: '2025-11-19T12:20:00Z'
+  },
+  // {
+  //   id: 308,
+  //   date: '2025-12-01',
+  //   title: '感受到第一次胎動？',
+  //   content: '今天肚子裡突然有種小泡泡跳動的感覺，不知道是不是胎動，但心裡莫名期待。',
+  //   image: `${BASE_URL}`,
+  //   createdAt: '2025-12-01T20:00:00Z',
+  //   updatedAt: ''
+  // },
+  {
+    id: 309,
+    date: '2025-12-17',
+    title: '20週產檢大超音波',
+    content: '今天做了第二次大超音波，寶寶手腳都很清楚，醫生說成長得剛剛好！',
+    image: `${BASE_URL}images/Ultrasound.jpg`,
+    createdAt: '2025-12-17T12:30:00Z',
+    updatedAt: '2025-12-17T14:30:00Z'
+  },
+  {
+    id: 310,
+    date: '2025-12-28',
+    title: '肚子明顯圓圓了',
+    content: '最近穿衣服明顯能看出孕肚，開始覺得自己像個準媽媽了～',
+    image: `${BASE_URL}images/pregnantbelly_big.png`,
+    createdAt: '2025-12-28T10:00:00Z',
     updatedAt: ''
   }
 ];
 
-// 計算下一個可用的 ID (如果沒有後端)
-// 這是為了在新增資料時，確保 ID 不會與現有資料衝突
+
 const getNextEventId = (events) => {
     const maxId = events.reduce((max, event) => Math.max(max, event.id), 0);
     return maxId + 1;
