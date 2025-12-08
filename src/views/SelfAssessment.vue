@@ -46,7 +46,7 @@ const menuItems = ref([
   width: 65%;
   max-width: 1400px; /* 增加最大寬度限制，避免在超大螢幕太寬 */
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 40px 20px 155px;
   box-sizing: border-box;
 }
 
