@@ -124,11 +124,11 @@ const fieldDetails = {
 ----------------------------- */
 const mockData = [
   {
-    date: "2025/10/15",
+    date: "2025/9/24",
     checkupNumber: 1,
     details: {
-      gestational_age_wks: 12,
-      gestational_age_days: 3,
+      gestational_age_wks: 8,
+      gestational_age_days: 1,
       gravida: 1,
       para: 0,
       SA: 0,
@@ -152,11 +152,11 @@ const mockData = [
   },
 
   {
-    date: "2025/11/12",
+    date: "2025/10/24",
     checkupNumber: 2,
     details: {
-      gestational_age_wks: 16,
-      gestational_age_days: 1,
+      gestational_age_wks: 12,
+      gestational_age_days: 2,
       gravida: 1,
       para: 0,
       SA: 0,
@@ -179,11 +179,11 @@ const mockData = [
     },
   },
   {
-    date: "2025/12/16",
+    date: "2025/11/19",
     checkupNumber: 3,
     details: {
-      gestational_age_wks: 20,
-      gestational_age_days: 1,
+      gestational_age_wks: 16,
+      gestational_age_days: 0,
       gravida: 1,
       para: 0,
       SA: 0,
