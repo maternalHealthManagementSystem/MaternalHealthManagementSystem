@@ -291,8 +291,8 @@ const babySizeMap = {
     weight: "100 g",
   },
   18: {
-    name: "甜椒 (大型)",
-    img: "https://i.imgur.com/4p7ct8b.png", // 沿用
+    name: "甜椒",
+    img: `${BASE_URL}fruitimg/sweetpepper.png`, // 沿用
     length: "12.5~14.0 cm",
     weight: "150 g",
   },
