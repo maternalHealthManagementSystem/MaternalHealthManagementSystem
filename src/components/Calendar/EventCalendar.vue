@@ -481,6 +481,7 @@ onMounted(() => {
 .day-cell {
   background: white;
   min-height: 90px;
+  max-width: 90px;
   padding: 6px;
   cursor: pointer;
   border-bottom: 1px solid #e0e0e0;
@@ -588,7 +589,7 @@ onMounted(() => {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* iPhne 12 Pro   */
+/* iPhone 12 Pro   */
 @media (min-width: 350px) and (max-width: 400px) {
   .calendar-container {
     min-width: 100%;
@@ -616,7 +617,7 @@ onMounted(() => {
   }
 }
 
-/* iPhne 14 Pro Max   */
+/* iPhone 14 Pro Max   */
 @media (min-width: 400px) and (max-width: 450px) {
   .calendar-container {
     min-width: 100%;
