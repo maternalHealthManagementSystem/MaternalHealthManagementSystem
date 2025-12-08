@@ -219,8 +219,9 @@ const sendsms = () => {
     // 驗證成功時，可以清除計時器
     if (timer) clearInterval(timer); 
 
-    localStorage.setItem("loggedIn", "true");
-    localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
+    localStorage.setItem("loggedIn", "true"); // 標記已登入
+    localStorage.setItem("userProfile", JSON.stringify(demoUser.profile)); // 儲存使用者資料
+    localStorage.setItem("justLoggedIn", "true"); // 標記剛登入狀態
     router.push("/home");
 
   } else {
