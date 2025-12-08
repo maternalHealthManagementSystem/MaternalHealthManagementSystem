@@ -5,8 +5,8 @@
     "items": [
       { "title": "各孕期不適症狀處理", "link": "https://ihealth.vghtc.gov.tw/media/443", "checked": true },
       { "title": "孕期中出血的介紹", "link": "https://ihealth.vghtc.gov.tw/media/451", "checked": true },
-      { "title": "心臟病孕婦自我照顧", "link": "https://ihealth.vghtc.gov.tw/media/502", "checked": false },
-      { "title": "認識早期破水", "link": "https://ihealth.vghtc.gov.tw/media/504", "checked": false }
+      { "title": "心臟病孕婦自我照顧", "link": "https://ihealth.vghtc.gov.tw/media/502", "checked": true },
+      { "title": "認識早期破水", "link": "https://ihealth.vghtc.gov.tw/media/504", "checked": true }
     ]
   },
   {

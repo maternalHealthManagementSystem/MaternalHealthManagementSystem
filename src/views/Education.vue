@@ -32,10 +32,10 @@ const infoList = ref([
     path: '/education/pregnancy',
     desc: [
       // { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：` },
-      { text: '各孕期不適症狀處理', link: 'https://ihealth.vghtc.gov.tw/media/443' },
-      { text: '孕期中出血的介紹', link: 'https://ihealth.vghtc.gov.tw/media/451' },
-      { text: '心臟病孕婦自我照顧', link: 'https://ihealth.vghtc.gov.tw/media/502' },
-      { text: '認識早期破水', link: 'https://ihealth.vghtc.gov.tw/media/504' }
+      { text: `目前懷孕第18週，以下為推薦內容：` },
+      { text: '早產防治、須立即就醫之危險徵兆', link: 'https://ihealth.vghtc.gov.tw/media/605' },
+      { text: '哺餵母乳衛教', link: 'https://ihealth.vghtc.gov.tw/media/648' },
+      { text: '認識妊娠高血壓', link: 'https://ihealth.vghtc.gov.tw/media/449' }
     ]
   },
   {
@@ -44,10 +44,24 @@ const infoList = ref([
     path: '/education/prenatal-checkup',
     desc: [
       // { text: `目前懷孕第 ${currentWeek.value} 週，推薦內容：` },
-      { 
-        text: '超音波檢查、血液常規、尿液常規、愛滋病篩檢、B型肝炎檢查...', 
-        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=4a463034-b9a0-4709-a5d5-01b9c76c8871&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
+      { text: `目前懷孕第18週，以下為推薦內容：` },
+      { text: '早期子癇前症篩檢 + 子宮動脈血流量測', 
+        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=6136e0c5-61e2-4e29-9254-65c942d2ca82&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
+      },
+      { text: '第一孕期母血唐氏症篩檢', 
+        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=610672ce-8b46-472e-87fd-a2d5b670a5b0&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
+      },
+      { text: '非侵入性染色體篩檢NIPS', 
+        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=03d10c24-5549-42b9-81ec-11116af79a42&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
+      },
+      { text: '第二孕期母血唐氏症篩檢', 
+        link: 'https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=617d2450-e735-4925-a510-329d2967eccc&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1' 
+      },
+      { text: '羊膜穿刺(需預約)、羊水晶片檢測(Array CGH)', 
+        link: 'https://www.vghtc.gov.tw/UnitPage/UnitContentView?WebMenuID=4fb5d8c2-3896-4353-8507-836bb762f0f9&UnitID=adaf167e-fe3e-4956-8ba5-6571087eed85&UnitDefaultTemplate=1' 
       }
+
+
     ]
   }
 ]);

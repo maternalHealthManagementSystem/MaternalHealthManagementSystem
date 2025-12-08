@@ -174,8 +174,8 @@ h2 {
 }
 
 .section-title-box h3 {
-  font-size: 20px;
-  color: #5a6b7c;
+  color: #2c3e50; 
+  font-weight: bold;
   margin: 0 0 5px 0;
   font-weight: 500;
 }
