@@ -271,6 +271,24 @@ watch(
   }
 );
 
+/* 自動彈出首頁通知（僅剛登入後一次） */
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath === "/home") {
+      const hasShown = localStorage.getItem("homeNotificationShown");
+
+      // 第一次進入首頁 → 自動開啟通知視窗
+      if (!hasShown) {
+        showNotificationModal.value = true;
+        localStorage.setItem("homeNotificationShown", "true");
+      }
+    }
+  },
+  { immediate: true }
+);
+
+
 // 認證狀態
 const showLogoutConfirm = ref(false);
 
@@ -328,6 +346,7 @@ const confirmLogout = () => {
 
   localStorage.removeItem("loggedIn");
   localStorage.removeItem("currentUser");
+  localStorage.removeItem("homeNotificationShown");
 
   router.push("/");
 };
