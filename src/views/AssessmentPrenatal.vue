@@ -1,7 +1,8 @@
 <template>
     <AssessmentPanel title="孕婦產前健康照護衛教指導紀錄表" subtitle="( 適用週數：第 29 週 ~ 第 40 週 )">
+        <div class="step-indicator">步驟 {{ currentStep }} / {{ totalSteps }}</div>
         <AssessmentProgressBar :completionRate="completionRate" />
-        <div class="form-card">
+        <div v-show="currentStep === 1" class="form-card">
             <div class="card-label">基本資料</div>
             <div class="card-body">
                 <div class="row">
@@ -40,7 +41,7 @@
             </div>
         </div>
 
-        <div class="form-card">
+        <div v-show="currentStep === 2" class="form-card">
             <div class="card-label">健康行為</div>
             <div class="card-body">
             
@@ -111,7 +112,7 @@
             </div>
         </div>
 
-        <div class="form-card">
+        <div v-show="currentStep === 3" class="form-card">
             <div class="card-label">孕產婦醫療史</div>
             <div class="card-body">
                 <p class="q-title">過去是否有相關孕產醫療史？</p>
@@ -151,12 +152,12 @@
             </div>
         </div>
 
-        <div class="form-card">
+        <div v-show="currentStep === 4" class="form-card">
             <div class="card-label">衛教指導</div>
             <div class="card-body">
-                <p class="hint-text">請準媽媽自我評估是否清楚下列指導重點：</p>
+                <p class="hint-text">請準媽媽自我評估是否清楚下列指導重點(第 1~3 大題)：</p>
                 
-                <div v-for="(topic, index) in educationTopics" :key="index" class="edu-topic">
+                <div v-for="(topic, index) in educationTopics.slice(0, 3)" :key="topic.title" class="edu-topic">
                     <h4 class="topic-title">{{ topic.title }}</h4>
                     <div class="topic-items">
                         <div v-for="(point, pIndex) in topic.points" :key="pIndex" class="edu-item-row">
@@ -189,7 +190,57 @@
             </div>
         </div>
 
-        <FormFooter @submit="submitForm" />
+        <div v-show="currentStep === 5" class="form-card">
+            <div class="card-label">衛教指導</div>
+            <div class="card-body">
+                <p class="hint-text">請準媽媽自我評估是否清楚下列指導重點 (第 4~6 大題)：</p>
+                
+                <div v-for="(topic, index) in educationTopics.slice(3)" :key="topic.title" class="edu-topic">
+                <h4 class="topic-title">{{ topic.title }}</h4>
+                <div class="topic-items">
+                    <div v-for="(point, pIndex) in topic.points" :key="pIndex" class="edu-item-row">
+                    <p class="edu-text">{{ point.text }}</p>
+                    <div class="edu-radio-group">
+                        <label class="radio-label">
+                        <input type="radio" :name="`edu-${index + 3}-${pIndex}`" v-model="point.value" :value="1"> 清楚
+                        </label>
+                        <label class="radio-label">
+                        <input type="radio" :name="`edu-${index + 3}-${pIndex}`" v-model="point.value" :value="0"> 不清楚
+                        </label>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- <FormFooter @submit="submitForm" /> -->
+        <div class="navigation-buttons">
+            <button 
+                v-if="currentStep > 1" 
+                class="nav-btn btn-prev" 
+                @click="prevStep"
+            >
+                上一頁
+            </button>
+            
+            <button 
+                v-if="currentStep < totalSteps" 
+                class="nav-btn btn-next" 
+                @click="nextStep"
+            >
+                下一頁
+            </button>
+            
+            <button 
+                v-if="currentStep === totalSteps" 
+                class="nav-btn btn-submit" 
+                @click="submitForm"
+            >
+                送出表單
+            </button>
+        </div>
+
         <div v-if="showSuccessModal" class="modal-overlay">
         
             <div class="modal-box">
@@ -205,12 +256,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router'; 
 import successImage from '../assets/success.png';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
-import FormFooter from '../components/FormFooter.vue';
+// import FormFooter from '../components/FormFooter.vue';
 // 引入 JSON 資料
 import prenatalQuestions from '../assets/data/prenatalQuestions.json'; 
 // 使用 JSON 資料初始化變數
@@ -219,6 +270,106 @@ const seriousComplications = prenatalQuestions.seriousComplications;
 // 注意：因為 educationTopics 裡的 value 需要響應式 (v-model 綁定)
 // 所以建議用 reactive 包起來，或是深拷貝一份
 const educationTopics = reactive(JSON.parse(JSON.stringify(prenatalQuestions.educationTopics)));
+// 定義步驟狀態
+const currentStep = ref(1);
+const totalSteps = 5;
+// 2.下一頁與上一頁的函式
+const nextStep = () => {
+  // 先驗證當前頁面有沒有填寫完整
+  if (validateCurrentStep()) {
+    currentStep.value++;
+    window.scrollTo({ top: 0, behavior: 'smooth' }); // 跳頁後滾回頂部
+  }
+};
+// 3. 分頁驗證邏輯 (將原本 submitForm 的檢查拆開)
+const validateCurrentStep = () => {
+  if (currentStep.value === 1) {
+    // 檢查基本資料
+    const basicFields = ['name', 'idNumber', 'birthDate', 'phone', 'address'];
+    const missing = basicFields.some(field => !form[field] || form[field].trim() === '');
+    if (missing) {
+      alert('請填寫完整基本資料');
+      return false;
+    }
+  } else if (currentStep.value === 2) {
+    // 檢查健康行為
+    const behaviorFields = ['smoking', 'secondhandSmoke', 'drinking', 'betelNut', 'drugs', 'depression1', 'depression2'];
+    const unfinished = behaviorFields.some(field => form.behavior[field] === null);
+    if (unfinished) {
+      alert('請完成所有健康行為與憂鬱檢測問題');
+      return false;
+    }
+  } else if (currentStep.value === 3) {
+    // 檢查醫療史
+    if (form.medicalHistory.hasHistory === null) {
+      alert('請選擇是否有孕產婦醫療史');
+      return false;
+    }
+  }
+  // 步驟 4 的驗證 (衛教指導前半部)
+  else if (currentStep.value === 4) {
+    // 取出前 3 個主題檢查
+    const part1Topics = educationTopics.slice(0, 3);
+    let allAnswered = true;
+    
+    // 檢查每一個題目是否都有選填 (value !== null)
+    part1Topics.forEach(topic => {
+      topic.points.forEach(point => {
+        if (point.value === null) allAnswered = false;
+      });
+    });
+
+    if (!allAnswered) {
+      alert('請完成本頁所有的衛教指導評估題目');
+      return false;
+    }
+  }
+  
+  return true;
+};
+
+const prevStep = () => {
+  if (currentStep.value > 1) {
+    currentStep.value--;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+onMounted(() => {
+  const savedProfileStr = localStorage.getItem("userProfile");
+  
+  if (savedProfileStr) {
+    try {
+      const profile = JSON.parse(savedProfileStr);
+      
+      console.log("讀取到的資料:", profile); // 可以用F12確認資料有沒有進來
+
+      // 1. 帶入姓名
+      if (profile.name) form.name = profile.name;
+      
+      // 2. 帶入身分證 (修正 Login.vue 後這裡才會有值)
+      if (profile.idNumber) form.idNumber = profile.idNumber;
+      
+      // 3. 帶入出生日期 (🔥重點修正：格式轉換)
+      if (profile.dob) {
+        // 將 "1990/05/15" 轉換為 "1990-05-15"
+        // <input type="date"> 只接受 "YYYY-MM-DD"
+        form.birthDate = profile.dob.replace(/\//g, '-');
+      }
+      
+      // 4. 帶入手機
+      if (profile.mobile) form.phone = profile.mobile;
+      
+      // 5. 帶入市話
+      if (profile.landline) form.homePhone = profile.landline;
+      
+      // 6. 帶入地址
+      if (profile.address) form.address = profile.address;
+
+    } catch (e) {
+      console.error("解析使用者資料失敗:", e);
+    }
+  }
+});
 
 // 表單資料模型
 const form = reactive({
@@ -342,6 +493,64 @@ const closeModal = () => {
 </script>
 
 <style scoped>
+/* 步驟指示文字 */
+.step-indicator {
+  text-align: right;
+  color: #666;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* 導航按鈕區塊 */
+.navigation-buttons {
+  display: flex;
+  justify-content: center; /* 按鈕置中 */
+  gap: 20px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+/* 按鈕共用樣式 */
+.nav-btn {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 50px; /* 圓角 */
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* 上一頁按鈕 - 灰色 */
+.btn-prev {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+.btn-prev:hover {
+  background-color: #cbd5e0;
+}
+
+/* 下一頁按鈕 - 藍色 */
+.btn-next {
+  background-color: #3498db;
+  color: white;
+}
+.btn-next:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+/* 送出按鈕 - 綠色 */
+.btn-submit {
+  background-color: #3498db;
+  color: white;
+}
+.btn-submit:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
 /* Form Card */
 .form-card {
   background-color: white;
@@ -622,6 +831,13 @@ const closeModal = () => {
 
 /* --- 手機版 (iPhone 12/14 Pro Max, 768px 以下) --- */
 @media (max-width: 768px) {
+  .navigation-buttons {
+    flex-direction: column-reverse; /* 手機上把上一頁放在下面，比較好按 */
+    gap: 15px;
+  }
+  .nav-btn {
+    width: 100%; /* 按鈕滿寬 */
+  }
   /* 1. 卡片佈局重組：左標題變上標題 */
   .form-card {
     flex-direction: column; /* 改為垂直排列 */

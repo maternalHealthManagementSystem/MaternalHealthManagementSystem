@@ -220,7 +220,16 @@ const sendsms = () => {
     if (timer) clearInterval(timer); 
 
     localStorage.setItem("loggedIn", "true"); // 標記已登入
-    localStorage.setItem("userProfile", JSON.stringify(demoUser.profile)); // 儲存使用者資料
+    // 把身分證字號(idNumber)合併進去 profile 一起存
+    const finalProfile = {
+      ...demoUser.profile,           // 展開原本的個人資料 (姓名、生日...)
+      idNumber: demoUser.idNumber    // 補上身分證字號 "A123456789"
+    };
+
+    // 儲存這個包含 ID 的完整物件
+    localStorage.setItem("userProfile", JSON.stringify(finalProfile));
+    // 儲存使用者資料
+    // localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
     localStorage.setItem("justLoggedIn", "true"); // 標記剛登入狀態
     router.push("/home");
 
