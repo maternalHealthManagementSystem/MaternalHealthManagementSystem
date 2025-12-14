@@ -9,7 +9,7 @@
     </div>
 
     <!-- 捲動內容 -->
-    <div class="scroll-content">
+    <div class="scroll-content" ref="scrollRef">
       <slot></slot>
     </div>
 
@@ -17,10 +17,23 @@
 </template>
 
 <script setup>
-defineProps({
-  title: { type: String, required: true },
-  subtitle: { type: String, default: '' }
-});
+  import { ref, defineExpose } from 'vue';
+
+  defineProps({
+    title: { type: String, required: true },
+    subtitle: { type: String, default: '' }
+  });
+
+  const scrollRef = ref(null);
+
+  defineExpose({
+    scrollToTop() {
+      scrollRef.value?.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  });
 </script>
 
 <style scoped>

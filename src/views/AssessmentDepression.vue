@@ -1,5 +1,5 @@
 <template>
-  <AssessmentPanel title="愛丁堡產後憂鬱量表" subtitle="（請您依據過去七天內的感受進行填寫）">
+  <AssessmentPanel ref="panelRef" title="愛丁堡產後憂鬱量表" subtitle="（請您依據過去七天內的感受進行填寫）">
     <AssessmentProgressBar :completionRate="completionRate" />
     <div class="info-section">
       <div class="input-row">
@@ -98,7 +98,6 @@
         送出表單
       </button>
     </div>
-    <!-- <FormFooter @submit="submitForm" /> -->
     <div v-if="showResultModal" class="modal-overlay">
       <div class="modal-box">
         <button class="modal-close" @click="closeModal">×</button>
@@ -123,7 +122,6 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
-// import FormFooter from '../components/FormFooter.vue'; 
 // 引入 JSON 資料檔
 import depressionQuestions from '../assets/data/depressionQuestions.json';
 // 使用 JSON 資料初始化 questions
@@ -132,12 +130,12 @@ const questions = reactive(JSON.parse(JSON.stringify(depressionQuestions)));
 // 1. 定義分頁狀態 
 const currentStep = ref(1);
 const totalSteps = 2; // 共 2 頁
-
+const panelRef = ref(null);
 // 2. 下一頁函式
 const nextStep = () => {
   if (validateCurrentStep()) {
     currentStep.value++;
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // 換頁後滾回頂部
+    panelRef.value?.scrollToTop(); // 換頁後滾回頂部
   }
 };
 
@@ -145,7 +143,7 @@ const nextStep = () => {
 const prevStep = () => {
   if (currentStep.value > 1) {
     currentStep.value--;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    panelRef.value?.scrollToTop();
   }
 };
 

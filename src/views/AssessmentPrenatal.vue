@@ -1,6 +1,5 @@
 <template>
-    <AssessmentPanel title="孕婦產前健康照護衛教指導紀錄表" subtitle="( 適用週數：第 29 週 ~ 第 40 週 )">
-        <!-- <div class="step-indicator">步驟 {{ currentStep }} / {{ totalSteps }}</div> -->
+    <AssessmentPanel ref="panelRef" title="孕婦產前健康照護衛教指導紀錄表" subtitle="( 適用週數：第 29 週 ~ 第 40 週 )">
         <AssessmentProgressBar :completionRate="completionRate" />
         <div v-show="currentStep === 1" class="form-card">
             <div class="card-label">基本資料</div>
@@ -214,7 +213,6 @@
             </div>
         </div>
         
-        <!-- <FormFooter @submit="submitForm" /> -->
         <div class="navigation-buttons">
             <button 
                 v-if="currentStep > 1" 
@@ -261,7 +259,6 @@ import { useRouter } from 'vue-router';
 import successImage from '../assets/success.png';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
-// import FormFooter from '../components/FormFooter.vue';
 // 引入 JSON 資料
 import prenatalQuestions from '../assets/data/prenatalQuestions.json'; 
 // 使用 JSON 資料初始化變數
@@ -273,12 +270,19 @@ const educationTopics = reactive(JSON.parse(JSON.stringify(prenatalQuestions.edu
 // 定義步驟狀態
 const currentStep = ref(1);
 const totalSteps = 5;
+const panelRef = ref(null);
 // 2.下一頁與上一頁的函式
 const nextStep = () => {
   // 先驗證當前頁面有沒有填寫完整
   if (validateCurrentStep()) {
     currentStep.value++;
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // 跳頁後滾回頂部
+    panelRef.value?.scrollToTop(); // 跳頁後滾回頂部
+  }
+};
+const prevStep = () => {
+  if (currentStep.value > 1) {
+    currentStep.value--;
+    panelRef.value?.scrollToTop();
   }
 };
 // 3. 分頁驗證邏輯 (將原本 submitForm 的檢查拆開)
@@ -328,12 +332,6 @@ const validateCurrentStep = () => {
   return true;
 };
 
-const prevStep = () => {
-  if (currentStep.value > 1) {
-    currentStep.value--;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-};
 onMounted(() => {
   const savedProfileStr = localStorage.getItem("userProfile");
   
