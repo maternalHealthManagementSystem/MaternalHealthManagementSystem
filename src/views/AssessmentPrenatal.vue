@@ -1,6 +1,6 @@
 <template>
     <AssessmentPanel title="孕婦產前健康照護衛教指導紀錄表" subtitle="( 適用週數：第 29 週 ~ 第 40 週 )">
-        <div class="step-indicator">步驟 {{ currentStep }} / {{ totalSteps }}</div>
+        <!-- <div class="step-indicator">步驟 {{ currentStep }} / {{ totalSteps }}</div> -->
         <AssessmentProgressBar :completionRate="completionRate" />
         <div v-show="currentStep === 1" class="form-card">
             <div class="card-label">基本資料</div>
@@ -349,7 +349,7 @@ onMounted(() => {
       // 2. 帶入身分證 (修正 Login.vue 後這裡才會有值)
       if (profile.idNumber) form.idNumber = profile.idNumber;
       
-      // 3. 帶入出生日期 (🔥重點修正：格式轉換)
+      // 3. 帶入出生日期 (格式轉換)
       if (profile.dob) {
         // 將 "1990/05/15" 轉換為 "1990-05-15"
         // <input type="date"> 只接受 "YYYY-MM-DD"
@@ -493,14 +493,6 @@ const closeModal = () => {
 </script>
 
 <style scoped>
-/* 步驟指示文字 */
-.step-indicator {
-  text-align: right;
-  color: #666;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
 /* 導航按鈕區塊 */
 .navigation-buttons {
   display: flex;
