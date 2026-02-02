@@ -103,6 +103,16 @@
         </div>
       </div>
     </div>
+
+    <!-- 更多事件彈窗 -->
+    <EventListModal
+      v-if="showEventModal"
+      :events="modalEvents"
+      :date="modalDate"
+      @close="showEventModal = false"
+      @eventClick="handleEventClick"
+    />
+
   </div>
 </template>
 
@@ -110,6 +120,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import dayjs from 'dayjs'
+import EventListModal from './EventListModal.vue'
 
 // Props
 const props = defineProps({
@@ -122,6 +133,10 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['dayClick', 'monthChange', 'eventClick'])
 
+// 談窗狀態
+const showEventModal = ref(false)
+const modalEvents = ref([])
+const modalDate = ref('')
 
 // 響應式數據
 const currentDate = ref(dayjs())
@@ -240,6 +255,7 @@ function selectDay(day) {
 
 // 處理事件點擊
 function handleEventClick(event) {
+  showEventModal.value = false
   emit('eventClick', event)
 }
 
@@ -247,6 +263,9 @@ function handleEventClick(event) {
 function showMoreEvents(day) {
   // 可以顯示該日所有事件的列表
   console.log('顯示更多事件:', day.events)
+  modalEvents.value = day.events
+  modalDate.value = day.fullDate
+  showEventModal.value = true
 }
 
 // 開啟新增行程
