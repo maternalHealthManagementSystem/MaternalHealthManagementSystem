@@ -13,6 +13,12 @@ export const login = async (req, res) => {
         message: '請輸入身分證字號與手機號碼',
       });
     }
+    // 身分證格式檢查
+    const idRegex = /^[A-Z][12]\d{8}$/;
+    if (!idRegex.test(national_id)) {
+      return res.status(400).json({ message: '身分證格式錯誤' });
+    }
+
 
     // 2. 查詢使用者
     const [rows] = await db.query(

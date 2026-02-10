@@ -58,10 +58,10 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import axios from "axios";
+import api from "../services/api";
 
 // 🔥 是否開啟 Demo 模式（展示用）
-const demoMode = true;
+const demoMode = false;
 
 // ----------------------
 // 倒數計時狀態 (新增)
@@ -165,18 +165,14 @@ const verification = () => {
   if (idError.value || phoneError.value) return;
 
   // 檢查預設使用者
-  if (idNumber.value === demoUser.idNumber && phoneNumber.value === demoUser.phoneNumber) {
-    showIdPhone.value = false;
-    
-    // ⭐ 成功發送後開始倒數
-    startCountdown();
+  if (demoMode) {
+  showIdPhone.value = false;
+  startCountdown();
 
-    if (demoMode) {
-      const code = generateDemoSMS();
-      alert(`驗證碼已寄送：${code}`);
-    }
+  const code = generateDemoSMS();
+  alert(`驗證碼已寄送：${code}`);
 
-  } else {
+} else {
     alert("此身分證字號或手機號碼尚未註冊，請聯絡工作人員。");
   }
 };
@@ -214,36 +210,44 @@ const sendsms = async () => {
     return;
   }
 
+  // 驗證碼比對
   const savedCode = localStorage.getItem("demoSMSCode");
+  if (smsCode.value !== savedCode) {
+    smsError.value = "驗證碼錯誤";
+    return;
+  }
 
-  if (smsCode.value === savedCode) {
-    // 驗證成功時，可以清除計時器
-    if (timer) clearInterval(timer); 
-
-    try {
-      const res = await axios.post("http://localhost:3000/api/login", {
-        nationalId: idNumber.value,
-        phone: phoneNumber.value,
+  // 3. 通過驗證，呼叫後端登入 API
+  try {
+    // 這裡使用你上方 import 的 api 物件
+    const res = await api.post("/api/login", {
+      nationalId: idNumber.value,
+      phone: phoneNumber.value,
     });
 
-    if(res.data.success) {
-      localStorage.setItem("loggedIn", "true"); // 標記已登入
-      // 把身分證字號(idNumber)合併進去 profile 一起存
-      const finalProfile = {
-        ...demoUser.profile,           // 展開原本的個人資料 (姓名、生日...)
-        idNumber: demoUser.idNumber    // 補上身分證字號 "A123456789"
-      };
+    // 假設後端回傳成功 (res.data 包含用戶資訊)
+    if (res.data?.success) {
+      // 停止計時器
+      if (timer) clearInterval(timer); 
 
-      // 儲存這個包含 ID 的完整物件
-      localStorage.setItem("userProfile", JSON.stringify(res.data.user));
-      // 儲存使用者資料
-      // localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
-      localStorage.setItem("justLoggedIn", "true"); // 標記剛登入狀態
+      // 儲存登入狀態與資料
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("justLoggedIn", "true");
+      // login 成功後
+      localStorage.setItem('user_id', res.data.user.user_id);
+
+      
+      // 建議儲存後端回傳的真實資料，而非 demoUser
+      localStorage.setItem("userProfile", JSON.stringify(res.data.user || res.data));
+
+      alert("登入成功！");
       router.push("/home");
-      }
-    } catch (err) {
-      alert(err.response?.data?.message || "登入失敗");
     }
+  } catch (err) {
+    console.error("Login Error:", err);
+    // 處理錯誤訊息
+    const errorMsg = err.response?.data?.message || "登入失敗，請檢查網路連線";
+    alert(errorMsg);
   }
 };
 
