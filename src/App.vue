@@ -1,5 +1,5 @@
 <template>
-  <!-- 載入 Flaticon CSS for icons (fi fi-sr-*) -->
+  <!-- 載入 Flaticon CSS for icons  -->
   <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css"
   />
   <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
@@ -340,13 +340,15 @@ const logout = () => {
   showLogoutConfirm.value = true;
 };
 
+/* 在彈出的確認視窗點擊「確認」時觸發：真正的清除資料與導向登入頁 */
 const confirmLogout = () => {
   isSidebarOpen.value = false;
   showLogoutConfirm.value = false;
 
-  localStorage.removeItem("loggedIn");
-  localStorage.removeItem("currentUser");
-  localStorage.removeItem("homeNotificationShown");
+  localStorage.removeItem("loggedIn");// 清除登入狀態（login.vue檢查這項）
+  localStorage.removeItem("currentUser");// 清除使用者基本資料
+  localStorage.removeItem("homeNotificationShown");// 清除通知紀錄
+  localStorage.removeItem("userProfile"); // 清除頭像與詳細資料
 
   router.push("/");
 };

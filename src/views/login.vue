@@ -58,6 +58,7 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 // 🔥 是否開啟 Demo 模式（展示用）
 const demoMode = true;
@@ -199,7 +200,7 @@ const resendsms = () => {
 // ----------------------
 // 驗證簡訊
 // ----------------------
-const sendsms = () => {
+const sendsms = async () => {
   smsError.value = "";
   const smsPattern = /^\d{6}$/;
 
@@ -219,22 +220,30 @@ const sendsms = () => {
     // 驗證成功時，可以清除計時器
     if (timer) clearInterval(timer); 
 
-    localStorage.setItem("loggedIn", "true"); // 標記已登入
-    // 把身分證字號(idNumber)合併進去 profile 一起存
-    const finalProfile = {
-      ...demoUser.profile,           // 展開原本的個人資料 (姓名、生日...)
-      idNumber: demoUser.idNumber    // 補上身分證字號 "A123456789"
-    };
+    try {
+      const res = await axios.post("http://localhost:3000/api/login", {
+        nationalId: idNumber.value,
+        phone: phoneNumber.value,
+    });
 
-    // 儲存這個包含 ID 的完整物件
-    localStorage.setItem("userProfile", JSON.stringify(finalProfile));
-    // 儲存使用者資料
-    // localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
-    localStorage.setItem("justLoggedIn", "true"); // 標記剛登入狀態
-    router.push("/home");
+    if(res.data.success) {
+      localStorage.setItem("loggedIn", "true"); // 標記已登入
+      // 把身分證字號(idNumber)合併進去 profile 一起存
+      const finalProfile = {
+        ...demoUser.profile,           // 展開原本的個人資料 (姓名、生日...)
+        idNumber: demoUser.idNumber    // 補上身分證字號 "A123456789"
+      };
 
-  } else {
-    smsError.value = "驗證碼錯誤，請重新輸入";
+      // 儲存這個包含 ID 的完整物件
+      localStorage.setItem("userProfile", JSON.stringify(res.data.user));
+      // 儲存使用者資料
+      // localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
+      localStorage.setItem("justLoggedIn", "true"); // 標記剛登入狀態
+      router.push("/home");
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "登入失敗");
+    }
   }
 };
 
