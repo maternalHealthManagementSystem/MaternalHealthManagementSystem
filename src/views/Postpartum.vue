@@ -122,7 +122,6 @@ const handleSearch = (key) => {
   color: #333;
   background-color: #f9fbfd; /* 整個頁面給一個底色 */
   min-height: 100vh; /* 確保背景色填滿 */
-  box-sizing: border-box;
 }
 
 .page-header {
@@ -138,8 +137,11 @@ const handleSearch = (key) => {
 
 h2 {
   font-size: 28px;
-  color: #3b4a5a;
+  color: #2c3e50;
   font-weight: bold;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0;
 }
 
 /* 主佈局：Flexbox 左右分割 */
@@ -172,8 +174,8 @@ h2 {
 }
 
 .section-title-box h3 {
-  font-size: 20px;
-  color: #5a6b7c;
+  color: #2c3e50; 
+  font-weight: bold;
   margin: 0 0 5px 0;
   font-weight: 500;
 }
@@ -311,6 +313,13 @@ h2 {
     gap: 20px; /* 縮小左右間距 */
   }
 
+  .page-header h2 {
+    white-space: nowrap; /* 強制文字不換行 */
+    flex-shrink: 0;      /* 防止標題被右邊的搜尋框擠壓收縮 */
+    font-size: 24px;     /* 稍微縮小字體，讓空間更餘裕 */
+    margin-right: 20px;  /* 確保跟搜尋框保持距離 */
+  }
+
   .sidebar {
     width: 180px; /* 稍微縮小側邊欄 */
   }
@@ -325,6 +334,7 @@ h2 {
   .postpartum-page {
     width: 100%;
     padding: 15px 10px;
+    box-sizing: border-box;
   }
 
   /* Header 垂直排列 */

@@ -29,6 +29,7 @@
                   <input
                     type="checkbox"
                     v-model="item.checked"
+                    disabled
                     class="custom-checkbox"
                   />
                   <span class="status-text">{{
@@ -36,7 +37,12 @@
                   }}</span>
                 </label>
 
-                <a :href="item.link" target="_blank" class="item-link">
+                <a 
+                  :href="item.link" 
+                  target="_blank" 
+                  class="item-link"
+                  @click="handleLinkClick(item)"
+                >
                   {{ item.title }}
                 </a>
               </div>
@@ -99,6 +105,39 @@ const scrollToSection = (id) => {
   }
 };
 
+/* --- 文章點擊處理 --- */
+const handleLinkClick = async (item) => {
+  // 如果已經是已讀狀態，就不用再做動作 (避免重複發送 API)
+  if (item.checked) return;
+
+  // 1. 前端 UI 即時更新：直接將該物件的 checked 設為 true
+  item.checked = true;
+
+  // 2. (重要) 呼叫後端 API 儲存狀態
+  // 這裡需要搭配你前面設計的 API，確保重新整理頁面後狀態還在
+  try {
+    // 假設你的 API路徑是 /api/read-status
+    // 這裡的 item.id 對應你 JSON 裡的 he_pregnancy_id (請依實際欄位名稱調整)
+    
+    /* 範例程式碼：
+    await fetch('http://你的後端網址/api/read-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        article_id: item.id, // 或 item.he_pregnancy_id
+        user_id: '目前登入的使用者ID' 
+      })
+    });
+    */
+    console.log(`文章 "${item.title}" 已標記為已讀`);
+    
+  } catch (error) {
+    console.error("更新閱讀狀態失敗", error);
+    // 如果 API 失敗，視情況決定是否要將 checked 改回 false
+    // item.checked = false; 
+  }
+};
+
 /* --- 搜尋結果用資料 --- */
 const filteredSections = ref([...sections.value]); // 初始化顯示原始內容
 const hasResult = ref(true);
@@ -152,8 +191,9 @@ const handleSearch = (key) => {
 
 .page-header h2 {
   font-size: 28px;
-  font-weight: bold;
   color: #2c3e50;
+  font-weight: 700;
+  letter-spacing: 1px;
   margin: 0;
 }
 
@@ -210,7 +250,7 @@ const handleSearch = (key) => {
 .checkbox-label {
   display: flex;
   align-items: center;
-  cursor: pointer;
+  cursor: default;
   margin-right: 20px;
   color: #999;
   flex-shrink: 0; /* 防止 checkbox 被壓縮 */
@@ -221,8 +261,11 @@ const handleSearch = (key) => {
   width: 20px;
   height: 18px;
   margin-right: 8px;
-  cursor: pointer;
-  accent-color: #5a6b7c; /* 勾選後的顏色 */
+  accent-color: #5a6b7c;  /* 勾選後的顏色 */
+}
+
+.custom-checkbox:disabled {
+  opacity: 1; 
 }
 
 .status-text {
@@ -289,7 +332,6 @@ const handleSearch = (key) => {
   font-size: 16px;
   transition: opacity 0.2s;
   border-bottom: 1px solid transparent;
-  display: block; /* 讓整行可點擊 */
 }
 
 .toc-link:hover {
@@ -323,6 +365,13 @@ const handleSearch = (key) => {
   
   .main-layout {
     gap: 30px; /* 縮小左右間距 */
+  }
+
+  .page-header h2 {
+    white-space: nowrap; /* 強制文字不換行 */
+    flex-shrink: 0;      /* 防止標題被右邊的搜尋框擠壓收縮 */
+    font-size: 24px;     /* 稍微縮小字體，讓空間更餘裕 */
+    margin-right: 20px;  /* 確保跟搜尋框保持距離 */
   }
 
   .sidebar {
@@ -416,7 +465,7 @@ const handleSearch = (key) => {
     display: inline-block;
     width: 5px; /* 稍微細一點 */
     height: 18px;
-    background-color: #57aee2;
+    background-color: #8faec6;
     margin-right: 8px; /* 文字離藍色豎條的距離 */
     border-radius: 3px;
   }

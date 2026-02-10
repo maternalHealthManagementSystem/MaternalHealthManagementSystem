@@ -2,6 +2,7 @@
   <!-- 遮罩層 -->
   <transition name="modal">
     <div v-if="show" class="modal-overlay" @click="closeModal">
+      
       <!-- 彈窗內容 -->
       <div class="modal-container" @click.stop>
         <!-- 標題列 -->
@@ -17,9 +18,6 @@
                 <h1>{{ diary.title || '（今日日記）' }}</h1>
                 <span class="diary-badge">日記</span>
             </div>
-
-            <!-- 詳細資訊 -->
-            <div class="diary-details">
             <!-- 日期 -->
             <div class="diary-date">
                 <span class="date-icon">📅</span>
@@ -37,7 +35,7 @@
             <div v-if="diary.image" class="diary-image">
                 <img :src="diary.image" alt="日記圖片" />
             </div>
-
+          <div class="meta">
             <!-- 建立時間 -->
             <div class="diary-meta">
                 <span class="meta-label">建立時間：</span>
@@ -49,7 +47,8 @@
               <span class="meta-label">最後編輯：</span>
               <span class="meta-value">{{ formatDateTime(diary.updatedAt) }}</span>
             </div>
-
+          </div>
+          </div>
             <!-- 底部按鈕 -->
             <div class="modal-footer">
               <button class="btn-delete" @click="deleteDiary">刪除日記</button>
@@ -57,8 +56,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
   </transition>
 </template>
 
@@ -131,7 +128,7 @@ function formatDateTime(datetime) {
   background: white;
   border-radius: 12px;
   width: 100%;
-  max-width: 700px;
+  max-width: 600px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -186,7 +183,7 @@ function formatDateTime(datetime) {
 /* 內容區 */
 .modal-body {
   padding: 20px;
-  padding-top:10px;
+  padding-top:15px;
   overflow-y: auto;
   flex: 1;
 }
@@ -199,7 +196,7 @@ function formatDateTime(datetime) {
 }
 
 .diary-title h1 {
-  font-size: 30px;
+  font-size: 26px;
   color: #333;
   margin: 10px 0;
   flex: 1;
@@ -253,7 +250,6 @@ function formatDateTime(datetime) {
 .diary-image img {
   width: 100%;
   height: auto;
-  max-height: 400px;
   object-fit: cover;
   display: block;
 
@@ -279,18 +275,19 @@ function formatDateTime(datetime) {
 
 /* 元資料 */
 .diary-meta {
-  padding-top: 10px;
+  padding-top: 15px;
   border-top: 1px solid #e0e0e0;
   font-size: 15px;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   justify-content: center;
   text-align: center;
 }
 
 .meta-item {
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   justify-content: center;
   text-align: center;
+  font-size: 15px
 }
 
 .meta-label  {
@@ -307,9 +304,9 @@ function formatDateTime(datetime) {
 .modal-footer {
   display: flex;
   gap: 10px;
-  padding: 20px;
   border-top: 1px solid #e0e0e0;
   background: #f8f9fa;
+  padding: 20px;
 }
 
 .btn-delete,
@@ -366,7 +363,7 @@ function formatDateTime(datetime) {
 }
 
 /* 平板版（1024px 以下）*/
-@media (max-width: 1024px) {
+/* @media (max-width: 1024px) {
   .modal-container {
     max-width: 700px;
     border-radius: 10px;
@@ -390,9 +387,9 @@ function formatDateTime(datetime) {
   .modal-footer {
     padding: 20px;
   }
-}
+} */
 /* 小平板 / 大手機樣式 (Max-width: 820px) */
-@media (max-width: 820px) {
+/* @media (max-width: 820px) {
   .modal-container {
     max-width: 85vw;
   }
@@ -416,9 +413,9 @@ function formatDateTime(datetime) {
   .modal-footer {
     padding: 16px;
   }
-}
+} */
 /* 手機版（600px 以下） */
-@media (max-width: 600px) {
+/* @media (max-width: 600px) {
   .modal-overlay {
     padding: 0; 
   }
@@ -493,6 +490,250 @@ function formatDateTime(datetime) {
   .btn-edit {
     padding: 10px; 
     font-size: 14px;
+  }
+} */
+ /* iPhne 12 Pro  */
+@media (max-width: 400px){
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 18px;
+  }
+
+  .modal-title {
+    font-size: 120%; 
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .diary-title h1 {
+    font-size: 24px; 
+    margin: 5px 0;
+    order: 1; 
+  }
+  
+  .diary-title span {
+    font-size: 15px;
+    order: 2; 
+  }
+  .diary-date{
+    margin-top: 15px;
+  }
+  .date-icon,
+  .date-text{
+    font-size: 20px;
+  }
+
+  .diary-image {
+    margin-bottom: 15px;
+  }
+  .diary-image img {
+    max-height: 100%;
+  }
+
+  .diary-content {
+    font-size: 18px;
+  }
+  
+  .diary-meta,
+  .meta-item{
+    font-size: 16px;
+  }
+  .meta{
+    margin-bottom: 150px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+  }
+  .btn-cancel,
+  .btn-save {
+    font-size: 16px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+/* iPhne 14 Pro Max */
+@media(min-width: 400px) and (max-width: 450px){
+ .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 500px; 
+    max-height: 100vh; 
+    border-radius: 0;
+  }
+  
+  .modal-header {
+    padding: 18px;
+  }
+
+  .modal-title {
+    font-size: 120%; 
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .diary-title h1 {
+    font-size: 26px; 
+    margin: 10px 0;
+    order: 1; 
+  }
+  
+  .diary-title span {
+    font-size: 15px;
+    order: 2; 
+  }
+  .diary-date{
+    margin-top: 20px;
+  }
+  .date-icon,
+  .date-text{
+    font-size: 20px;
+  }
+
+  .diary-image {
+    margin-bottom: 15px;
+  }
+  .diary-image img {
+    max-height: 100%;
+  }
+
+  .diary-content {
+    font-size: 18px;
+  }
+  
+  .diary-meta,
+  .meta-item{
+    font-size: 18px;
+  }
+  .meta{
+    margin-bottom: 170px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+  }
+  .btn-cancel,
+  .btn-save {
+    font-size: 18px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* iPad Air*/
+@media (min-width: 750px) and (max-width: 820px){
+  .modal-overlay {
+    padding: 0; 
+  }
+  
+  .modal-container {
+    max-width: 630px; 
+    max-height: 85vh; 
+    border-radius: 10px;
+  }
+  
+  .modal-header {
+    padding: 25px;
+  }
+
+  .modal-title {
+    font-size: 150%; 
+  }
+
+  .modal-body {
+    padding: 20px;
+  }
+  .close-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 30px;
+  }
+
+  .modal-body {
+    padding: 25px;
+  }
+  
+  .diary-title h1 {
+    font-size: 32px; 
+    margin: 10px 0;
+    order: 1; 
+  }
+  
+  .diary-title span {
+    font-size: 20px;
+    order: 2; 
+  }
+  .diary-date{
+    margin-top: 20px;
+  }
+  .date-icon,
+  .date-text{
+    font-size: 25px;
+  }
+
+  .diary-image {
+    margin-bottom: 15px;
+  }
+  .diary-image img {
+    max-height: 100%;
+  }
+
+  .diary-content {
+    font-size: 25px;
+  }
+  
+  .diary-meta,
+  .meta-item{
+    font-size: 22px;
+  }
+  .meta{
+    margin-bottom: 100px;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 8px; 
+  }
+  .btn-cancel,
+  .btn-save {
+    font-size: 18px;
+    justify-content: center;
+    text-align: center;
   }
 }
 </style>

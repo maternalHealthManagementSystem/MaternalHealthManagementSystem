@@ -11,7 +11,7 @@
           {{ segment.text }}
         </a>
         
-        <span v-else>
+        <span v-else :class="{ 'blue-text': segment.isVaccine }">
           {{ segment.text }}
         </span>
     </div>
@@ -65,6 +65,12 @@ h1 {
 .desc-link:hover {
   color: #1e6091;
 }
+
+.blue-text {
+  color: #3498db; /* 與連結同色 */
+  font-weight: 500; /* 加一點粗度，看起來更明顯 */
+}
+
 .more-btn {
   position: absolute;
   bottom: 20px;

@@ -117,6 +117,7 @@
       @close="showDiaryEdit = false"
       @save="handleSaveDiary"
     />
+
   <CalendarSystem />
   </div>
 </template>
@@ -132,7 +133,7 @@ import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue'
 import DiaryEditForm from '../components/Calendar/DiaryEditForm.vue'
 import dayjs from 'dayjs'
 
-import { useCalendarStore } from '../stores/calendarStore.js'
+import { useCalendarStore } from '../../stores/calendarStore.js'
 const calendarStore = useCalendarStore()
 
 // --- 新增路由實例 ---
@@ -145,6 +146,7 @@ const showAddForm = ref(false)
 const showDiaryDetail = ref(false)
 const showDiaryEdit = ref(false)
 const defaultAddDate = ref("")
+
 
 // 新增日記表單
 const selectedDiary = ref({
@@ -177,6 +179,7 @@ const selectedEvent = ref({
   location: '',
   description: ''
 })
+
 
 // 合併事件和日記（用於顯示在日曆上）
 const allEvents = computed(() => calendarStore.allEvents)
@@ -227,6 +230,7 @@ function handleEventClick(event) {
   console.log('handleEventClick 被觸發!')
   console.log('event:', event)
 
+
   // 判斷是日記還是行程
   if (event.isDiary) {
     // 顯示日記詳細資訊
@@ -239,6 +243,7 @@ function handleEventClick(event) {
     showEventDetail.value = true
   }
 }
+
 
 // 處理行程編輯事件
 function handleEditEvent(event) {
@@ -451,13 +456,6 @@ function handleSaveDiary(updatedDiary) {
   align-items: flex-start;
 }
 .content-wrapper {
-  /* display: flex;
-  justify-content: center;   
-  align-items: flex-start;
-  gap: 20px;
-  background: #f5f7fa;
-  flex-wrap: nowrap;
-  margin: 30px auto; */
   display: flex;
   flex-wrap: nowrap;
   grid-template-columns: 1fr 2fr;

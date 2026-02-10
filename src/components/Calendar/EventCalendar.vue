@@ -103,6 +103,16 @@
         </div>
       </div>
     </div>
+
+    <!-- 更多事件彈窗 -->
+    <EventListModal
+      v-if="showEventModal"
+      :events="modalEvents"
+      :date="modalDate"
+      @close="showEventModal = false"
+      @eventClick="handleEventClick"
+    />
+
   </div>
 </template>
 
@@ -110,6 +120,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import dayjs from 'dayjs'
+import EventListModal from './EventListModal.vue'
 
 // Props
 const props = defineProps({
@@ -122,6 +133,10 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['dayClick', 'monthChange', 'eventClick'])
 
+// 談窗狀態
+const showEventModal = ref(false)
+const modalEvents = ref([])
+const modalDate = ref('')
 
 // 響應式數據
 const currentDate = ref(dayjs())
@@ -240,6 +255,7 @@ function selectDay(day) {
 
 // 處理事件點擊
 function handleEventClick(event) {
+  showEventModal.value = false
   emit('eventClick', event)
 }
 
@@ -247,6 +263,9 @@ function handleEventClick(event) {
 function showMoreEvents(day) {
   // 可以顯示該日所有事件的列表
   console.log('顯示更多事件:', day.events)
+  modalEvents.value = day.events
+  modalDate.value = day.fullDate
+  showEventModal.value = true
 }
 
 // 開啟新增行程
@@ -481,6 +500,7 @@ onMounted(() => {
 .day-cell {
   background: white;
   min-height: 90px;
+  max-width: 90px;
   padding: 6px;
   cursor: pointer;
   border-bottom: 1px solid #e0e0e0;
@@ -588,7 +608,7 @@ onMounted(() => {
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-/* iPhne 12 Pro   */
+/* iPhone 12 Pro   */
 @media (min-width: 350px) and (max-width: 400px) {
   .calendar-container {
     min-width: 100%;
@@ -616,7 +636,7 @@ onMounted(() => {
   }
 }
 
-/* iPhne 14 Pro Max   */
+/* iPhone 14 Pro Max   */
 @media (min-width: 400px) and (max-width: 450px) {
   .calendar-container {
     min-width: 100%;

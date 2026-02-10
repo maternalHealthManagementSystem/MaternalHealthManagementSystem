@@ -1,5 +1,5 @@
 <template>
-  <AssessmentPanel title="愛丁堡產後憂鬱量表" subtitle="（請您依據過去七天內的感受進行填寫）">
+  <AssessmentPanel ref="panelRef" title="愛丁堡產後憂鬱量表" subtitle="（請您依據過去七天內的感受進行填寫）">
     <AssessmentProgressBar :completionRate="completionRate" />
     <div class="info-section">
       <div class="input-row">
@@ -22,8 +22,8 @@
 
     <hr class="divider">
 
-    <div class="question-list">
-      <div v-for="q in questions" :key="q.id" class="question-card">
+    <div v-show="currentStep === 1" class="question-list">
+      <div v-for="q in questions.slice(0, 4)" :key="q.id" class="question-card">
         <p class="q-text">
           <span class="q-num">{{ q.id }}.</span> {{ q.text }}
         </p>
@@ -46,7 +46,58 @@
         </div>
       </div>
     </div>
-    <FormFooter @submit="submitForm" />
+    <div v-show="currentStep === 2">
+       <div class="question-list">
+         <div v-for="q in questions.slice(4)" :key="q.id" class="question-card">
+           <p class="q-text">
+             <span class="q-num">{{ q.id }}.</span> {{ q.text }}
+           </p>
+           
+           <div class="options-container">
+             <label 
+               v-for="(opt, optIndex) in q.options" 
+               :key="optIndex" 
+               class="option-item"
+               :class="{ 'selected': q.selectedVal === opt.value }"
+             >
+               <input 
+                 type="radio" 
+                 :name="`question-${q.id}`" 
+                 :value="opt.value" 
+                 v-model="q.selectedVal"
+               >
+               <span class="opt-text">{{ opt.text }}</span>
+             </label>
+           </div>
+         </div>
+       </div>
+    </div>
+
+    <div class="navigation-buttons">
+      <button 
+        v-if="currentStep > 1" 
+        class="nav-btn btn-prev" 
+        @click="prevStep"
+      >
+        上一頁
+      </button>
+      
+      <button 
+        v-if="currentStep < totalSteps" 
+        class="nav-btn btn-next" 
+        @click="nextStep"
+      >
+        下一頁
+      </button>
+      
+      <button 
+        v-if="currentStep === totalSteps" 
+        class="nav-btn btn-submit" 
+        @click="submitForm"
+      >
+        送出表單
+      </button>
+    </div>
     <div v-if="showResultModal" class="modal-overlay">
       <div class="modal-box">
         <button class="modal-close" @click="closeModal">×</button>
@@ -67,16 +118,99 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
-import FormFooter from '../components/FormFooter.vue'; 
 // 引入 JSON 資料檔
 import depressionQuestions from '../assets/data/depressionQuestions.json';
 // 使用 JSON 資料初始化 questions
 // 使用深拷貝確保每次進入頁面都是乾淨的狀態，不會被快取影響
 const questions = reactive(JSON.parse(JSON.stringify(depressionQuestions)));
+// 1. 定義分頁狀態 
+const currentStep = ref(1);
+const totalSteps = 2; // 共 2 頁
+const panelRef = ref(null);
+// 2. 下一頁函式
+const nextStep = () => {
+  if (validateCurrentStep()) {
+    currentStep.value++;
+    panelRef.value?.scrollToTop(); // 換頁後滾回頂部
+  }
+};
+
+//  3. 上一頁函式 
+const prevStep = () => {
+  if (currentStep.value > 1) {
+    currentStep.value--;
+    panelRef.value?.scrollToTop();
+  }
+};
+
+//  4. 分頁驗證邏輯 
+const validateCurrentStep = () => {
+  if (currentStep.value === 1) {
+    // 檢查基本資料
+    if (!form.identity) {
+      alert('請填寫身分');
+      return false;
+    }
+    if (!form.date) {
+      alert('請填寫預產期或寶寶生日');
+      return false;
+    }
+
+    // 檢查第 1~4 題 (對應陣列索引 0~3)
+    // 使用 slice(0, 4) 取出前四題檢查
+    const part1Questions = questions.slice(0, 4);
+    const allAnswered = part1Questions.every(q => q.selectedVal !== null);
+
+    if (!allAnswered) {
+      alert('請完成本頁所有題目 (第 1 到第 4 題)');
+      return false;
+    }
+  }
+  // 第二頁的檢查在 submitForm 統一處理
+  return true;
+};
+
+// ==========================================
+// 網頁載入後，自動讀取 localStorage 資料
+// ==========================================
+onMounted(() => {
+  const savedProfileStr = localStorage.getItem("userProfile");
+  
+  if (savedProfileStr) {
+    try {
+      const profile = JSON.parse(savedProfileStr);
+      
+      // 1. 處理日期 (預產期 dueDate)
+      if (profile.dueDate) {
+        // 資料庫格式通常是 YYYY/MM/DD，需轉換為 YYYY-MM-DD 才能放入 input type="date"
+        const formattedDate = profile.dueDate.replace(/\//g, '-');
+        form.date = formattedDate;
+
+        // 2. 自動判斷身分 (邏輯：比較今天與預產期)
+        const today = new Date();
+        const targetDate = new Date(formattedDate);
+        
+        // 歸零時間，只比較日期
+        today.setHours(0, 0, 0, 0);
+        targetDate.setHours(0, 0, 0, 0);
+
+        if (targetDate >= today) {
+          // 如果預產期在今天之後 (或等於今天)，視為「準媽媽」
+          form.identity = '1';
+        } else {
+          // 如果預產期已過，視為「寶寶媽媽」(此時該日期代表寶寶生日)
+          form.identity = '2';
+        }
+      }
+    } catch (e) {
+      console.error("解析使用者資料失敗:", e);
+    }
+  }
+});
 
 // 表單基本資料
 const form = reactive({
@@ -179,6 +313,40 @@ const closeModal = () => {
 </script>
 
 <style scoped>
+/* 🔥🔥🔥 [新增] 按鈕樣式 🔥🔥🔥 */
+.navigation-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+  padding: 20px 0;
+}
+
+.nav-btn {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 50px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-prev {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.btn-next {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-submit {
+  background-color: #3498db;
+  color: white;
+}
 /* --- 上方基本資訊區 --- */
 .info-section {
   padding: 10px 20px;
@@ -372,6 +540,13 @@ const closeModal = () => {
    3. iPhone 12/14 Pro/Max & Mobile (寬度 <= 768px)
    ========================================= */
 @media (max-width: 768px) {
+  .navigation-buttons {
+    flex-direction: column-reverse;
+    gap: 15px;
+  }
+  .nav-btn {
+    width: 100%;
+  }
   /* 輸入列改為垂直堆疊 */
   .input-row {
     flex-direction: column;

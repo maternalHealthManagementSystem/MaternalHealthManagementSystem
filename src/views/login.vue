@@ -106,6 +106,7 @@ const demoUser = {
     bloodType: "A型",
     height: "165",
     weight: "58",
+    address: "台北市中正區仁愛路一段100號4樓",
     dueDate: "2026/05/05",
     emergencyContact: "王大明",
     emergencyRelation: "配偶",
@@ -190,7 +191,7 @@ const resendsms = () => {
   // ⭐ 重新寄送並開始倒數
   if (demoMode) {
     const code = generateDemoSMS();
-    alert(`【Demo 模式】驗證碼已重新寄送：${code}`);
+    alert(`驗證碼已重新寄送：${code}`);
   }
   startCountdown();
 };
@@ -218,8 +219,18 @@ const sendsms = () => {
     // 驗證成功時，可以清除計時器
     if (timer) clearInterval(timer); 
 
-    localStorage.setItem("loggedIn", "true");
-    localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
+    localStorage.setItem("loggedIn", "true"); // 標記已登入
+    // 把身分證字號(idNumber)合併進去 profile 一起存
+    const finalProfile = {
+      ...demoUser.profile,           // 展開原本的個人資料 (姓名、生日...)
+      idNumber: demoUser.idNumber    // 補上身分證字號 "A123456789"
+    };
+
+    // 儲存這個包含 ID 的完整物件
+    localStorage.setItem("userProfile", JSON.stringify(finalProfile));
+    // 儲存使用者資料
+    // localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
+    localStorage.setItem("justLoggedIn", "true"); // 標記剛登入狀態
     router.push("/home");
 
   } else {

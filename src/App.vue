@@ -1,9 +1,8 @@
 <template>
   <!-- 載入 Flaticon CSS for icons (fi fi-sr-*) -->
-  <link
-    rel="stylesheet"
-    href="https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css"
+  <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/3.0.0/uicons-solid-rounded/css/uicons-solid-rounded.css"
   />
+  <link rel='stylesheet' href='https://cdn-uicons.flaticon.com/3.0.0/uicons-regular-rounded/css/uicons-regular-rounded.css'>
 
   <div class="app-container font-inter">
     <!-- 登入頁不顯示導覽列 -->
@@ -17,7 +16,10 @@
         <router-link to="/home">首頁</router-link>
         <router-link to="/prenatal">產檢紀錄專區</router-link>
         <div class="dropdown">
-          <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }">衛教資訊專區 ⮟</router-link>
+          <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }">衛教資訊專區 
+            <i class="fi fi-rr-angle-small-down"></i>
+            
+          </router-link>
           <div class="dropdown-content">
             <router-link to="/education/pregnancy">孕期衛教資訊</router-link>
             <router-link to="/education/prenatal-checkup"
@@ -140,7 +142,9 @@
             >產檢紀錄專區</router-link
           >
           <div class="dropdown">
-            <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }" @click="closeSidebar">衛教資訊專區 ⮟</router-link>
+            <router-link class="dropbtn" to="/education" :class="{ active: isEducationActive }" @click="closeSidebar">衛教資訊專區
+              <i class="fi fi-rr-angle-small-down"></i>
+            </router-link>
             <div class="dropdown-content">
               <router-link to="/education/pregnancy" @click="closeSidebar">孕期衛教資訊</router-link>
               <router-link to="/education/prenatal-checkup" @click="closeSidebar"
@@ -197,10 +201,10 @@
         <span class="close" @click="closeNotificationModal">×</span>
 
         <h2>🔔 近期行程提醒</h2>
-        <p>這裡放你的行程內容...</p>
+        <p>1. 下一次產檢是2025年12月17日（第四次產檢）。<br>　將進行例行檢查項目、第二次超音波檢查。<br>　請攜帶健保卡！</p>
 
         <h2>📝 待辦事項</h2>
-        <p>這裡放你的待辦內容...</p>
+        <p>1. 您尚未閱讀「16~20週」的孕期衛教資訊！<br>　請盡快參閱。</p>
 
         <button class="confirm-btn" @click="closeNotificationModal">
           確認
@@ -267,6 +271,24 @@ watch(
   }
 );
 
+/* 自動彈出首頁通知（僅剛登入後一次） */
+watch(
+  () => route.path,
+  (newPath) => {
+    if (newPath === "/home") {
+      const hasShown = localStorage.getItem("homeNotificationShown");
+
+      // 第一次進入首頁 → 自動開啟通知視窗
+      if (!hasShown) {
+        showNotificationModal.value = true;
+        localStorage.setItem("homeNotificationShown", "true");
+      }
+    }
+  },
+  { immediate: true }
+);
+
+
 // 認證狀態
 const showLogoutConfirm = ref(false);
 
@@ -324,6 +346,7 @@ const confirmLogout = () => {
 
   localStorage.removeItem("loggedIn");
   localStorage.removeItem("currentUser");
+  localStorage.removeItem("homeNotificationShown");
 
   router.push("/");
 };
@@ -338,21 +361,34 @@ const cancelLogout = () => {
 
 watch(
   () => route.path,
-  () => {
-    // 只需要關閉右側側邊欄
+  (newPath) => {
+    // ---- 每次登入後第一次進 /home 就跳通知 ----
+    if (newPath === "/home") {
+      const justLoggedIn = localStorage.getItem("justLoggedIn");
+
+      if (justLoggedIn) {
+        showNotificationModal.value = true;
+        localStorage.removeItem("justLoggedIn"); // 第一次跳完後移除
+      }
+    }
+
+    // ---- 換頁自動關 sidebar ----
     closeSidebar();
-  }
+  },
+  { immediate: true }
 );
+
 
 /*通知數量控制 */
 // 通知列表(未來可從 API / localStorage 取得)
 const notifications = ref([
-  { id: 1, title: "今日產檢提醒", read: false },
-  { id: 2, title: "產後填寫問卷提醒", read: true },
+  { id: 1, title: "今日產檢提醒", read: false }, 
+  { id: 2, title: "產後填寫問卷提醒", read: false }, // <--- 修正：將此項設為未讀
 ]);
 // 計算未讀通知數量
 const notificationCount = computed(() => {
-  return notifications.value.filter((n) => !n.read).length;
+  // 現在 count 會是 2
+  return notifications.value.filter((n) => !n.read).length; 
 });
 
 // 衛教專區是否為當前頁面

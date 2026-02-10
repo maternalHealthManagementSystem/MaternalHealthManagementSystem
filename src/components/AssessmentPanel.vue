@@ -9,7 +9,7 @@
     </div>
 
     <!-- 捲動內容 -->
-    <div class="scroll-content">
+    <div class="scroll-content" ref="scrollRef">
       <slot></slot>
     </div>
 
@@ -17,10 +17,23 @@
 </template>
 
 <script setup>
-defineProps({
-  title: { type: String, required: true },
-  subtitle: { type: String, default: '' }
-});
+  import { ref, defineExpose } from 'vue';
+
+  defineProps({
+    title: { type: String, required: true },
+    subtitle: { type: String, default: '' }
+  });
+
+  const scrollRef = ref(null);
+
+  defineExpose({
+    scrollToTop() {
+      scrollRef.value?.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  });
 </script>
 
 <style scoped>
@@ -67,6 +80,7 @@ defineProps({
   flex-grow: 1;
   overflow-y: auto;
   padding-right: 10px;
+  padding-left: 10px;
   max-height: 600px;
   /* 自訂捲軸 */
   scrollbar-width: thin;
@@ -97,10 +111,6 @@ defineProps({
 
   .subtitle {
     font-size: 14px;
-  }
-
-  .scroll-content {
-    padding-right: 5px; /* 稍微減少右側留白 */
   }
 }
 </style>

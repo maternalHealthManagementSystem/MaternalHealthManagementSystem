@@ -256,7 +256,7 @@ function saveEvent() {
   background: white;
   border-radius: 12px;
   width: 100%;
-  max-width: 700px;
+  max-width: 600px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
@@ -325,7 +325,7 @@ function saveEvent() {
 
 /* 內容區 */
 .modal-body {
-  padding: 30px;
+  padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
@@ -350,8 +350,15 @@ function saveEvent() {
 }
 
 .form-input,
-.form-select,
 .form-textarea {
+  width: 95%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+.form-select {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid #ddd;
@@ -359,6 +366,7 @@ function saveEvent() {
   font-size: 16px;
   transition: border-color 0.3s;
 }
+
 
 .form-input:focus,
 .form-select:focus,
@@ -386,7 +394,8 @@ function saveEvent() {
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 20px;
+  padding-right: 15px;
 }
 
 /* 錯誤訊息 */
@@ -583,7 +592,7 @@ function saveEvent() {
 
 /* iPhne 12 Pro  */
 @media (max-width: 400px){
-.modal-overlay {
+ .modal-overlay {
     padding: 0; 
   }
   
@@ -715,9 +724,9 @@ function saveEvent() {
 
 /* iPad Air*/
 @media (min-width: 750px) and (max-width: 820px){
-    .modal-overlay {
-      padding: 0; 
-    }
+  .modal-overlay {
+    padding: 0; 
+  }
     
   .modal-container {
     max-width: 630px; 

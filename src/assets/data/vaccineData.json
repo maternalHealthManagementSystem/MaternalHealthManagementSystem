@@ -9,12 +9,16 @@
     "id": 2, 
     "name": "百日咳疫苗", 
     "time": "28 - 36週", 
+    "minWeek": 28,
+    "maxWeek": 36,
     "desc": "建議於懷孕晚期施打，提供新生兒保護力。" 
   },
   { 
     "id": 3, 
     "name": "RSV疫苗 (Abrysvo)", 
     "time": "32 - 36週", 
+    "minWeek": 32,
+    "maxWeek": 36,
     "desc": "建議施打以預防呼吸道融合病毒。" 
   }
 ]
