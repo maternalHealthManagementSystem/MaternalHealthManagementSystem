@@ -18,3 +18,5 @@ const pool = mysql.createPool({
 });
 
 export default pool.promise();
+
+console.log('DB_NAME:', process.env.DB_NAME);

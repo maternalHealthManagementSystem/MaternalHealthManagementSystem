@@ -61,7 +61,7 @@ import { useRouter } from "vue-router";
 import api from "../services/api";
 
 // 🔥 是否開啟 Demo 模式（展示用）
-const demoMode = false;
+const demoMode = true;
 
 // ----------------------
 // 倒數計時狀態 (新增)
@@ -149,7 +149,7 @@ const startCountdown = () => {
 // ----------------------
 // 送出驗證碼 (修改：成功後開始倒數)
 // ----------------------
-const verification = () => {
+const verification = async () => {
   idError.value = "";
   phoneError.value = "";
 
@@ -157,25 +157,36 @@ const verification = () => {
   const phonePattern = /^09\d{8}$/;
 
   if (!idNumber.value) idError.value = "請輸入身分證字號";
-  else if (!idPattern.test(idNumber.value)) idError.value = "身分證字號格式錯誤(例:A123456789)";
+  else if (!idPattern.test(idNumber.value))
+    idError.value = "身分證字號格式錯誤(例:A123456789)";
 
   if (!phoneNumber.value) phoneError.value = "請輸入手機號碼";
-  else if (!phonePattern.test(phoneNumber.value)) phoneError.value = "手機號碼格式錯誤(例:0912345678)";
+  else if (!phonePattern.test(phoneNumber.value))
+    phoneError.value = "手機號碼格式錯誤(例:0912345678)";
 
   if (idError.value || phoneError.value) return;
 
-  // 檢查預設使用者
-  if (demoMode) {
-  showIdPhone.value = false;
-  startCountdown();
+  // ⭐ 直接呼叫後端登入（暫時不走 SMS）
+  try {
+    const res = await api.post("/api/auth/login", {
+      national_id: idNumber.value,
+      phone_number: phoneNumber.value,
+    });
 
-  const code = generateDemoSMS();
-  alert(`驗證碼已寄送：${code}`);
+    if (res.data?.success) {
+      localStorage.setItem("loggedIn", "true");
+      localStorage.setItem("user_id", res.data.user.user_id);
 
-} else {
-    alert("此身分證字號或手機號碼尚未註冊，請聯絡工作人員。");
+      alert("登入成功！");
+      router.push("/home");
+    }
+  } catch (err) {
+    const errorMsg =
+      err.response?.data?.message || "登入失敗，請檢查帳號";
+    alert(errorMsg);
   }
 };
+
 
 // ----------------------
 // 重新寄送驗證碼 (修改：只有非倒數狀態下才能重新寄送)
@@ -220,9 +231,9 @@ const sendsms = async () => {
   // 3. 通過驗證，呼叫後端登入 API
   try {
     // 這裡使用你上方 import 的 api 物件
-    const res = await api.post("/api/login", {
-      nationalId: idNumber.value,
-      phone: phoneNumber.value,
+    const res = await api.post("/api/auth/login", {
+      national_id: idNumber.value,
+      phone_number: phoneNumber.value,
     });
 
     // 假設後端回傳成功 (res.data 包含用戶資訊)
