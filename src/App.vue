@@ -342,15 +342,32 @@ const logout = () => {
 
 /* 在彈出的確認視窗點擊「確認」時觸發：真正的清除資料與導向登入頁 */
 const confirmLogout = () => {
+  console.log("正在執行登出程序...");
+  
+  // 1. 關閉 UI 元件
   isSidebarOpen.value = false;
   showLogoutConfirm.value = false;
 
-  localStorage.removeItem("loggedIn");// 清除登入狀態（login.vue檢查這項）
-  localStorage.removeItem("currentUser");// 清除使用者基本資料
-  localStorage.removeItem("homeNotificationShown");// 清除通知紀錄
-  localStorage.removeItem("userProfile"); // 清除頭像與詳細資料
+  // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
+  localStorage.removeItem("user");        // login.vue 存的
+  localStorage.removeItem("loggedIn");    // router 守衛檢查的
+  
+  // 3. 其他資料清理
+  localStorage.removeItem("currentUser");
+  localStorage.removeItem("homeNotificationShown");
+  localStorage.removeItem("userProfile");
+  localStorage.removeItem("temp_user_id");
 
-  router.push("/");
+  // 4. 重置本頁變數狀態
+  currentUser.value = { name: "", email: "" };
+  userAvatar.value = "";
+
+  console.log("LocalStorage 已清理，跳轉至登入頁");
+
+  // 5. 跳轉並重整 (確保狀態完全乾淨)
+  router.push("/").then(() => {
+    window.location.reload(); 
+  });
 };
 
 const cancelLogout = () => {

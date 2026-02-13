@@ -86,25 +86,20 @@ export default router;
 
 //登入後才可以訪問其他頁面，否則導回登入頁
 router.beforeEach((to, from, next) => {
-  // 1. 定義不需要登入就能進去的頁面(白名單)
   const publicPages = ['login']; 
-  
-  // 2. 判斷當前要去的地方是否在白名單內 (檢查name或path)
   const authRequired = !publicPages.includes(to.name);
   
-  // 3. 檢查 localStorage 是否有登入憑證 (login.vue存的key)
-  const isLoggedIn = localStorage.getItem('loggedIn');
+  // 修正這裡：檢查 login.vue 存入的 'user'
+  const isLoggedIn = localStorage.getItem('user'); 
 
-  // 如果要去的地方需要驗證，但使用者沒登入--> 踢回登入頁
   if (authRequired && !isLoggedIn) {
+    console.warn("未偵測到登入資訊，跳回登入頁");
     return next({ name: 'login' });
   }
 
-  // 如果使用者「已經登入」卻想跑去「登入頁」--> 直接送他去首頁
   if (!authRequired && isLoggedIn) {
     return next({ name: 'home' });
   }
 
-  // 其他情況：直接放行
   next();
 });
