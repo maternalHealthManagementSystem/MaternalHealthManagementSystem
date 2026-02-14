@@ -45,5 +45,59 @@ app.get("/api/profile/:user_id", async (req, res) => {
   }
 });
 
+// 更新個人資料的 API
 
+app.put("/api/profile/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+  const data = req.body;
+
+  try {
+    const query = `
+      UPDATE personal_information 
+      SET 
+        name = ?, 
+        birthday = ?, 
+        phone_number = ?, 
+        landline = ?, 
+        email = ?, 
+        address = ?, 
+        ice_name = ?, 
+        ice_relationship = ?, 
+        ice_phone_number = ?, 
+        blood_type = ?, 
+        height = ?, 
+        weight = ?,
+        user_file_path = ?
+      WHERE user_id = ?
+    `;
+
+    const values = [
+      data.name,
+      data.birthday,
+      data.phone_number,
+      data.landline,
+      data.email,
+      data.address,
+      data.ice_name,
+      data.ice_relationship,
+      data.ice_phone_number,
+      data.blood_type,
+      data.height,
+      data.weight,
+      data.user_file_path,
+      user_id
+    ];
+
+    const [result] = await db.query(query, values);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: "找不到該使用者或資料未變更" });
+    }
+
+    res.json({ success: true, message: "資料庫更新成功" });
+  } catch (err) {
+    console.error("更新失敗:", err);
+    res.status(500).json({ success: false, message: "伺服器更新錯誤", error: err.message });
+  }
+});
 

@@ -441,7 +441,10 @@ const validateProfile = () => {
 };
 
 // 儲存前統一格式
+// profile.vue
+
 const saveProfile = async () => {
+  // 1. 先跑原本的防呆驗證
   if (!validateProfile()) {
     customAlert("資料格式有誤，請檢查！");
     return;
@@ -449,40 +452,44 @@ const saveProfile = async () => {
 
   try {
     const loginUser = JSON.parse(localStorage.getItem("user"));
-    
-    // 準備 payload，將前端名稱轉回資料庫預期的名稱
+    if (!loginUser?.user_id) throw new Error("找不到 User ID");
+
+    // 2. 封裝資料：將前端 profileData 轉為後端資料庫欄位
     const payload = {
       name: profileData.name,
-      phone_number: profileData.mobile,
+      birthday: profileData.dob,             // 轉為資料庫欄位名
+      phone_number: profileData.mobile,       // 轉為資料庫欄位名
       landline: profileData.landline,
       email: profileData.email,
       address: profileData.address,
-      birthday: profileData.dob,
-      blood_type: profileData.bloodType.replace("型", ""), // 轉回 "O"
-      height: profileData.height,
-      weight: profileData.weight,
-      ice_name: profileData.emergencyContact,
+      ice_name: profileData.emergencyContact, // 轉為資料庫欄位名
       ice_relationship: profileData.emergencyRelation,
       ice_phone_number: profileData.emergencyPhone,
-      user_file_path: profileData.avatar // 如果有新上傳的 Base64，後端需處理
+      blood_type: profileData.bloodType.replace("型", ""), // 移除「型」字
+      height: Number(profileData.height),
+      weight: Number(profileData.weight),
+      user_file_path: profileData.avatar      // 雲端圖片網址或 Base64
     };
 
-    // 呼叫後端更新 API (需確認後端 index.js 有寫對應的 app.put)
-    await api.put(`/api/profile/${loginUser.user_id}`, payload);
+    // 3. 送出請求給後端
+    const res = await api.put(`/api/profile/${loginUser.user_id}`, payload);
 
-    // --- 同步本地狀態 ---
-    localStorage.setItem("userProfile", JSON.stringify(profileData));
-    localStorage.setItem("currentUser", JSON.stringify({
-      name: profileData.name,
-      email: profileData.email,
-    }));
+    if (res.data.success) {
+      // 4. 更新本地 localStorage 讓其他頁面同步
+      localStorage.setItem("userProfile", JSON.stringify(profileData));
+      localStorage.setItem("currentUser", JSON.stringify({
+        name: profileData.name,
+        email: profileData.email,
+      }));
 
-    window.dispatchEvent(new Event("storage"));
-    customAlert("資料已成功儲存至資料庫！");
-    
+      // 觸發 App.vue 更新側邊欄
+      window.dispatchEvent(new Event("storage"));
+      
+      customAlert("🎉 資料已成功同步至資料庫！");
+    }
   } catch (error) {
     console.error("儲存失敗:", error);
-    customAlert("儲存失敗，請檢查網路連線或後端服務");
+    customAlert(`儲存失敗: ${error.response?.data?.message || "網路連線異常"}`);
   }
 };
 
