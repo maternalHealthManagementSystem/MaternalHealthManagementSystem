@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+
+
 // 1. 取得目前檔案的絕對路徑
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

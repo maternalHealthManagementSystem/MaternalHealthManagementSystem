@@ -231,24 +231,35 @@ const currentYear = computed(() => new Date().getFullYear());
 
 // 使用者資料
 const currentUser = ref({
-  name: "使用者姓名",
-  email: "example@mail.com",
+  name: "載入中...",
+  email: "",
 });
 
 // 使用者頭像
 const userAvatar = ref("");
 
-// 載入使用者資料和頭像
+// 載入使用者名字和頭像
 const loadUserData = () => {
+  // 優先從currentUser拿名字（側邊欄顯示）
   const userData = localStorage.getItem("currentUser");
   if (userData) {
     currentUser.value = JSON.parse(userData);
+  } else {
+    // 如果沒有，試著從登入時存的 user 拿
+    const user = localStorage.getItem("user");
+    if (user) {
+      const parsedUser = JSON.parse(user);
+      currentUser.value.name = parsedUser.name;
+    }
   }
 
+  // 載入頭像
   const profileData = localStorage.getItem("userProfile");
   if (profileData) {
     const profile = JSON.parse(profileData);
     userAvatar.value = profile.avatar || "";
+    // 同步更新 email，如果 profile 裡有的話
+    if (profile.email) currentUser.value.email = profile.email;
   }
 };
 
