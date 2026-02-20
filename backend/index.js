@@ -2,17 +2,23 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import db from './db/connection.js';
-
+import { v2 as cloudinary } from 'cloudinary';
 
 import authRoutes from './routes/auth.routes.js';
 
 dotenv.config();
+// Cloudinary 配置
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({limit: '10mb' })); // 增加 JSON 請求的大小限制
+app.use(express.urlencoded({limit: '10mb', extended: true }));
 
 //API 路由
 app.use('/api/auth', authRoutes);
@@ -46,12 +52,32 @@ app.get("/api/profile/:user_id", async (req, res) => {
 });
 
 // 更新個人資料的 API
-
 app.put("/api/profile/:user_id", async (req, res) => {
   const { user_id } = req.params;
   const data = req.body;
 
+  let imageUrl = data.user_file_path || null;
+
   try {
+    // 檢查是否有新的圖片 (如果是 Base64 字串，代表是新上傳的)
+    if (data.avatar && data.avatar.startsWith('data:image')) {
+      try {
+        const uploadResponse = await cloudinary.uploader.upload(data.avatar, {
+          upload_preset: 'ml_default',
+          folder: '專題/頭像', 
+          // 使用user_id固定檔名，這會覆蓋preset的Unique filename 設定
+          public_id: user_id, 
+          overwrite: true,
+          invalidate: true // 確保CDN緩存會更新，否則舊照片可能還會出現一陣子
+        });
+        imageUrl = uploadResponse.secure_url;
+        console.log("Cloudinary 上傳成功:", imageUrl);
+      } catch (error) {
+        console.error("Cloudinary 上傳失敗:", error);
+        throw error;
+      }
+    }
+
     const query = `
       UPDATE personal_information 
       SET 
@@ -72,19 +98,19 @@ app.put("/api/profile/:user_id", async (req, res) => {
     `;
 
     const values = [
-      data.name,
-      data.birthday,
-      data.phone_number,
-      data.landline,
-      data.email,
-      data.address,
-      data.ice_name,
-      data.ice_relationship,
-      data.ice_phone_number,
-      data.blood_type,
-      data.height,
-      data.weight,
-      data.user_file_path,
+      data.name || null,
+      (data.birthday && data.birthday.trim() !== "") ? data.birthday : null,
+      data.phone_number || null,
+      data.landline || null,
+      data.email || null,
+      data.address || null,
+      data.ice_name || null,
+      data.ice_relationship || null,
+      data.ice_phone_number || null,
+      data.blood_type || null,
+      data.height || 0,
+      data.weight || 0,
+      imageUrl,
       user_id
     ];
 
@@ -94,7 +120,7 @@ app.put("/api/profile/:user_id", async (req, res) => {
       return res.status(404).json({ success: false, message: "找不到該使用者或資料未變更" });
     }
 
-    res.json({ success: true, message: "資料庫更新成功" });
+    res.json({ success: true, message: "資料與圖片同步成功", imageUrl });
   } catch (err) {
     console.error("更新失敗:", err);
     res.status(500).json({ success: false, message: "伺服器更新錯誤", error: err.message });

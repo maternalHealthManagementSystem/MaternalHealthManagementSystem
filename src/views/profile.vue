@@ -468,24 +468,31 @@ const saveProfile = async () => {
       blood_type: profileData.bloodType.replace("型", ""), // 移除「型」字
       height: Number(profileData.height),
       weight: Number(profileData.weight),
-      user_file_path: profileData.avatar      // 雲端圖片網址或 Base64
+      avatar: profileData.avatar      // 雲端圖片網址或 Base64
     };
 
     // 3. 送出請求給後端
     const res = await api.put(`/api/profile/${loginUser.user_id}`, payload);
 
     if (res.data.success) {
-      // 4. 更新本地 localStorage 讓其他頁面同步
+      // 重要：將頭像替換為後端傳回的 Cloudinary URL
+      if (res.data.imageUrl) {
+        profileData.avatar = res.data.imageUrl;
+      }
+
+      // 更新本地快取，確保重新整理後也是最新的
       localStorage.setItem("userProfile", JSON.stringify(profileData));
+      
+      // 同步更新 App.vue 的側邊欄頭像與姓名
       localStorage.setItem("currentUser", JSON.stringify({
         name: profileData.name,
         email: profileData.email,
       }));
 
-      // 觸發 App.vue 更新側邊欄
+      // 觸發 storage 事件讓 Navbar 同步更新圖片
       window.dispatchEvent(new Event("storage"));
       
-      customAlert("🎉 資料已成功同步至資料庫！");
+      customAlert("🎉 個人資料與照片已成功儲存至雲端！");
     }
   } catch (error) {
     console.error("儲存失敗:", error);
