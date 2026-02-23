@@ -65,7 +65,7 @@ app.put("/api/profile/:user_id", async (req, res) => {
         const uploadResponse = await cloudinary.uploader.upload(data.avatar, {
           upload_preset: 'ml_default',
           folder: '專題/頭像', 
-          // 使用user_id固定檔名，這會覆蓋preset的Unique filename 設定
+          // 使用user_id固定檔名，覆蓋原先舊的頭像檔案
           public_id: user_id, 
           overwrite: true,
           invalidate: true // 確保CDN緩存會更新，否則舊照片可能還會出現一陣子

@@ -1,3 +1,4 @@
+// 控制路由導航，定義各個頁面對應的路徑和元件
 import { createRouter, createWebHashHistory } from "vue-router";
 import login from "../views/login.vue";
 import home from "../views/home.vue";
@@ -89,8 +90,8 @@ router.beforeEach((to, from, next) => {
   const publicPages = ['login']; 
   const authRequired = !publicPages.includes(to.name);
   
-  // 修正這裡：檢查 login.vue 存入的 'user'
-  const isLoggedIn = localStorage.getItem('user'); 
+  // 檢查 login.vue 存入的 'user'
+  const isLoggedIn = sessionStorage.getItem('user'); 
 
   if (authRequired && !isLoggedIn) {
     console.warn("未偵測到登入資訊，跳回登入頁");
