@@ -301,6 +301,14 @@ onMounted(async () => {
       profileData.dueDate = db.edc ? db.edc.split('T')[0] : "";
 
       console.log("資料庫個人資料載入成功！");
+
+      // 如果資料庫有網址就用網址，沒有就嘗試看快取有沒有
+      if (db.user_file_path) {
+        profileData.avatar = db.user_file_path;
+      } else {
+        const saved = JSON.parse(localStorage.getItem("userProfile"));
+        profileData.avatar = saved?.avatar || "";
+      }
     }
   } catch (error) {
     console.error("從資料庫載入失敗，嘗試載入本地暫存:", error);
@@ -475,7 +483,7 @@ const saveProfile = async () => {
     const res = await api.put(`/api/profile/${loginUser.user_id}`, payload);
 
     if (res.data.success) {
-      // 重要：將頭像替換為後端傳回的 Cloudinary URL
+      // 將頭像替換為後端傳回的 Cloudinary URL
       if (res.data.imageUrl) {
         profileData.avatar = res.data.imageUrl;
       }

@@ -263,43 +263,6 @@ const loadUserData = () => {
   }
 };
 
-onMounted(() => {
-  loadUserData();
-});
-
-// 監聽 localStorage 變化 (當使用者在 profile 頁面上傳頭像時)
-window.addEventListener("storage", (e) => {
-  if (e.key === "userProfile") {
-    loadUserData();
-  }
-});
-
-// 監聽路由變化,重新載入使用者資料 (處理同頁面更新的情況)
-watch(
-  () => route.path,
-  () => {
-    loadUserData();
-  }
-);
-
-/* 自動彈出首頁通知（僅剛登入後一次） */
-watch(
-  () => route.path,
-  (newPath) => {
-    if (newPath === "/home") {
-      const hasShown = localStorage.getItem("homeNotificationShown");
-
-      // 第一次進入首頁 → 自動開啟通知視窗
-      if (!hasShown) {
-        showNotificationModal.value = true;
-        localStorage.setItem("homeNotificationShown", "true");
-      }
-    }
-  },
-  { immediate: true }
-);
-
-
 // 認證狀態
 const showLogoutConfirm = ref(false);
 
@@ -309,21 +272,20 @@ const isSidebarOpen = ref(false);
 const openSidebar = () => {
   // 每次開啟側邊欄時重新載入資料,確保顯示最新頭像
   loadUserData();
-  isSidebarOpen.value = true;
+  isSidebarOpen.value = true
 };
 const closeSidebar = () => {
   isSidebarOpen.value = false;
 };
 
-/* Navbar icons / 通知 Modal 控制*/
 
-// 新增:通知 Modal 狀態
+// 通知 Modal 狀態
 const showNotificationModal = ref(false);
 
 const openNotificationModal = () => {
   showNotificationModal.value = true;
 
-  // 開啟後標記所有為已讀(依你需求可選)
+  // 開啟後標記所有為已讀
   notifications.value = notifications.value.map((n) => ({
     ...n,
     read: true,
@@ -360,20 +322,20 @@ const confirmLogout = () => {
   showLogoutConfirm.value = false;
 
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
-  localStorage.removeItem("user");        // login.vue 存的
-  localStorage.removeItem("loggedIn");    // router 守衛檢查的
+  sessionStorage.removeItem("user");        // login.vue 存的
+  sessionStorage.removeItem("loggedIn");    // router 守衛檢查的
   
   // 3. 其他資料清理
-  localStorage.removeItem("currentUser");
-  localStorage.removeItem("homeNotificationShown");
-  localStorage.removeItem("userProfile");
-  localStorage.removeItem("temp_user_id");
+  sessionStorage.removeItem("currentUser");
+  sessionStorage.removeItem("homeNotificationShown");
+  sessionStorage.removeItem("userProfile");
+  sessionStorage.removeItem("temp_user_id");
 
   // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
   userAvatar.value = "";
 
-  console.log("LocalStorage 已清理，跳轉至登入頁");
+  console.log("SessionStorage 已清理，跳轉至登入頁");
 
   // 5. 跳轉並重整 (確保狀態完全乾淨)
   router.push("/").then(() => {
@@ -385,24 +347,43 @@ const cancelLogout = () => {
   showLogoutConfirm.value = false;
 };
 
-/* -----------------------------
-   自動行為:換頁 → 關閉所有面板
------------------------------ */
+onMounted(() => {
+  loadUserData();
+});
 
+// 監聽 localStorage 變化 (當使用者在 profile 頁面上傳頭像時)
+window.addEventListener("storage", (e) => {
+  if (e.key === "userProfile") {
+    loadUserData();
+  }
+});
+
+/* -----------------------------
+   自動行為：換頁處理與通知彈窗
+----------------------------- */
 watch(
   () => route.path,
   (newPath) => {
-    // ---- 每次登入後第一次進 /home 就跳通知 ----
+    // 1. 處理「剛登入後第一次進首頁」的彈窗通知
     if (newPath === "/home") {
-      const justLoggedIn = localStorage.getItem("justLoggedIn");
+      // 統一檢查 sessionStorage 中的旗標
+      const justLoggedIn = sessionStorage.getItem("justLoggedIn");
+      const hasShown = sessionStorage.getItem("homeNotificationShown");
 
-      if (justLoggedIn) {
+      // 觸發條件：有剛登入旗標，且「本次會話」尚未顯示過通知
+      if (justLoggedIn === "true" || !hasShown) {
         showNotificationModal.value = true;
-        localStorage.removeItem("justLoggedIn"); // 第一次跳完後移除
+        
+        // 顯示後立刻標記為已顯示，並移除登入旗標
+        sessionStorage.setItem("homeNotificationShown", "true");
+        sessionStorage.removeItem("justLoggedIn");
+        
+        // 同步移除舊的 localStorage 標記以免干擾 (清理舊資料)
+        localStorage.removeItem("homeNotificationShown");
       }
     }
 
-    // ---- 換頁自動關 sidebar ----
+    // 2. 換頁時自動關閉側邊欄
     closeSidebar();
   },
   { immediate: true }
@@ -410,7 +391,7 @@ watch(
 
 
 /*通知數量控制 */
-// 通知列表(未來可從 API / localStorage 取得)
+// 通知列表(未來可從 API / sessionStorage 取得)
 const notifications = ref([
   { id: 1, title: "今日產檢提醒", read: false }, 
   { id: 2, title: "產後填寫問卷提醒", read: false }, // <--- 修正：將此項設為未讀
