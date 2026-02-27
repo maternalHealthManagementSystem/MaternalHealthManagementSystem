@@ -103,6 +103,16 @@
         </div>
       </div>
     </div>
+
+    <!-- 更多事件彈窗 -->
+    <EventListModal
+      v-if="showEventModal"
+      :events="modalEvents"
+      :date="modalDate"
+      @close="showEventModal = false"
+      @eventClick="handleEventClick"
+    />
+
   </div>
 </template>
 
@@ -110,6 +120,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import dayjs from 'dayjs'
+import EventListModal from './EventListModal.vue'
+
 
 // Props
 const props = defineProps({
@@ -122,6 +134,10 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['dayClick', 'monthChange', 'eventClick'])
 
+// 談窗狀態
+const showEventModal = ref(false)
+const modalEvents = ref([])
+const modalDate = ref('')
 
 // 響應式數據
 const currentDate = ref(dayjs())
@@ -240,6 +256,7 @@ function selectDay(day) {
 
 // 處理事件點擊
 function handleEventClick(event) {
+  showEventModal.value = false
   emit('eventClick', event)
 }
 
@@ -247,6 +264,9 @@ function handleEventClick(event) {
 function showMoreEvents(day) {
   // 可以顯示該日所有事件的列表
   console.log('顯示更多事件:', day.events)
+  modalEvents.value = day.events
+  modalDate.value = day.fullDate
+  showEventModal.value = true
 }
 
 // 開啟新增行程
@@ -551,24 +571,33 @@ onMounted(() => {
   opacity: 0.8;
 }
 
+/* 產檢：對應 type: 'checkup' */
 .event-checkup {
-  background: #ff6b9d;
+  background-color: #ff6b9d !important;
+  color: white !important;
 }
 
-.event-appointment {
-  background: #9c8ec9;
-}
-
+/* 其他：對應 type: 'other' */
 .event-other {
-  background: #4fc3f7;
+  background-color: #4fc3f7 !important;
+  color: white !important;
+}
+
+/* 日記：對應 type: 'diary' */
+.event-diary {
+  background-color: #4e7d50 !important;
+  color: white !important;
+}
+
+/* 提醒或預約 (視你的需求而定) */
+.event-appointment {
+  background-color: #9c8ec9 !important;
+  color: white !important;
 }
 
 .event-reminder {
-  background: #ffa726;
-}
-
-.event-diary {
-  background: #4e7d50;
+  background-color: #ffa726 !important;
+  color: white !important;
 }
 
 .more-events {

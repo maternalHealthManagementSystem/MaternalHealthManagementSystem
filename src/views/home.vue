@@ -42,7 +42,7 @@
       <div class="right-panel">
         <div class="calendar-section">
           <EventCalendar
-            :events="allEvents"
+            :events="combinedCalendarData"
             @dayClick="handleDayClick"
             @monthChange="handleMonthChange"
             @eventClick="handleEventClick"
@@ -75,7 +75,6 @@
     @close="closeDiaryDetail"
     @delete="handleDeleteDiary"
     @edit="handleEditDiary"
-    @save="handleSaveDiary"
   />
 </template>
 
@@ -86,10 +85,44 @@ import EventCalendar from "../components/Calendar/EventCalendar.vue";
 import EventDetailModal from "../components/Calendar/EventDetailModal.vue";
 import EventAddForm from "../components/Calendar/EventAddForm.vue";
 import DiaryDetailModal from "../components/Calendar/DiaryDetailModal.vue";
-import { useCalendarStore } from "../../stores/calendarStore.js"; // 使用相對路徑避免別名問題
+import { useCalendarStore } from '../stores/calendarStore.js'
 import dayjs from "dayjs";
 
-const calendarStore = useCalendarStore();
+const calendarStore = useCalendarStore()
+
+// 合併事件和日記（用於顯示在日曆上）
+const combinedCalendarData = computed(() => {
+  const ev = calendarStore.events || [];
+  const di = calendarStore.diaries || [];
+  
+  return [
+    ...ev.map(e => ({ ...e, isDiary: false })),
+    ...di.map(d => ({ 
+      ...d, 
+      isDiary: true, 
+      title: `${d.title}`,
+      type: 'diary' 
+    }))
+  ];
+});
+
+onMounted(async () => {
+  await calendarStore.fetchAllData('U001');
+
+  if (router.query.date) {
+    newDiary.value.date = router.query.date;
+    currentMonth.value = dayjs(router.query.date);
+  }
+
+  if (router.query.editEventId) {
+    const eventToEdit = calendarStore.events.find(e => e.id == route.query.editEventId);
+    if (eventToEdit) {
+      selectedEvent.value = { ...eventToEdit };
+      showEditForm.value = true;
+    }
+  }
+});
+
 const router = useRouter();
 
 // 彈窗狀態
@@ -103,10 +136,6 @@ const selectedEvent = ref({});
 
 // 選中的日記
 const selectedDiary = ref({});
-
-// --- Computed ---
-// 從 Store 取得合併後的事件和日記
-const allEvents = computed(() => calendarStore.allEvents);
 
 // --- 函式處理 ---
 onMounted(() => {

@@ -4,7 +4,7 @@
       <!-- 行事曆區域 -->
       <div class="calendar-section">
         <EventCalendar 
-          :events="allEvents"
+          :events="combinedCalendarData"
           @dayClick="handleDayClick"
           @monthChange="handleMonthChange"
           @eventClick="handleEventClick"
@@ -117,7 +117,7 @@
       @close="showDiaryEdit = false"
       @save="handleSaveDiary"
     />
-  <CalendarSystem />
+
   </div>
 </template>
 
@@ -132,11 +132,11 @@ import DiaryDetailModal from '../components/Calendar/DiaryDetailModal.vue'
 import DiaryEditForm from '../components/Calendar/DiaryEditForm.vue'
 import dayjs from 'dayjs'
 
-import { useCalendarStore } from '../../stores/calendarStore.js'
-const calendarStore = useCalendarStore()
+import { useCalendarStore } from '../stores/calendarStore.js'
 
 // --- 新增路由實例 ---
 const route = useRoute()
+const calendarStore = useCalendarStore()
 
 // 彈窗狀態
 const showEventDetail = ref(false)
@@ -146,16 +146,8 @@ const showDiaryDetail = ref(false)
 const showDiaryEdit = ref(false)
 const defaultAddDate = ref("")
 
-// 新增日記表單
-const selectedDiary = ref({
-  id:'',
-  date: '',
-  title: '',
-  content: '',
-  image: '',
-  createdAt: '',
-  updatedAt: ''
-})
+const selectedDiary = ref({})
+const selectedEvent = ref({})
 
 // 新增日記表單
 const newDiary = ref({
@@ -166,77 +158,58 @@ const newDiary = ref({
   imageFile: null
 })
 
-const selectedEvent = ref({
-  id: '',
-  date: '',
-  title: '',
-  type: '',
-  startDate: '',
-  startTime: '',
-  endTime: '',
-  location: '',
-  description: ''
-})
 
 // 合併事件和日記（用於顯示在日曆上）
-const allEvents = computed(() => calendarStore.allEvents)
-
-// 在元件掛載後檢查是否有編輯行程的 ID
-onMounted(() => {
-  // 檢查是否有傳遞特定日期，並選中它（如果有需要的話）
-  if (route.query.date) {
-      // 如果 Home 頁面傳遞了日期，可以讓日曆定位到該月份，或讓日記表單選中該日期
-      newDiary.value.date = route.query.date
-      currentMonth.value = dayjs(route.query.date) // 讓日曆顯示該月份
-  }
-
-  // 檢查是否有傳遞要編輯的 Event ID
-  if (route.query.editEventId) {
-      const eventId = parseInt(route.query.editEventId);
-      // 嘗試從 Store 的 events 陣列中找到該行程 
-      const eventToEdit = calendarStore.events.find(e => e.id === eventId);
-      
-      if (eventToEdit) {
-          // 找到後，將其設置為 selectedEvent 並打開編輯表單
-          selectedEvent.value = { ...eventToEdit };
-          showEditForm.value = true;
-      }
-  }
+const combinedCalendarData = computed(() => {
+  const ev = calendarStore.events || [];
+  const di = calendarStore.diaries || [];
   
-  // 檢查日記編輯參數 
-  if (route.query.editDiaryId) {
-      const diaryId = parseInt(route.query.editDiaryId);
-      // 從 Store 的 diaries 陣列中找到該日記
-      const diaryToEdit = calendarStore.diaries.find(d => d.id === diaryId);
-      
-      if (diaryToEdit) {
-          // 找到後，設置為 selectedDiary 並打開【日記編輯】表單
-          selectedDiary.value = { ...diaryToEdit };
-          showDiaryEdit.value = true; 
-          
-          // 如果同時傳了日期，確保日記表單選中該日期
-          if (route.query.date) {
-              newDiary.value.date = route.query.date;
-          }
-      }
+  return [
+    ...ev.map(e => ({ ...e, isDiary: false })),
+    ...di.map(d => ({ 
+      ...d, 
+      isDiary: true, 
+      title: `${d.title}`, 
+      type: 'diary' 
+    }))
+  ];
+});
+
+onMounted(async () => {
+  await calendarStore.fetchAllData('U001');
+
+  if (route.query.date) {
+    newDiary.value.date = route.query.date;
+    currentMonth.value = dayjs(route.query.date);
+  }
+  // 從首頁點擊行程編輯跳轉至孕育時光表
+  if (route.query.editEventId) {
+    const eventToEdit = calendarStore.events.find(e => e.id == route.query.editEventId);
+    if (eventToEdit) {
+      selectedEvent.value = { ...eventToEdit };
+      showEditForm.value = true;
     }
-})
+  }
+  // 從首頁點擊日記編輯跳轉至孕育時光表
+  if (route.query.editDiaryId) {
+    const diaryToEdit = calendarStore.diaries.find(d => d.id === route.query.editDiaryId);
+    if (diaryToEdit) {
+      console.log("偵測到日記編輯請求:", diaryToEdit);
+      selectedDiary.value = { ...diaryToEdit };
+      showDiaryEdit.value = true; // 關鍵：開啟日記編輯彈窗
+    }
+  }
+});
 
-// 處理行程、日記點擊 
-function handleEventClick(event) {
-  console.log('handleEventClick 被觸發!')
-  console.log('event:', event)
-
-  // 判斷是日記還是行程
-  if (event.isDiary) {
-    // 顯示日記詳細資訊
-    const fullDiary = calendarStore.diaries.find(d => d.id === event.id);
-    selectedDiary.value = { ...fullDiary }
-    showDiaryDetail.value = true
+// 處理點擊日曆上的物件
+function handleEventClick(item) {
+  if (item.isDiary) {
+    const fullDiary = calendarStore.diaries.find(d => d.id === item.id);
+    selectedDiary.value = { ...fullDiary };
+    showDiaryDetail.value = true;
   } else {
-    // 顯示行程詳細資訊
-    selectedEvent.value = { ...event }
-    showEventDetail.value = true
+    selectedEvent.value = { ...item };
+    showEventDetail.value = true;
   }
 }
 
@@ -368,35 +341,29 @@ function removeImage() {
 }
 
 // 儲存日記
-function saveDiary() {
-    if (!newDiary.value.date) {
-        alert('請選擇日期')
-        return
-    }
-    if (!newDiary.value.content && !newDiary.value.imagePreview) {
-        alert('請輸入日記內容或上傳圖片')
-        return
-    }
+const saveDiary = async () => {
+  // 欄位驗證
+  if (!newDiary.value.date) {
+    alert('請選擇日期')
+    return
+  }
+  if (!newDiary.value.content && !newDiary.value.imageFile) {
+    alert('請輸入內容或上傳圖片 (兩者至少擇一)')
+    return
+  }
 
-    // 建立新日記 (ID 生成邏輯保持不變)
-    const diary = {
-        id: Date.now(), // 這裡使用時間戳記作為 ID
-        date: newDiary.value.date,
-        title: newDiary.value.title || '今日日記',
-        content: newDiary.value.content,
-        image: newDiary.value.imagePreview,
-        createdAt: new Date().toISOString()
-    }
+  // 建立日記資料物件
+  try {
+  // 呼叫 Store 的 Action
+  await calendarStore.addDiary(newDiary.value, newDiary.value.imageFile);
 
-    console.log('儲存日記:', diary)
-
-    // *** 呼叫 Store 的 Action ***
-    calendarStore.addDiary(diary)
-
-    alert(`日記已儲存！\n日期：${selectedDateDisplay.value}`)
-
-    // 重置日記表單
-    resetDiaryForm()
+  alert(`日記已儲存！`)
+  // 重置日記表單
+  resetDiaryForm()
+  } catch (error) {
+    console.error('儲存失敗:', error)
+    alert('儲存失敗')
+  }
 }
 
 // 重置日記表單
@@ -434,10 +401,16 @@ function handleEditDiary(diary) {
 function handleSaveDiary(updatedDiary) {
     console.log('儲存編輯日記:', updatedDiary)
     // *** 呼叫 Store 的 Action ***
-    calendarStore.updateDiary(updatedDiary)
-    alert('日記已更新！')
-
-    showDiaryEdit.value = false
+    calendarStore.updateDiary(updatedDiary, updatedDiary.newImageFile)
+    .then(() => {
+      alert('日記已更新！');
+      showDiaryEdit.value = false;
+      calendarStore.fetchAllData('U001');
+    })
+    .catch(err => {
+      console.error('更新出錯:', err);
+      alert('更新失敗');
+    });
 }
 </script>
 

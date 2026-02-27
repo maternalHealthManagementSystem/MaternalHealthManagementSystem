@@ -238,6 +238,7 @@ function saveDiary() {
     title: formData.value.title || '每日日記',
     content: formData.value.content,
     image: formData.value.imagePreview,
+    newImageFile: formData.value.imageFile,
     createdAt: props.diary.createdAt, // 保留原建立時間
     updatedAt: new Date().toISOString() // 新增更新時間
   }
