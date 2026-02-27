@@ -510,7 +510,18 @@ const saveProfile = async () => {
 
 const backbtn = () => router.back();
 const clean = () => {
-  Object.keys(profileData).forEach((k) => (profileData[k] = ""));
+  // 定義不需要被清除的欄位的key
+  const keepFields = ["dueDate", "avatar"];
+
+  Object.keys(profileData).forEach((k) => {
+    // 只有當 key 不在排除名單內時，才執行清除
+    if (!keepFields.includes(k)) {
+      profileData[k] = "";
+    }
+  });
+  
+  // 同時清空錯誤訊息提示
+  Object.keys(errors).forEach((k) => (errors[k] = ""));
 };
 
 const customAlert = (message) => {
@@ -733,6 +744,12 @@ const handleFileUpload = (event) => {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
   outline: none;
+}
+/* 唯讀欄位樣式 */
+.input-field[readonly] {
+  background-color: #f0f2f5;
+  cursor: not-allowed;
+  color: #888;
 }
  /* 底部操作按鈕 */
 .action-buttons {

@@ -6,6 +6,7 @@ import { v2 as cloudinary } from 'cloudinary';
 
 import authRoutes from './routes/auth.routes.js';
 
+
 dotenv.config();
 // Cloudinary 配置
 cloudinary.config({
@@ -127,3 +128,5 @@ app.put("/api/profile/:user_id", async (req, res) => {
   }
 });
 
+import growthRoutes from "./routes/growth.routes.js";
+app.use("/api/growth", growthRoutes);
