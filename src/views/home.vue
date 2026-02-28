@@ -241,7 +241,7 @@ function calculatePregnancy(dueDate) {
 const fetchGrowthData = async (week) => {
   try {
     const targetWeek = Math.max(4, Math.min(40, week));
-    const res = await api.get(`/api/growth/${week}`);
+    const res = await api.get(`/api/growth/${targetWeek}`);
     
     if (res.data) {
       currentData.value = {
