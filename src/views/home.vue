@@ -216,7 +216,7 @@ const currentData = ref({
   weight: "--",
 });
 
-// 1. 核心邏輯：計算週數 (參考資料庫 edc 欄位)
+// 1. 核心邏輯：用EDC計算週數和天數
 function calculatePregnancy(dueDate) {
   const today = dayjs().startOf("day");   
   const edc = dayjs(dueDate).startOf("day");
@@ -237,7 +237,6 @@ function calculatePregnancy(dueDate) {
 }
 
 // 2. 核心邏輯：抓取水果資料
-// 注意：這裡假設你的後端有一個 /api/growth-info/:week 的路由
 const fetchGrowthData = async (week) => {
   try {
     const targetWeek = Math.max(4, Math.min(40, week));
@@ -248,7 +247,7 @@ const fetchGrowthData = async (week) => {
         name: res.data.fruit_name,
         length: res.data.baby_length,
         weight: res.data.baby_weight,
-        img: res.data.growth_file_path // 資料庫中的 Cloudinary 網址
+        img: res.data.growth_file_path 
       };
     }
   } catch (error) {
