@@ -93,6 +93,39 @@ import api from "../services/api.js";
 const calendarStore = useCalendarStore();
 const router = useRouter();
 
+// 合併事件和日記（用於顯示在日曆上）
+const combinedCalendarData = computed(() => {
+  const ev = calendarStore.events || [];
+  const di = calendarStore.diaries || [];
+  
+  return [
+    ...ev.map(e => ({ ...e, isDiary: false })),
+    ...di.map(d => ({ 
+      ...d, 
+      isDiary: true, 
+      title: `${d.title}`,
+      type: 'diary' 
+    }))
+  ];
+});
+
+onMounted(async () => {
+  await calendarStore.fetchAllData('U001');
+
+  if (router.query.date) {
+    newDiary.value.date = router.query.date;
+    currentMonth.value = dayjs(router.query.date);
+  }
+
+  if (router.query.editEventId) {
+    const eventToEdit = calendarStore.events.find(e => e.id == route.query.editEventId);
+    if (eventToEdit) {
+      selectedEvent.value = { ...eventToEdit };
+      showEditForm.value = true;
+    }
+  }
+});
+
 // 彈窗狀態
 const showEventDetail = ref(false);
 const showAddForm = ref(false);
@@ -104,10 +137,6 @@ const selectedEvent = ref({});
 
 // 選中的日記
 const selectedDiary = ref({});
-
-// --- Computed ---
-// 從 Store 取得合併後的事件和日記
-const allEvents = computed(() => calendarStore.allEvents);
 
 // --- 函式處理 ---
 onMounted(() => {
@@ -195,14 +224,6 @@ function handleEditDiary(diary) {
   });
 }
 
-// 只需要處理日曆需要的回調
-function handleDayClick(day) {
-  console.log("Home Page - Date Clicked:", day.fullDate);
-}
-function handleMonthChange(month) {
-  console.log("Home Page - Month Changed:", month);
-}
-
 //------------------------
 // 寶寶示意圖邏輯
 //------------------------
@@ -217,23 +238,24 @@ const currentData = ref({
 });
 
 // 1. 核心邏輯：用EDC計算週數和天數
-function calculatePregnancy(dueDate) {
+function calculatePregnancyByLMP(lmpDate) {
   const today = dayjs().startOf("day");   
-  const edc = dayjs(dueDate).startOf("day");
+  const lmp = dayjs(lmpDate).startOf("day");
 
-  const totalDays = 280;
-  const remainingDays = edc.diff(today, "day");
+  const diffDays = today.diff(lmp, "day");// 計算從 LMP 到今天總共過了多少天
 
-  const passedDays = totalDays - remainingDays;
-
-  if (passedDays < 0) {
+  if (diffDays < 0) { //// 如果今天比 LMP 還早，表示還沒懷孕或日期錯誤
     currentWeek.value = 0;
     currentDay.value = 0;
     return;
   }
+  // 超過 280 天通常代表已生產或過期妊娠，但邏輯上我們最高顯示 40 週
+  const currentTotalDays = Math.min(diffDays, 280);
 
-  currentWeek.value = Math.floor(passedDays / 7);
-  currentDay.value = passedDays % 7;
+  currentWeek.value = Math.floor(currentTotalDays / 7);
+  currentDay.value = currentTotalDays % 7;
+
+  console.log(`LMP: ${lmpDate}, 目前已過: ${currentTotalDays} 天`);
 }
 
 // 2. 核心邏輯：抓取水果資料
@@ -263,15 +285,14 @@ onMounted(async () => {
 
   try {
     const res = await api.get(`/api/profile/${loginUser.user_id}`);
-    console.log("個人資料:", res.data);
 
-    if (res.data?.edc) {
-      calculatePregnancy(res.data.edc);
+    if (res.data && res.data.LMP) {
+      calculatePregnancyByLMP(res.data.LMP);
       console.log("計算後週數:", currentWeek.value);
 
       await fetchGrowthData(currentWeek.value);
     } else {
-      console.log("沒有 edc");
+      console.log("沒有lmp資料，無法計算週數");
     }
   } catch (error) {
     console.error("初始化首頁資料失敗:", error);

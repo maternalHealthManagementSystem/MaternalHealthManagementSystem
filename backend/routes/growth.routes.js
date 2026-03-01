@@ -1,3 +1,5 @@
+//讀growth_diagram中的資料，根據week參數回傳對應的資料
+
 import express from "express";
 import db from "../db/connection.js";
 
