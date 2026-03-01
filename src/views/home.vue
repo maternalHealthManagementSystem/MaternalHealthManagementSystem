@@ -257,24 +257,26 @@ const fetchGrowthData = async (week) => {
 
 onMounted(async () => {
   const loginUser = JSON.parse(localStorage.getItem("user") || "{}");
+  console.log("登入使用者:", loginUser);
+
   if (!loginUser.user_id) return;
 
   try {
     const res = await api.get(`/api/profile/${loginUser.user_id}`);
+    console.log("個人資料:", res.data);
 
     if (res.data?.edc) {
       calculatePregnancy(res.data.edc);
+      console.log("計算後週數:", currentWeek.value);
 
-      if (currentWeek.value >= 4) {
-        await fetchGrowthData(currentWeek.value);
-      }
+      await fetchGrowthData(currentWeek.value);
+    } else {
+      console.log("沒有 edc");
     }
   } catch (error) {
     console.error("初始化首頁資料失敗:", error);
   }
 });
-
-
 </script>
 
 <style scoped>
