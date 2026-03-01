@@ -8,7 +8,7 @@
       <div class="meta-header">
         <div class="header-content">
           <h2 class="record-title">{{ record.title }}</h2>
-          <span class="record-date">填寫時間：{{ formatTime(record.id) }}</span>
+          <span class="record-date">填寫時間：{{ formatTime(record.submitTime) }}</span>
         </div>
       </div>
 
@@ -28,8 +28,8 @@
         <div class="form-card">
           <div class="card-label">基本資料</div>
           <div class="card-body">
-            <p><strong>身分：</strong> {{ record.form.identity == '1' ? '準媽媽' : '寶寶媽媽' }}</p>
-            <p><strong>預產期/寶寶生日：</strong> {{ record.form.date }}</p>
+            <p><strong>身分：</strong> {{ record.form.identityText }}</p>
+            <p><strong>預產期/寶寶生日：</strong> {{ record.form.date || '未填寫'}}</p>
           </div>
         </div>
 
@@ -40,7 +40,7 @@
               <p class="qa-question">{{ q.id }}. {{ q.text }}</p>
               <div class="qa-answer">
                 <span class="ans-label">您的回答：</span>
-                <span class="ans-text">{{ getSelectedText(q) }}</span>
+                <span class="ans-text">{{ q.answerText }}</span>
                 <span class="ans-score">({{ q.selectedVal }}分)</span>
               </div>
             </div>
@@ -140,13 +140,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
+// 引入 JSON 檔案
+import prenatalQuestions from '../assets/data/prenatalQuestions.json'; 
+import depressionQuestions from '../assets/data/depressionQuestions.json';
 
 const route = useRoute();
 const router = useRouter();
 const record = ref(null);
+const isLoading = ref(true);
 
 // --- 選項對照表 ---
 const optionMaps = {
@@ -171,33 +175,123 @@ const medicalLabels = {
   '8-11': '孕期感染性疾病', '8-12': '性傳染病'
 };
 
-// --- 愛丁堡 Helper ---
+// 衛教指導的映射邏輯：用 JSON 中的 educationTopics
+const mapPrenatalEducation = (backendAnswers) => {
+  let globalIndex = 1; // 對應後端 question_index (1-18)
+  
+  return prenatalQuestions.educationTopics.map(topic => {
+    return {
+      title: topic.title,
+      points: topic.points.map(p => {
+        // 從後端回傳資料中找尋對應索引的數值
+        const answer = backendAnswers.find(a => parseInt(a.index) === globalIndex);
+        globalIndex++;
+        return {
+          text: p.text,
+          value: answer ? answer.value : 0
+        };
+      })
+    };
+  });
+};
+
+// --- 獲取詳細資料的函式 ---
+const fetchDetail = async () => {
+  const responseId = route.params.id;
+  const formType = route.query.type; // 從網址取得 ?type=...
+  try {
+    isLoading.value = true;
+    
+    // 直接根據 type 決定 API 路徑與判斷布林值
+    const isPrenatal = formType === 'prenatal';
+    const apiUrl = isPrenatal 
+      ? `http://localhost:3000/api/prenatal_detail/${responseId}`
+      : `http://localhost:3000/api/edinburgh_detail/${responseId}`;
+
+    const response = await fetch(apiUrl);
+    if (!response.ok) throw new Error("找不到紀錄");
+    const data = await response.json();
+
+    if (isPrenatal) {
+      // --- 映射產前表單資料 ---
+      record.value = {
+        submitTime: data.summary.submit_time,
+        title: "孕婦產前健康照護衛教指導紀錄表",
+        type: 'prenatal',
+        formData: {
+          name: data.summary.name,
+          idNumber: data.summary.idNumber,
+          birthDate: data.summary.birthDate,
+          address: data.summary.address,
+          phone: data.summary.phone,
+          homePhone: data.summary.homePhone,
+          behavior: data.behavior, // 包含 smoking, drinking 等
+          medicalHistory: data.medicalHistory // 包含 hasHistory, selectedItems
+        },
+        // 將 18 題扁平資料轉為分組格式
+        eduData: mapPrenatalEducation(data.education)
+      };
+    } else {
+      // --- 映射愛丁堡量表資料 ---
+      record.value = {
+        submitTime: data.summary.submit_time,
+        title: "愛丁堡產後憂鬱量表",
+        type: 'depression',
+        totalScore: data.summary.total_score,
+        message: data.summary.advice,
+        form: {
+          identityText: data.summary.role,
+          date: data.summary.edc
+        },
+        questions: data.answers.map(ans => {
+          const questionInfo = depressionQuestions.find(q => q.id == ans.question_num);
+          return {
+            id: ans.question_num,
+            text: questionInfo ? questionInfo.text : "未知題目",
+            selectedVal: ans.score,
+            answerText: ans.answer_text
+          };
+        })
+      };
+    }
+  } catch (error) {
+    console.error("讀取詳細資料失敗:", error);
+    record.value = null;
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchDetail();
+});
+
+// --- 其他輔助函式 ---
 const getScoreClass = (score) => {
   if (score >= 13) return 'status-danger';
   if (score >= 10) return 'status-warning';
   return 'status-normal';
 };
 
-const getSelectedText = (question) => {
-  const selected = question.options.find(opt => opt.value === question.selectedVal);
-  return selected ? selected.text : '未作答';
-};
-
+// 時間格式化函式
 const formatTime = (timestamp) => {
   if (!timestamp) return '';
+  
+  // 將 timestamp (毫秒) 轉為 Date 物件
   const date = new Date(timestamp);
-  if (isNaN(date.getTime())) return timestamp;
+  
+  // 轉為中文格式 
   return date.toLocaleString('zh-TW', {
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit'
+    year: 'numeric',
+    month: '2-digit', 
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    // hour12: false // 使用 24 小時制
   });
 };
 
-onMounted(() => {
-  const id = route.params.id;
-  const allRecords = JSON.parse(localStorage.getItem('assessment_history') || '[]');
-  record.value = allRecords.find(r => r.id == id);
-});
 </script>
 
 <style scoped>

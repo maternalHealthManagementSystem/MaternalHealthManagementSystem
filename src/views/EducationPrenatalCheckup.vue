@@ -70,7 +70,7 @@
     </div>
 
     <div v-else class="no-result">
-      <img src="../assets/no-result.png" alt="" />
+      <img src="https://res.cloudinary.com/dfrjrvt44/image/upload/v1769574328/no-result_gtetqp.png" alt="" />
       <p>查無搜尋結果</p>
     </div>
   </div>

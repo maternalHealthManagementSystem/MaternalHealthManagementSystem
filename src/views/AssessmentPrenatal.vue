@@ -195,20 +195,20 @@
                 <p class="hint-text">請準媽媽自我評估是否清楚下列指導重點 (第 4~6 大題)：</p>
                 
                 <div v-for="(topic, index) in educationTopics.slice(3)" :key="topic.title" class="edu-topic">
-                <h4 class="topic-title">{{ topic.title }}</h4>
-                <div class="topic-items">
-                    <div v-for="(point, pIndex) in topic.points" :key="pIndex" class="edu-item-row">
-                    <p class="edu-text">{{ point.text }}</p>
-                    <div class="edu-radio-group">
-                        <label class="radio-label">
-                        <input type="radio" :name="`edu-${index + 3}-${pIndex}`" v-model="point.value" :value="1"> 清楚
-                        </label>
-                        <label class="radio-label">
-                        <input type="radio" :name="`edu-${index + 3}-${pIndex}`" v-model="point.value" :value="0"> 不清楚
-                        </label>
-                    </div>
-                    </div>
-                </div>
+                  <h4 class="topic-title">{{ topic.title }}</h4>
+                  <div class="topic-items">
+                      <div v-for="(point, pIndex) in topic.points" :key="pIndex" class="edu-item-row">
+                        <p class="edu-text">{{ point.text }}</p>
+                        <div class="edu-radio-group">
+                            <label class="radio-label">
+                              <input type="radio" :name="`edu-${index + 3}-${pIndex}`" v-model="point.value" :value="1"> 清楚
+                            </label>
+                            <label class="radio-label">
+                              <input type="radio" :name="`edu-${index + 3}-${pIndex}`" v-model="point.value" :value="0"> 不清楚
+                            </label>
+                        </div>
+                      </div>
+                  </div>
                 </div>
             </div>
         </div>
@@ -245,7 +245,7 @@
                 <button class="modal-close" @click="closeModal">×</button>
 
                 <div class="modal-content">
-                    <img :src="successImage" alt="送出成功" class="modal-icon" />
+                    <img src="https://res.cloudinary.com/dfrjrvt44/image/upload/v1769574284/success_kjzrgr.png" alt="送出成功" class="modal-icon" />
                     <h3 class="modal-title" style="color: #333;">送出成功</h3>
                 </div>
             </div>
@@ -256,7 +256,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router'; 
-import successImage from '../assets/success.png';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
 // 引入 JSON 資料
@@ -264,13 +263,38 @@ import prenatalQuestions from '../assets/data/prenatalQuestions.json';
 // 使用 JSON 資料初始化變數
 const generalMedicalOptions = prenatalQuestions.generalMedicalOptions;
 const seriousComplications = prenatalQuestions.seriousComplications;
-// 注意：因為 educationTopics 裡的 value 需要響應式 (v-model 綁定)
-// 所以建議用 reactive 包起來，或是深拷貝一份
+// 因為 educationTopics 裡的 value 需要響應式 (v-model 綁定)
+// 用 reactive 包起來，或是深拷貝一份
 const educationTopics = reactive(JSON.parse(JSON.stringify(prenatalQuestions.educationTopics)));
 // 定義步驟狀態
 const currentStep = ref(1);
 const totalSteps = 5;
 const panelRef = ref(null);
+
+// 表單資料模型
+const form = reactive({
+  name: '',
+  idNumber: '',
+  birthDate: '',
+  phone: '',
+  homePhone: '', 
+  address: '',   
+  behavior: {
+    smoking: null,
+    secondhandSmoke: null,
+    drinking: null,
+    betelNut: null,
+    drugs: null,    
+    depression1: null,
+    depression2: null
+  },
+  medicalHistory: {
+    hasHistory: null,
+    selectedItems: [],
+    otherNote: '',
+  }
+});
+
 // 2.下一頁與上一頁的函式
 const nextStep = () => {
   // 先驗證當前頁面有沒有填寫完整
@@ -332,66 +356,43 @@ const validateCurrentStep = () => {
   return true;
 };
 
-onMounted(() => {
-  const savedProfileStr = localStorage.getItem("userProfile");
+// onMounted(() => {
+//   const savedProfileStr = localStorage.getItem("userProfile");
   
-  if (savedProfileStr) {
-    try {
-      const profile = JSON.parse(savedProfileStr);
+//   if (savedProfileStr) {
+//     try {
+//       const profile = JSON.parse(savedProfileStr);
       
-      console.log("讀取到的資料:", profile); // 可以用F12確認資料有沒有進來
+//       console.log("讀取到的資料:", profile); // 可以用F12確認資料有沒有進來
 
-      // 1. 帶入姓名
-      if (profile.name) form.name = profile.name;
+//       // 1. 帶入姓名
+//       if (profile.name) form.name = profile.name;
       
-      // 2. 帶入身分證 (修正 Login.vue 後這裡才會有值)
-      if (profile.idNumber) form.idNumber = profile.idNumber;
+//       // 2. 帶入身分證 (修正 Login.vue 後這裡才會有值)
+//       if (profile.idNumber) form.idNumber = profile.idNumber;
       
-      // 3. 帶入出生日期 (格式轉換)
-      if (profile.dob) {
-        // 將 "1990/05/15" 轉換為 "1990-05-15"
-        // <input type="date"> 只接受 "YYYY-MM-DD"
-        form.birthDate = profile.dob.replace(/\//g, '-');
-      }
+//       // 3. 帶入出生日期 (格式轉換)
+//       if (profile.dob) {
+//         // 將 "1990/05/15" 轉換為 "1990-05-15"
+//         // <input type="date"> 只接受 "YYYY-MM-DD"
+//         form.birthDate = profile.dob.replace(/\//g, '-');
+//       }
       
-      // 4. 帶入手機
-      if (profile.mobile) form.phone = profile.mobile;
+//       // 4. 帶入手機
+//       if (profile.mobile) form.phone = profile.mobile;
       
-      // 5. 帶入市話
-      if (profile.landline) form.homePhone = profile.landline;
+//       // 5. 帶入市話
+//       if (profile.landline) form.homePhone = profile.landline;
       
-      // 6. 帶入地址
-      if (profile.address) form.address = profile.address;
+//       // 6. 帶入地址
+//       if (profile.address) form.address = profile.address;
 
-    } catch (e) {
-      console.error("解析使用者資料失敗:", e);
-    }
-  }
-});
+//     } catch (e) {
+//       console.error("解析使用者資料失敗:", e);
+//     }
+//   }
+// });
 
-// 表單資料模型
-const form = reactive({
-  name: '',
-  idNumber: '',
-  birthDate: '',
-  phone: '',
-  homePhone: '', 
-  address: '',   
-  behavior: {
-    smoking: null,
-    secondhandSmoke: null,
-    drinking: null,
-    betelNut: null,
-    drugs: null,    
-    depression1: null,
-    depression2: null
-  },
-  medicalHistory: {
-    hasHistory: null,
-    selectedItems: [],
-    otherNote: '',
-  }
-});
 
 // 計算填寫進度
 const completionRate = computed(() => {
@@ -418,7 +419,7 @@ const completionRate = computed(() => {
   totalCount++;
   if (form.medicalHistory.hasHistory !== null) filledCount++;
 
-  // 4. 檢查衛教指導 (5大題共 11小題)
+  // 4. 檢查衛教指導 (6大題共 18小題)
   educationTopics.forEach(topic => {
     topic.points.forEach(point => {
       totalCount++;
@@ -441,41 +442,70 @@ const router = useRouter();
 // 控制彈窗顯示的狀態
 const showSuccessModal = ref(false);
 
-// 送出表單的函式
-const submitForm = () => {
-    // 定義基本資料的欄位
-    const basicFields = ['name', 'idNumber', 'birthDate', 'phone', 'homePhone', 'address'];
-    // 檢查基本資料是否有缺漏
-    const isBasicInfoIncomplete = basicFields.some(field => !form[field] || form[field].trim() === '');
+// --- 從後端 API 自動代入基本資料 ---
+onMounted(async () => {
+  try {
+    const userId = 'U001'; 
+    const response = await fetch(`http://localhost:3000/api/personal_information/${userId}`);
+    const result = await response.json();
 
-    if(isBasicInfoIncomplete){
-        alert('請填寫基本資料所有欄位。');
-        return;
-    }else if (completionRate.value <  100) {  // 檢查完成度是否為 100%
-        alert('您還有題目尚未完成，請檢查所有題目。');
-    } else {
-        // 讀取目前 localStorage 裡是否已經有舊資料
-        const historyData = JSON.parse(localStorage.getItem('assessment_history') || '[]');
-
-        // 建立一筆新紀錄物件
-        const newRecord = {
-            id: Date.now(), // 用時間戳記當作唯一 ID
-            title: '孕婦產前健康照護衛教指導紀錄表',
-            date: new Date().toLocaleDateString(), // 儲存當下日期
-            timestamp: new Date().getTime(), // 排序用
-            formData: JSON.parse(JSON.stringify(form)), // 深拷貝表單內容，避免參照問題
-            eduData: JSON.parse(JSON.stringify(educationTopics)) // 衛教題目的勾選狀態也要存
-        };
-
-        // 加入陣列並存回 localStorage
-        historyData.unshift(newRecord); // unshift 讓最新的排在最前面
-        localStorage.setItem('assessment_history', JSON.stringify(historyData));
-
-        console.log('Form Data Saved:', newRecord);
-
-        // 顯示成功視窗
-        showSuccessModal.value = true; 
+    if (result.success && result.data) {
+      const p = result.data;
+      
+      // 執行欄位對應
+      if (p.userName) form.name = p.userName;
+      if (p.idNumber) form.idNumber = p.idNumber;
+      
+      // 處理日期格式：HTML5 <input type="date"> 只接受 YYYY-MM-DD
+      if (p.birthday) {
+        form.birthDate = p.birthday.replace(/\//g, '-');
+      }
+      
+      if (p.phone) form.phone = p.phone;
+      if (p.homePhone) form.homePhone = p.homePhone;
+      if (p.address) form.address = p.address;
+      
+      console.log("產前表單基本資料代入成功");
     }
+  } catch (error) {
+    console.error("從後端抓取資料失敗，執行本地備案:", error);
+    // 備案：若 API 失敗，可嘗試從 localStorage 讀取
+    const saved = JSON.parse(localStorage.getItem("userProfile") || '{}');
+    if (saved.name) form.name = saved.name;
+  }
+});
+
+const submitForm = async () => {
+  // 驗證邏輯 (維持你原有的驗證)
+  if (completionRate.value < 100) {
+    alert('您還有題目尚未完成，請檢查所有題目。');
+    return;
+  }
+
+  try {
+    const userId = 'U001'; // 實務上請從 profile 獲取，如 profile.user_id
+
+    const response = await fetch("http://localhost:3000/api/submit_prenatal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        form: form,              // 包含基本資料、行為、病史
+        educationTopics: educationTopics // 18 題衛教資料
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      showSuccessModal.value = true;
+    } else {
+      alert("儲存失敗：" + result.message);
+    }
+  } catch (error) {
+    console.error("連線錯誤：", error);
+    alert("無法連線至伺服器");
+  }
 };
 
 // 關閉彈窗函式
