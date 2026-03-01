@@ -133,14 +133,6 @@ const sendsms = async () => {
     if (res.data.success) {
       // 登入成功，儲存使用者資訊並導向首頁(在localstorage)
       // 儲存完整 user 物件（包含 user_id, name, national_id, phone_number）
-
-
-      // localStorage.setItem("user", JSON.stringify(res.data.user));
-      
-      // // 儲存 App.vue 側邊欄專用的基本資訊
-      // localStorage.setItem("currentUser", JSON.stringify({
-
-      
       sessionStorage.setItem("user", JSON.stringify(res.data.user));
       
       // 儲存 App.vue 側邊欄專用的基本資訊
@@ -149,10 +141,7 @@ const sendsms = async () => {
         email: res.data.user.email || "",
       }));
 
-      localStorage.setItem("loggedIn", "true");
-      // 為了觸發 App.vue 的通知彈窗，這個可以保留在 sessionStorage 或也改掉
-      sessionStorage.setItem("justLoggedIn", "true");
-      // sessionStorage.setItem("loggedIn", "true");
+      sessionStorage.setItem("loggedIn", "true");
       router.push("/home");
     }
   } catch (err) {

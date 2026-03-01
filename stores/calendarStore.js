@@ -231,6 +231,26 @@ export const useCalendarStore = defineStore('calendar', {
 
     // 3. ACTIONS: 所有修改 state 的方法
     actions: {
+      async fetchAllData(userId) {
+            this.loading = true;
+            try {
+                // 這裡假設你的後端 API 路徑是這樣
+                // 如果後端還沒寫好，這裡會噴 500
+                const response = await api.get(`/api/calendar/${userId}`); 
+                
+                // 確保後端回傳的是正確格式
+                if (response.data) {
+                    this.events = response.data.events || [];
+                    this.diaries = response.data.diaries || [];
+                }
+            } catch (error) {
+                console.error("獲取資料庫資料失敗:", error);
+                // 發生 500 錯誤時，保留 INITIAL_EVENTS 不要清空，畫面才不會崩潰
+                alert("伺服器連線失敗，目前顯示離線預設資料");
+            } finally {
+                this.loading = false;
+            }
+        },
         // --- 行程 (Events) 相關 Actions ---
 
         // 新增行程 (對應 handleAddNewEvent)
@@ -276,3 +296,5 @@ export const useCalendarStore = defineStore('calendar', {
         }
     }
 });
+
+
