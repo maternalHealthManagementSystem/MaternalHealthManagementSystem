@@ -223,6 +223,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api.js";
+import dayjs from "dayjs";
 
 const router = useRouter();
 
@@ -297,8 +298,8 @@ onMounted(async () => {
 
       // 日期處理：HTML <input type="date"> 只接受 "YYYY-MM-DD"
       // 資料庫回傳 "1996-04-11T16:00:00.000Z"，需切割字串
-      profileData.dob = db.birthday ? db.birthday.split('T')[0] : "";
-      profileData.dueDate = db.edc ? db.edc.split('T')[0] : "";
+      profileData.dob = db.birthday ? dayjs(db.birthday).format("YYYY-MM-DD") : "";
+      profileData.dueDate = db.edc ? dayjs(db.edc).format("YYYY-MM-DD") : "未設定";
 
       console.log("資料庫個人資料載入成功！");
 
@@ -465,12 +466,13 @@ const saveProfile = async () => {
     // 2. 封裝資料：將前端 profileData 轉為後端資料庫欄位
     const payload = {
       name: profileData.name,
-      birthday: profileData.dob,             // 轉為資料庫欄位名
-      phone_number: profileData.mobile,       // 轉為資料庫欄位名
+      edc: profileData.dueDate,
+      birthday: profileData.dob,             
+      phone_number: profileData.mobile,       
       landline: profileData.landline,
       email: profileData.email,
       address: profileData.address,
-      ice_name: profileData.emergencyContact, // 轉為資料庫欄位名
+      ice_name: profileData.emergencyContact, 
       ice_relationship: profileData.emergencyRelation,
       ice_phone_number: profileData.emergencyPhone,
       blood_type: profileData.bloodType.replace("型", ""), // 移除「型」字
