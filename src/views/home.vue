@@ -85,9 +85,8 @@ import EventCalendar from "../components/Calendar/EventCalendar.vue";
 import EventDetailModal from "../components/Calendar/EventDetailModal.vue";
 import EventAddForm from "../components/Calendar/EventAddForm.vue";
 import DiaryDetailModal from "../components/Calendar/DiaryDetailModal.vue";
-import { useCalendarStore } from "../../stores/calendarStore.js"; // 使用相對路徑避免別名問題
+import { useCalendarStore } from "../stores/calendarStore.js"; // 使用相對路徑避免別名問題
 import dayjs from "dayjs";
-import axios from "axios";
 import api from "../services/api.js";
 
 const calendarStore = useCalendarStore();
