@@ -56,87 +56,36 @@
   </div>
 </template>
 <script setup>
-import { ref } from "vue";
+import { ref, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
+import api from "../services/api";
 
-// 🔥 是否開啟 Demo 模式（展示用）
-const demoMode = true;
+const router = useRouter();
+const demoMode = false; // 建議接後端時關閉 demo
 
-// ----------------------
-// 倒數計時狀態 (新增)
-// ----------------------
-const initialTime = 60;
-const countdown = ref(initialTime);
+// 狀態控制
+const showIdPhone = ref(true);
 const isCounting = ref(false);
-let timer = null; // 用於儲存計時器
+const countdown = ref(60);
+let timer = null;
 
-// ----------------------
-// 欄位錯誤訊息
-// ----------------------
-const idError = ref("");
-const phoneError = ref("");
-const smsError = ref("");
-
-// ----------------------
-// 表單欄位資料
-// ----------------------
+// 表單資料
 const idNumber = ref("");
 const phoneNumber = ref("");
 const smsCode = ref("");
 
-const router = useRouter();
-const showIdPhone = ref(true);
+// 錯誤訊息
+const idError = ref("");
+const phoneError = ref("");
+const smsError = ref("");
 
-// 🔥 Demo 用驗證碼顯示
-const demoSMSDisplay = ref("");
-
-// ----------------------
-// Demo 使用者資料
-// ----------------------
-const demoUser = {
-  idNumber: "A123456789",
-  phoneNumber: "0912345678",
-  smsCode: "123456",
-  profile: {
-    name: "王小美",
-    email: "wang.xiaomay@example.com",
-    mobile: "0912345678",
-    landline: "0212345678",
-    dob: "1990/05/15",
-    bloodType: "A型",
-    height: "165",
-    weight: "58",
-    address: "台北市中正區仁愛路一段100號4樓",
-    dueDate: "2026/05/05",
-    emergencyContact: "王大明",
-    emergencyRelation: "配偶",
-    emergencyPhone: "0923456789",
-  },
-};
-
-// ----------------------
-// ⭐ 產生 Demo 用的驗證碼
-// ----------------------
-const generateDemoSMS = () => {
-  const code = Math.floor(100000 + Math.random() * 900000).toString(); // 6位數字
-  localStorage.setItem("demoSMSCode", code);
-  demoSMSDisplay.value = code;
-  return code;
-};
-
-// ----------------------
-// ⭐ 啟動倒數計時 (新增)
-// ----------------------
+// 1. 啟動倒數計時
 const startCountdown = () => {
-  // 先清除舊的計時器
   if (timer) clearInterval(timer);
-  
   isCounting.value = true;
-  countdown.value = initialTime;
-
+  countdown.value = 60;
   timer = setInterval(() => {
     countdown.value--;
-
     if (countdown.value <= 0) {
       clearInterval(timer);
       isCounting.value = false;
@@ -144,115 +93,81 @@ const startCountdown = () => {
   }, 1000);
 };
 
-
-// ----------------------
-// 送出驗證碼 (修改：成功後開始倒數)
-// ----------------------
-const verification = () => {
+// 2. 第一步：請求驗證碼 (verification)
+const verification = async () => {
   idError.value = "";
   phoneError.value = "";
 
-  const idPattern = /^[A-Z]{1}[1-2]{1}[0-9]{8}$/;
-  const phonePattern = /^09\d{8}$/;
+  try {
+    const res = await api.post("/api/auth/request-otp", {
+      national_id: idNumber.value,
+      phone_number: phoneNumber.value,
+    });
 
-  if (!idNumber.value) idError.value = "請輸入身分證字號";
-  else if (!idPattern.test(idNumber.value)) idError.value = "身分證字號格式錯誤(例:A123456789)";
-
-  if (!phoneNumber.value) phoneError.value = "請輸入手機號碼";
-  else if (!phonePattern.test(phoneNumber.value)) phoneError.value = "手機號碼格式錯誤(例:0912345678)";
-
-  if (idError.value || phoneError.value) return;
-
-  // 檢查預設使用者
-  if (idNumber.value === demoUser.idNumber && phoneNumber.value === demoUser.phoneNumber) {
-    showIdPhone.value = false;
-    
-    // ⭐ 成功發送後開始倒數
-    startCountdown();
-
-    if (demoMode) {
-      const code = generateDemoSMS();
-      alert(`驗證碼已寄送：${code}`);
+    if (res.data.success) {
+      localStorage.setItem("temp_user_id", res.data.user_id);
+      showIdPhone.value = false;
+      startCountdown();
     }
-
-  } else {
-    alert("此身分證字號或手機號碼尚未註冊，請聯絡工作人員。");
+  } catch (err) {
+    idError.value = err.response?.data?.message || "發送失敗，請檢查資料";
   }
 };
 
-// ----------------------
-// 重新寄送驗證碼 (修改：只有非倒數狀態下才能重新寄送)
-// ----------------------
-const resendsms = () => {
-  if (isCounting.value) {
-    return; // 正在倒數中，不執行任何操作
-  }
+// 3. 第二步：驗證驗證碼並登入 (sendsms)
+const sendsms = async () => {
+  const tempId = localStorage.getItem("temp_user_id"); 
   
-  // ⭐ 重新寄送並開始倒數
-  if (demoMode) {
-    const code = generateDemoSMS();
-    alert(`驗證碼已重新寄送：${code}`);
+  if (!tempId) {
+    smsError.value = "請先獲取驗證碼";
+    return;
   }
-  startCountdown();
-};
 
-// ----------------------
-// 驗證簡訊
-// ----------------------
-const sendsms = () => {
   smsError.value = "";
-  const smsPattern = /^\d{6}$/;
+  try {
+    const res = await api.post("/api/auth/verify-otp", {
+      user_id: tempId, 
+      otp: smsCode.value,
+    });
 
-  if (!smsCode.value) {
-    smsError.value = "請輸入驗證碼";
-    return;
-  }
+    if (res.data.success) {
+      // 登入成功，儲存使用者資訊並導向首頁(在localstorage)
+      // 儲存完整 user 物件（包含 user_id, name, national_id, phone_number）
+      localStorage.setItem("user", JSON.stringify(res.data.user));
+      
+      // 儲存 App.vue 側邊欄專用的基本資訊
+      localStorage.setItem("currentUser", JSON.stringify({
+        name: res.data.user.name,
+        email: res.data.user.email || "",
+      }));
 
-  if (!smsPattern.test(smsCode.value)) {
-    smsError.value = "驗證碼格式錯誤(六位數字)";
-    return;
-  }
-
-  const savedCode = localStorage.getItem("demoSMSCode");
-
-  if (smsCode.value === savedCode) {
-    // 驗證成功時，可以清除計時器
-    if (timer) clearInterval(timer); 
-
-    localStorage.setItem("loggedIn", "true"); // 標記已登入
-    // 把身分證字號(idNumber)合併進去 profile 一起存
-    const finalProfile = {
-      ...demoUser.profile,           // 展開原本的個人資料 (姓名、生日...)
-      idNumber: demoUser.idNumber    // 補上身分證字號 "A123456789"
-    };
-
-    // 儲存這個包含 ID 的完整物件
-    localStorage.setItem("userProfile", JSON.stringify(finalProfile));
-    // 儲存使用者資料
-    // localStorage.setItem("userProfile", JSON.stringify(demoUser.profile));
-    localStorage.setItem("justLoggedIn", "true"); // 標記剛登入狀態
-    router.push("/home");
-
-  } else {
-    smsError.value = "驗證碼錯誤，請重新輸入";
+      localStorage.setItem("loggedIn", "true");
+      
+      router.push("/home");
+    }
+  } catch (err) {
+    smsError.value = err.response?.data?.message || "驗證碼錯誤";
   }
 };
 
-// ----------------------
-// 回到輸入手機 (修改：清除計時器和狀態)
-// ----------------------
+// 4. 重新寄送驗證碼
+const resendsms = async () => {
+  if (isCounting.value) return;
+  await verification(); // 直接複用請求邏輯
+};
+
+// 5. 回到上一步
 const resendPhoneInput = () => {
   showIdPhone.value = true;
-  idNumber.value = "";
-  phoneNumber.value = "";
   smsCode.value = "";
-  demoSMSDisplay.value = "";
-  
-  // ⭐ 清除計時器狀態
   if (timer) clearInterval(timer);
   isCounting.value = false;
-  countdown.value = initialTime;
 };
+
+// 組件卸載時清除計時器避免記憶體洩漏
+onUnmounted(() => {
+  if (timer) clearInterval(timer);
+});
 </script>
 
 

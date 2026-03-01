@@ -1,4 +1,5 @@
-import { createRouter, createWebHistory } from "vue-router";
+// 控制路由導航，定義各個頁面對應的路徑和元件
+import { createRouter, createWebHashHistory } from "vue-router";
 import login from "../views/login.vue";
 import home from "../views/home.vue";
 import profile from "../views/profile.vue";
@@ -77,8 +78,29 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory('/maternal/'), //加入儲存庫名稱
+  history: createWebHashHistory('/MaternalHealthManagementSystem/'), //加入儲存庫名稱
   routes,
 });
 
 export default router;
+
+
+//登入後才可以訪問其他頁面，否則導回登入頁
+router.beforeEach((to, from, next) => {
+  const publicPages = ['login']; 
+  const authRequired = !publicPages.includes(to.name);
+  
+  // 檢查 login.vue 存入的 'user'
+  const isLoggedIn = sessionStorage.getItem('user'); 
+
+  if (authRequired && !isLoggedIn) {
+    console.warn("未偵測到登入資訊，跳回登入頁");
+    return next({ name: 'login' });
+  }
+
+  if (!authRequired && isLoggedIn) {
+    return next({ name: 'home' });
+  }
+
+  next();
+});

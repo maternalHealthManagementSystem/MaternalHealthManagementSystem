@@ -222,6 +222,8 @@
 <script setup>
 import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
+import api from "../services/api.js";
+
 const router = useRouter();
 
 const profileData = reactive({
@@ -258,22 +260,63 @@ const toStandardDate = (dateStr) => {
 };
 
 // onMounted 載入資料並修正格式
-onMounted(() => {
-  const savedProfile = localStorage.getItem("userProfile");
-  if (savedProfile) {
-    const profile = JSON.parse(savedProfile);
+onMounted(async () => {
+  // 1. 先從 localStorage 拿登入時存的 user_id
+  const loginUser = JSON.parse(localStorage.getItem("user"));
+  
+  if (!loginUser || !loginUser.user_id) {
+    console.warn("未偵測到登入資訊");
+    return;
+  }
 
-    // 統一格式:生日
-    if (profile.dob) profile.dob = toStandardDate(profile.dob);
-    // 統一格式:預產期
-    if (profile.dueDate) profile.dueDate = toStandardDate(profile.dueDate);
+  try {
+    // 2. 呼叫後端 API 取得真實資料庫紀錄
+    // 注意：這裡使用你測試成功的路徑 /api/profile/${user_id}
+    const res = await api.get(`/api/profile/${loginUser.user_id}`);
 
-    // 確保頭像資料有被載入
-    if (profile.avatar) {
-      profileData.avatar = profile.avatar;
+    if (res.data) {
+      const db = res.data; // 這是你 curl 看到的原始資料
+
+      // 3. 手動對應資料庫欄位到前端 profileData
+      profileData.name = db.name;
+      profileData.mobile = db.phone_number;
+      profileData.landline = db.landline;
+      profileData.email = db.email;
+      profileData.address = db.address;
+      profileData.height = db.height;
+      profileData.weight = db.weight;
+      profileData.avatar = db.user_file_path; // 直接使用雲端圖片網址
+
+      // 對應緊急聯絡人 (ICE)
+      profileData.emergencyContact = db.ice_name;
+      profileData.emergencyRelation = db.ice_relationship;
+      profileData.emergencyPhone = db.ice_phone_number;
+
+      // 血型處理 (資料庫 "O" 轉前端 "O型")
+      profileData.bloodType = db.blood_type ? `${db.blood_type}型` : "";
+
+      // 日期處理：HTML <input type="date"> 只接受 "YYYY-MM-DD"
+      // 資料庫回傳 "1996-04-11T16:00:00.000Z"，需切割字串
+      profileData.dob = db.birthday ? db.birthday.split('T')[0] : "";
+      profileData.dueDate = db.edc ? db.edc.split('T')[0] : "";
+
+      console.log("資料庫個人資料載入成功！");
+
+      // 如果資料庫有網址就用網址，沒有就嘗試看快取有沒有
+      if (db.user_file_path) {
+        profileData.avatar = db.user_file_path;
+      } else {
+        const saved = JSON.parse(localStorage.getItem("userProfile"));
+        profileData.avatar = saved?.avatar || "";
+      }
     }
-
-    Object.assign(profileData, profile);
+  } catch (error) {
+    console.error("從資料庫載入失敗，嘗試載入本地暫存:", error);
+    // 備援方案：載入上次儲存的 userProfile
+    const savedProfile = localStorage.getItem("userProfile");
+    if (savedProfile) {
+      Object.assign(profileData, JSON.parse(savedProfile));
+    }
   }
 });
 
@@ -406,46 +449,79 @@ const validateProfile = () => {
 };
 
 // 儲存前統一格式
-const saveProfile = () => {
-  console.log("開始儲存,當前資料:", profileData); // 除錯用
+// profile.vue
 
+const saveProfile = async () => {
+  // 1. 先跑原本的防呆驗證
   if (!validateProfile()) {
-    console.log("驗證失敗,錯誤:", errors); // 除錯用
-    customAlert("資料格式有誤,請檢查!");
+    customAlert("資料格式有誤，請檢查！");
     return;
   }
 
   try {
-    // 格式化輸出,保留 avatar
-    const output = {
-      ...profileData,
-      dob: toStandardDate(profileData.dob),
-      dueDate: profileData.dueDate ? toStandardDate(profileData.dueDate) : "",
-      avatar: profileData.avatar || "", // 確保頭像被保存
+    const loginUser = JSON.parse(localStorage.getItem("user"));
+    if (!loginUser?.user_id) throw new Error("找不到 User ID");
+
+    // 2. 封裝資料：將前端 profileData 轉為後端資料庫欄位
+    const payload = {
+      name: profileData.name,
+      birthday: profileData.dob,             // 轉為資料庫欄位名
+      phone_number: profileData.mobile,       // 轉為資料庫欄位名
+      landline: profileData.landline,
+      email: profileData.email,
+      address: profileData.address,
+      ice_name: profileData.emergencyContact, // 轉為資料庫欄位名
+      ice_relationship: profileData.emergencyRelation,
+      ice_phone_number: profileData.emergencyPhone,
+      blood_type: profileData.bloodType.replace("型", ""), // 移除「型」字
+      height: Number(profileData.height),
+      weight: Number(profileData.weight),
+      avatar: profileData.avatar      // 雲端圖片網址或 Base64
     };
 
-    console.log("準備儲存的資料:", output); // 除錯用
+    // 3. 送出請求給後端
+    const res = await api.put(`/api/profile/${loginUser.user_id}`, payload);
 
-    localStorage.setItem("userProfile", JSON.stringify(output));
-    localStorage.setItem(
-      "currentUser",
-      JSON.stringify({
+    if (res.data.success) {
+      // 將頭像替換為後端傳回的 Cloudinary URL
+      if (res.data.imageUrl) {
+        profileData.avatar = res.data.imageUrl;
+      }
+
+      // 更新本地快取，確保重新整理後也是最新的
+      localStorage.setItem("userProfile", JSON.stringify(profileData));
+      
+      // 同步更新 App.vue 的側邊欄頭像與姓名
+      localStorage.setItem("currentUser", JSON.stringify({
         name: profileData.name,
         email: profileData.email,
-      })
-    );
+      }));
 
-    console.log("儲存成功!"); // 除錯用
-    customAlert("資料已儲存!");
+      // 觸發 storage 事件讓 Navbar 同步更新圖片
+      window.dispatchEvent(new Event("storage"));
+      
+      customAlert("🎉 個人資料與照片已成功儲存至雲端！");
+    }
   } catch (error) {
-    console.error("儲存時發生錯誤:", error);
-    customAlert("儲存失敗,請稍後再試!");
+    console.error("儲存失敗:", error);
+    customAlert(`儲存失敗: ${error.response?.data?.message || "網路連線異常"}`);
   }
 };
 
 const backbtn = () => router.back();
 const clean = () => {
-  Object.keys(profileData).forEach((k) => (profileData[k] = ""));
+  // 定義不需要被清除的欄位的key
+  const keepFields = ["dueDate", "avatar"];
+
+  Object.keys(profileData).forEach((k) => {
+    // 只有當 key 不在排除名單內時，才執行清除
+    if (!keepFields.includes(k)) {
+      profileData[k] = "";
+    }
+  });
+  
+  // 同時清空錯誤訊息提示
+  Object.keys(errors).forEach((k) => (errors[k] = ""));
 };
 
 const customAlert = (message) => {
@@ -668,6 +744,12 @@ const handleFileUpload = (event) => {
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
   outline: none;
+}
+/* 唯讀欄位樣式 */
+.input-field[readonly] {
+  background-color: #f0f2f5;
+  cursor: not-allowed;
+  color: #888;
 }
  /* 底部操作按鈕 */
 .action-buttons {

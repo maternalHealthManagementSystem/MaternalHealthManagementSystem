@@ -303,6 +303,6 @@ app.delete('/api/diary/:diaryId', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-    console.log('🚀 橋樑已搭建！後端伺服器運行在 http://localhost:3000');
+app.listen(3001, () => {
+    console.log('🚀 橋樑已搭建！後端伺服器運行在 http://localhost:3001');
 });

@@ -42,7 +42,7 @@
       <div class="right-panel">
         <div class="calendar-section">
           <EventCalendar
-            :events="combinedCalendarData" 
+            :events="combinedCalendarData"
             @dayClick="handleDayClick"
             @monthChange="handleMonthChange"
             @eventClick="handleEventClick"
@@ -85,12 +85,11 @@ import EventCalendar from "../components/Calendar/EventCalendar.vue";
 import EventDetailModal from "../components/Calendar/EventDetailModal.vue";
 import EventAddForm from "../components/Calendar/EventAddForm.vue";
 import DiaryDetailModal from "../components/Calendar/DiaryDetailModal.vue";
-import { useCalendarStore } from '../stores/calendarStore.js'
+import { useCalendarStore } from "../stores/calendarStore.js"; // 使用相對路徑避免別名問題
 import dayjs from "dayjs";
-import axios from "axios";
 import api from "../services/api.js";
 
-const calendarStore = useCalendarStore()
+const calendarStore = useCalendarStore();
 const router = useRouter();
 
 // 合併事件和日記（用於顯示在日曆上）
@@ -118,7 +117,7 @@ onMounted(async () => {
   }
 
   if (router.query.editEventId) {
-    const eventToEdit = calendarStore.events.find(e => e.id == route.query.editEventId);
+    const eventToEdit = calendarStore.events.find(e => e.id == router.query.editEventId);
     if (eventToEdit) {
       selectedEvent.value = { ...eventToEdit };
       showEditForm.value = true;
@@ -238,23 +237,24 @@ const currentData = ref({
 });
 
 // 1. 核心邏輯：用EDC計算週數和天數
-function calculatePregnancy(dueDate) {
+function calculatePregnancyByLMP(lmpDate) {
   const today = dayjs().startOf("day");   
-  const edc = dayjs(dueDate).startOf("day");
+  const lmp = dayjs(lmpDate).startOf("day");
 
-  const totalDays = 280;
-  const remainingDays = edc.diff(today, "day");
+  const diffDays = today.diff(lmp, "day");// 計算從 LMP 到今天總共過了多少天
 
-  const passedDays = totalDays - remainingDays;
-
-  if (passedDays < 0) {
+  if (diffDays < 0) { //// 如果今天比 LMP 還早，表示還沒懷孕或日期錯誤
     currentWeek.value = 0;
     currentDay.value = 0;
     return;
   }
+  // 超過 280 天通常代表已生產或過期妊娠，但邏輯上我們最高顯示 40 週
+  const currentTotalDays = Math.min(diffDays, 280);
 
-  currentWeek.value = Math.floor(passedDays / 7);
-  currentDay.value = passedDays % 7;
+  currentWeek.value = Math.floor(currentTotalDays / 7);
+  currentDay.value = currentTotalDays % 7;
+
+  console.log(`LMP: ${lmpDate}, 目前已過: ${currentTotalDays} 天`);
 }
 
 // 2. 核心邏輯：抓取水果資料
@@ -284,15 +284,14 @@ onMounted(async () => {
 
   try {
     const res = await api.get(`/api/profile/${loginUser.user_id}`);
-    console.log("個人資料:", res.data);
 
-    if (res.data?.edc) {
-      calculatePregnancy(res.data.edc);
+    if (res.data && res.data.LMP) {
+      calculatePregnancyByLMP(res.data.LMP);
       console.log("計算後週數:", currentWeek.value);
 
       await fetchGrowthData(currentWeek.value);
     } else {
-      console.log("沒有 edc");
+      console.log("沒有lmp資料，無法計算週數");
     }
   } catch (error) {
     console.error("初始化首頁資料失敗:", error);

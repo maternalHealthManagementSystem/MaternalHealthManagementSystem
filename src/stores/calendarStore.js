@@ -26,7 +26,7 @@ export const useCalendarStore = defineStore('schedule', {
       this.loading = true;
       try {
         // 呼叫後端 API 
-        const response = await axios.get(`http://localhost:3000/api/schedule/${user_id}`);
+        const response = await axios.get(`http://localhost:3001/api/schedule/${user_id}`);
         console.log("後端原始資料:", response.data);
         const { dbEvents, dbDiaries } = response.data;
         console.log("解構後的行程:", dbEvents);
@@ -79,7 +79,7 @@ export const useCalendarStore = defineStore('schedule', {
           event_describe: newEvent.description || '',
           personal_informations_user_id: 'U001',
         };
-        await axios.post('http://localhost:3000/api/schedule', payload);
+        await axios.post('http://localhost:3001/api/schedule', payload);
         await this.fetchAllData('U001'); // 重新整理資料
       } catch (error) {
         console.error('新增失敗:', error);
@@ -101,7 +101,7 @@ export const useCalendarStore = defineStore('schedule', {
           event_place: updatedEvent.location,
           event_describe: updatedEvent.description
         };
-        await axios.put(`http://localhost:3000/api/schedule/${updatedEvent.id}`, payload);
+        await axios.put(`http://localhost:3001/api/schedule/${updatedEvent.id}`, payload);
         await this.fetchAllData('U001');
       } catch (error) { console.error('更新失敗:', error); }
     },
@@ -110,7 +110,7 @@ export const useCalendarStore = defineStore('schedule', {
    async deleteEvent(eventId) {
     try {
       // 發送 DELETE 請求
-      await axios.delete(`http://localhost:3000/api/schedule/${eventId}`);
+      await axios.delete(`http://localhost:3001/api/schedule/${eventId}`);
       
       // 刪除成功後，立即重新抓取資料庫，讓日曆畫面更新
       await this.fetchAllData('U001'); 
@@ -134,7 +134,7 @@ export const useCalendarStore = defineStore('schedule', {
         formData.append('image', imageFile); // 這裡的 imageFile 是使用者在本機選取的原始檔案
       }
 
-      await axios.post('http://localhost:3000/api/diary', formData);
+      await axios.post('http://localhost:3001/api/diary', formData);
       console.log("日記儲存成功");
       await this.fetchAllData('U001');
       } catch (error) {
@@ -160,7 +160,7 @@ export const useCalendarStore = defineStore('schedule', {
         console.log('傳送舊網址或空值:', updatedDiary.image);
         formData.append('image', updatedDiary.image || '');
       }
-        await axios.put(`http://localhost:3000/api/diary/${updatedDiary.id}`, formData);
+        await axios.put(`http://localhost:3001/api/diary/${updatedDiary.id}`, formData);
         
         console.log("日記更新成功");
         await this.fetchAllData('U001'); // 重新整理畫面
@@ -174,7 +174,7 @@ export const useCalendarStore = defineStore('schedule', {
     async deleteDiary(diaryId) {
       try {
         // 發送 DELETE 請求到後端
-        await axios.delete(`http://localhost:3000/api/diary/${diaryId}`);
+        await axios.delete(`http://localhost:3001/api/diary/${diaryId}`);
         
         // 2. 刪除成功後，重新抓取所有資料以更新畫面
         await this.fetchAllData('U001'); 
