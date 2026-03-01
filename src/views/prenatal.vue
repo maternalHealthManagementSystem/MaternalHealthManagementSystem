@@ -152,7 +152,7 @@ const mockData = [
   },
 
   {
-    date: "2025/10/24",
+    date: "2025/10/22",
     checkupNumber: 2,
     details: {
       gestational_age_wks: 12,

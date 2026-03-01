@@ -118,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
@@ -127,6 +127,13 @@ import depressionQuestions from '../assets/data/depressionQuestions.json';
 // 使用 JSON 資料初始化 questions
 // 使用深拷貝確保每次進入頁面都是乾淨的狀態，不會被快取影響
 const questions = reactive(JSON.parse(JSON.stringify(depressionQuestions)));
+
+// 表單基本資料
+const form = reactive({
+  identity: null, // 1:準媽媽, 2:寶寶媽媽
+  date: ''        // 預產期 YYYY-MM-DD
+});
+
 // 1. 定義分頁狀態 
 const currentStep = ref(1);
 const totalSteps = 2; // 共 2 頁
@@ -175,47 +182,72 @@ const validateCurrentStep = () => {
 };
 
 // ==========================================
-// 網頁載入後，自動讀取 localStorage 資料
+// 自動代入功能：網頁載入後，讀取個人資料並判定身分
 // ==========================================
-onMounted(() => {
-  const savedProfileStr = localStorage.getItem("userProfile");
+// onMounted(() => {
+//   const savedProfileStr = localStorage.getItem("userProfile");
   
-  if (savedProfileStr) {
-    try {
-      const profile = JSON.parse(savedProfileStr);
+//   if (savedProfileStr) {
+//     try {
+//       const profile = JSON.parse(savedProfileStr);
       
-      // 1. 處理日期 (預產期 dueDate)
-      if (profile.dueDate) {
-        // 資料庫格式通常是 YYYY/MM/DD，需轉換為 YYYY-MM-DD 才能放入 input type="date"
-        const formattedDate = profile.dueDate.replace(/\//g, '-');
-        form.date = formattedDate;
+//       if (profile.dueDate) {
+//         // 將 YYYY/MM/DD 轉換為 YYYY-MM-DD 以符合 <input type="date"> 格式
+//         const formattedDate = profile.dueDate.replace(/\//g, '-');
+//         form.date = formattedDate;
 
-        // 2. 自動判斷身分 (邏輯：比較今天與預產期)
-        const today = new Date();
-        const targetDate = new Date(formattedDate);
-        
-        // 歸零時間，只比較日期
-        today.setHours(0, 0, 0, 0);
-        targetDate.setHours(0, 0, 0, 0);
+//         // 自動判定邏輯
+//         const today = new Date();
+//         const targetDate = new Date(formattedDate);
+//         today.setHours(0, 0, 0, 0);
+//         targetDate.setHours(0, 0, 0, 0);
 
-        if (targetDate >= today) {
-          // 如果預產期在今天之後 (或等於今天)，視為「準媽媽」
-          form.identity = '1';
-        } else {
-          // 如果預產期已過，視為「寶寶媽媽」(此時該日期代表寶寶生日)
-          form.identity = '2';
-        }
-      }
-    } catch (e) {
-      console.error("解析使用者資料失敗:", e);
-    }
-  }
+//         // 如果日期在今天之後(含今天) = 準媽媽(1)，否則 = 寶寶媽媽(2)
+//         form.identity = targetDate >= today ? '1' : '2';
+//       }
+//     } catch (e) {
+//       console.error("自動代入個人資料失敗:", e);
+//     }
+//   }
+// });
+// --- 2. 判定身分的邏輯函式 ---
+const updateMaternalStatus = (dateStr) => {
+  if (!dateStr) return;
+  const today = new Date().setHours(0, 0, 0, 0);
+  const targetDate = new Date(dateStr).setHours(0, 0, 0, 0);
+  
+  // 自動判定：未來或今天 = 準媽媽(1)，過去 = 寶寶媽媽(2)
+  form.identity = targetDate >= today ? '1' : '2';
+};
+
+// --- 3. 監聽日期變動 (當使用者手動修改日期時，身分也會跟著變) ---
+watch(() => form.date, (newVal) => {
+  updateMaternalStatus(newVal);
 });
 
-// 表單基本資料
-const form = reactive({
-  identity: null, // 1:準媽媽, 2:寶寶媽媽
-  date: ''
+// --- 4. 頁面載入時從後端 API 自動代入 ---
+onMounted(async () => {
+  try {
+    const userId = 'U001'; 
+    const response = await fetch(`http://localhost:3000/api/personal_information/${userId}`);
+    const result = await response.json();
+
+    if (result.success && result.data.dueDate) {
+      // 1. 取得預產期並處理格式 (HTML5 <input type="date"> 需使用 - 分隔)
+      const formattedDate = result.data.dueDate.replace(/\//g, '-');
+      
+      // 2. 填入表單
+      form.date = formattedDate;
+
+      // 3. 執行第一次身分判定
+      updateMaternalStatus(formattedDate);
+      
+      console.log("愛丁堡表單預產期代入成功，身分已自動判定");
+    }
+  } catch (error) {
+    console.error("從後端抓取資料失敗:", error);
+    // 備案：API 失敗時可維持手動填寫或讀取 localStorage
+  }
 });
 
 // 控制結果彈窗
@@ -266,40 +298,43 @@ const scoreStatusClass = computed(() => {
   return 'status-normal';
 });
 
-// 送出函式
-const submitForm = () => {
-  if (!form.identity) {
-    alert('請填寫身分');
-    return;
-  }else if( !form.date){
-    alert('請填寫預產期');
-    return;
-  }else if (completionRate.value < 100) {
-    alert('您還有題目尚未完成，請檢查所有題目。');
-    return;
-  }else{
-    // 取得當下的結果評語
-    const currentMessage = resultMessage.value; 
 
-    // 組裝要儲存的內容
-    const record = {
-      id: Date.now(),
-      title: "愛丁堡產後憂鬱量表",
-      type: 'depression', 
-      date: new Date().toLocaleDateString(), // 格式化日期
-      
-      // 儲存表單資料
-      form: { ...form }, 
-      questions: JSON.parse(JSON.stringify(questions)), // 儲存答題內容
-      totalScore: totalScore.value, // 儲存總分
-      message: currentMessage // 把評語存起來
-    };
-    const historyData = JSON.parse(localStorage.getItem("assessment_history") || "[]");
+const submitForm = async () => {
+  if (!form.identity || !form.date) {
+    alert('請填寫完整資訊');
+    return;
+  }
+  if (completionRate.value < 100) {
+    alert('請完成所有題目');
+    return;
+  }
+
+  try {
+    const userId = 'U001'; // 實務上從 Pinia 或登入資訊取得
     
-    historyData.unshift(record);
-    localStorage.setItem("assessment_history", JSON.stringify(historyData));
-    // 顯示結果彈窗
-    showResultModal.value = true;
+    const response = await fetch("http://localhost:3000/api/submit_edinburgh", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        user_id: userId,
+        form: form,
+        questions: questions,
+        totalScore: totalScore.value,
+        message: resultMessage.value
+      })
+    });
+
+    const result = await response.json();
+    
+    if (result.success) {
+      // 成功後顯示彈窗
+      showResultModal.value = true;
+    } else {
+      alert("儲存失敗：" + result.message);
+    }
+  } catch (error) {
+    console.error("連線錯誤：", error);
+    alert("無法連線至伺服器");
   }
 };
 
@@ -313,7 +348,7 @@ const closeModal = () => {
 </script>
 
 <style scoped>
-/* 🔥🔥🔥 [新增] 按鈕樣式 🔥🔥🔥 */
+/* 按鈕樣式 */
 .navigation-buttons {
   display: flex;
   justify-content: center;

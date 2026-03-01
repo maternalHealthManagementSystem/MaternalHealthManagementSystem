@@ -2,7 +2,6 @@
   <!-- 遮罩層 -->
   <transition name="modal">
     <div v-if="show" class="modal-overlay" @click="closeModal">
-      
       <!-- 彈窗內容 -->
       <div class="modal-container" @click.stop>
         <!-- 標題列 -->
@@ -239,6 +238,7 @@ function saveDiary() {
     title: formData.value.title || '每日日記',
     content: formData.value.content,
     image: formData.value.imagePreview,
+    newImageFile: formData.value.imageFile,
     createdAt: props.diary.createdAt, // 保留原建立時間
     updatedAt: new Date().toISOString() // 新增更新時間
   }

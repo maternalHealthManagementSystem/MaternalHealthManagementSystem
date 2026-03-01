@@ -10,7 +10,7 @@
       />
        <!-- 按鈕換成 PNG 搜尋圖示 -->
       <button class="search-btn" @click="filterContent">
-        <img src="../assets/search.png" alt="搜尋" class="search-icon" />
+        <img src="https://res.cloudinary.com/dfrjrvt44/image/upload/v1769574308/search_dfatie.png" alt="搜尋" class="search-icon" />
       </button>
     </div>
   </div>
@@ -72,4 +72,3 @@ const filterContent = () => {
   height: 18px;
 }
 </style>
-

@@ -1,10 +1,17 @@
+
 <template>
   <AssessmentPanel title="歷史填寫紀錄">  
-    <ul v-if="records.length > 0" class="history-list">
-      <li v-for="record in records" :key="record.id" class="history-item" @click="viewRecord(record)">
+    <div v-if="isLoading" class="empty-state">資料讀取中...</div>
+    <ul v-else-if="records.length > 0" class="history-list">
+      <li 
+        v-for="record in records" 
+        :key="record.assessment_response_id" 
+        class="history-item" 
+        @click="viewRecord(record)"
+      >
         <div class="item-content">
-          <span class="record-title">{{ record.title }}</span>
-          <span class="record-date">{{ formatTime(record.id) }}</span>
+          <span class="record-title">{{ record.questionnaire_title }}</span>
+          <span class="record-date">{{ formatTime(record.assessment_submit_datetime) }}</span>
         </div>
       </li>
     </ul>
@@ -22,6 +29,43 @@ import AssessmentPanel from '../components/AssessmentPanel.vue';
 
 const router = useRouter();
 const records = ref([]);
+const isLoading = ref(true);
+
+// 使用 fetch 呼叫後端 API
+const fetchAssessmentHistory = async () => {
+  try {
+    const userId = 'U001'; // 這裡之後可以改成從登入資訊取得
+    
+    // fetch 的 GET 請求：參數必須直接寫在網址後面
+    const url = `http://localhost:3000/api/assessment_history?user_id=${userId}`;
+    
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
+    }
+
+    const data = await response.json(); // 解析 JSON 資料
+    records.value = data;
+    
+  } catch (error) {
+    console.error("抓取歷史紀錄失敗：", error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchAssessmentHistory();
+});
+
+const viewRecord = (record) => {
+  // 利用 query 帶上類型，例如：/history/AR001?type=prenatal
+  router.push({
+    path: `/self-assessment/history/${record.assessment_response_id}`,
+    query: { type: record.questionnaire_sort } // 這裡的 sort 就是 'prenatal' 或 'depression'
+  });
+};
 
 // 時間格式化函式
 const formatTime = (timestamp) => {
@@ -42,23 +86,6 @@ const formatTime = (timestamp) => {
   });
 };
 
-// 當元件掛載時，從 localStorage 抓取資料
-onMounted(() => {
-  const storedData = localStorage.getItem('assessment_history');
-  if (storedData) {
-    records.value = JSON.parse(storedData);
-  }
-});
-
-// 點擊紀錄後查看詳細內容
-const viewRecord = (record) => {
-  // 跳轉到詳細頁面，並帶上 record.id
-  // router.push({
-  //   name: 'HistoryDetail',
-  //   params: { id: record.id }
-  // });
-  router.push(`/self-assessment/history/${record.id}`)
-};
 </script>
 
 <style scoped>

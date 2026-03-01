@@ -122,6 +122,7 @@ import { ref, computed, onMounted } from 'vue'
 import dayjs from 'dayjs'
 import EventListModal from './EventListModal.vue'
 
+
 // Props
 const props = defineProps({
   events: {
@@ -570,24 +571,33 @@ onMounted(() => {
   opacity: 0.8;
 }
 
+/* 產檢：對應 type: 'checkup' */
 .event-checkup {
-  background: #ff6b9d;
+  background-color: #ff6b9d !important;
+  color: white !important;
 }
 
-.event-appointment {
-  background: #9c8ec9;
-}
-
+/* 其他：對應 type: 'other' */
 .event-other {
-  background: #4fc3f7;
+  background-color: #4fc3f7 !important;
+  color: white !important;
+}
+
+/* 日記：對應 type: 'diary' */
+.event-diary {
+  background-color: #4e7d50 !important;
+  color: white !important;
+}
+
+/* 提醒或預約 (視你的需求而定) */
+.event-appointment {
+  background-color: #9c8ec9 !important;
+  color: white !important;
 }
 
 .event-reminder {
-  background: #ffa726;
-}
-
-.event-diary {
-  background: #4e7d50;
+  background-color: #ffa726 !important;
+  color: white !important;
 }
 
 .more-events {

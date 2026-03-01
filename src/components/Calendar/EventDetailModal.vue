@@ -299,6 +299,7 @@ function initMap(location) {
     }
   })
 }
+
 // 監控 modal 是否顯示
 watch(() => props.show, (isShown) => {
   if (isShown && props.event.location) {

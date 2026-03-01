@@ -239,19 +239,30 @@ const currentUser = ref({
 const userAvatar = ref("");
 
 // 載入使用者名字和頭像
+// const loadUserData = () => {
+//   // 優先從currentUser拿名字（側邊欄顯示）
+//   const userData = localStorage.getItem("currentUser");
+//   if (userData) {
+//     currentUser.value = JSON.parse(userData);
+//   } else {
+//     // 如果沒有，試著從登入時存的 user 拿
+//     const user = localStorage.getItem("user");
+//     if (user) {
+//       const parsedUser = JSON.parse(user);
+//       currentUser.value.name = parsedUser.name;
+//     }
 const loadUserData = () => {
-  // 優先從currentUser拿名字（側邊欄顯示）
-  const userData = localStorage.getItem("currentUser");
-  if (userData) {
-    currentUser.value = JSON.parse(userData);
-  } else {
-    // 如果沒有，試著從登入時存的 user 拿
-    const user = localStorage.getItem("user");
+  const user = localStorage.getItem("user");
+  const profile = localStorage.getItem("userProfile");
+  
+  console.log("LocalStorage User:", user);
+  console.log("LocalStorage Profile:", profile);
+
     if (user) {
-      const parsedUser = JSON.parse(user);
-      currentUser.value.name = parsedUser.name;
+      const parsed = JSON.parse(user);
+      console.log("解析後的 User 物件內容:", parsed);
+      currentUser.value.name = parsed.name || "找不到名稱欄位";
     }
-  }
 
   // 載入頭像
   const profileData = localStorage.getItem("userProfile");

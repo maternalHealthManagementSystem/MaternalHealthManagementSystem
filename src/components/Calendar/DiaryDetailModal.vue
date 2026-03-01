@@ -2,7 +2,6 @@
   <!-- 遮罩層 -->
   <transition name="modal">
     <div v-if="show" class="modal-overlay" @click="closeModal">
-      
       <!-- 彈窗內容 -->
       <div class="modal-container" @click.stop>
         <!-- 標題列 -->

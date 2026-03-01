@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> d6b977e9c7c7633226c05ba9cbfab9dc9904dbde
 <template>
   <div class="maternal-dashboard">
     <div class="main-content-container">
@@ -41,7 +45,7 @@
       <div class="right-panel">
         <div class="calendar-section">
           <EventCalendar
-            :events="allEvents"
+            :events="combinedCalendarData"
             @dayClick="handleDayClick"
             @monthChange="handleMonthChange"
             @eventClick="handleEventClick"
@@ -74,7 +78,6 @@
     @close="closeDiaryDetail"
     @delete="handleDeleteDiary"
     @edit="handleEditDiary"
-    @save="handleSaveDiary"
   />
 </template>
 
@@ -117,7 +120,7 @@ onMounted(async () => {
   }
 
   if (router.query.editEventId) {
-    const eventToEdit = calendarStore.events.find(e => e.id == route.query.editEventId);
+    const eventToEdit = calendarStore.events.find(e => e.id == router.query.editEventId);
     if (eventToEdit) {
       selectedEvent.value = { ...eventToEdit };
       showEditForm.value = true;

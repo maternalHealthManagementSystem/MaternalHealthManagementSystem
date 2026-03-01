@@ -19,6 +19,6 @@ app.get('/', (req, res) => {
   res.send('Backend API is running');
 });
 
-app.listen(3000, () => {
-  console.log('API running at http://localhost:3000');
+app.listen(3002, () => {
+  console.log('API running at http://localhost:3002');
 });
