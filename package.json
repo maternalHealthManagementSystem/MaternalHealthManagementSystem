@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist",
-    "dev:full": "concurrently \"npm run dev\" \"npm run start --prefix backend\" \"npm run start --prefix back_end\""
+    "dev:full": "concurrently \"npm run dev\" \"npm run start --prefix backend\" \"npm run start --prefix back_end\" \"npm run start --prefix back-end\""
   },
   "dependencies": {
     "axios": "^1.13.6",

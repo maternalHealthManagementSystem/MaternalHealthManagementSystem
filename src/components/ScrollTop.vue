@@ -1,4 +1,3 @@
-
 <template>
   <button
     class="scroll-top-btn"

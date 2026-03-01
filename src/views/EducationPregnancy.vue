@@ -52,7 +52,7 @@
 
         <!-- 查無搜尋結果 -->
         <div v-else class="no-result">
-          <img src="../assets/no-result.png" alt="" />
+          <img src="https://res.cloudinary.com/dfrjrvt44/image/upload/v1769574328/no-result_gtetqp.png" alt="" />
           <p>查無搜尋結果</p>
         </div>
       </div>
@@ -81,7 +81,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import SearchBar from "../components/SearchBar.vue";
 import ScrollTop from "../components/ScrollTop.vue";
 // 引入 JSON 檔案
@@ -89,6 +89,8 @@ import pregnancyData from "../assets/data/pregnancyData.json";
 // checkbox 可以被修改 (checked 狀態)，使用 ref 包起來
 // 使用 JSON.parse/stringify 深拷貝，避免汙染原始 JSON
 const sections = ref(JSON.parse(JSON.stringify(pregnancyData)));
+const isLoading = ref(true);
+const filteredSections = ref([]);
 
 // 平滑捲動功能
 const scrollToSection = (id) => {
@@ -105,43 +107,81 @@ const scrollToSection = (id) => {
   }
 };
 
-/* --- 文章點擊處理 --- */
+// 向後端索取「該使用者的已讀紀錄」
+const fetchReadRecords = async () => {
+  try {
+    isLoading.value = true;
+    
+    // 這裡我們先寫死測試用的使用者 ID：U001
+    const response = await fetch('http://localhost:3000/api/read_records?user_id=U001');
+    
+    if (!response.ok) throw new Error('無法取得已讀紀錄');
+    
+    // 這裡會拿到你剛剛在網頁上看到的 ["PG001", "PG002", "PG003", "PG004"]
+    const readArticleIds = await response.json(); 
+
+    // 比對 JSON 與已讀紀錄，把讀過的打勾
+    sections.value.forEach(section => {
+      section.items.forEach(item => {
+        // 如果這篇文章的 id 有出現在後端回傳的陣列裡，就設為已讀
+        if (readArticleIds.includes(item.he_pregnancy_id)) {
+          item.checked = true;
+        }
+      });
+    });
+
+    // 更新畫面
+    filteredSections.value = [...sections.value];
+    
+  } catch (error) {
+    console.error('抓取已讀紀錄失敗:', error);
+    // 就算失敗，還是要把預設的 JSON 顯示出來，只是都沒打勾而已
+    filteredSections.value = [...sections.value];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchReadRecords();
+});
+
+/* --- 文章點擊處理：寫入一筆新的已讀紀錄到資料庫 --- */
 const handleLinkClick = async (item) => {
   // 如果已經是已讀狀態，就不用再做動作 (避免重複發送 API)
   if (item.checked) return;
 
-  // 1. 前端 UI 即時更新：直接將該物件的 checked 設為 true
+  // 前端 UI 即時更新：直接將該物件的 checked 設為 true
   item.checked = true;
 
-  // 2. (重要) 呼叫後端 API 儲存狀態
+  // 呼叫後端 API 儲存狀態
   // 這裡需要搭配你前面設計的 API，確保重新整理頁面後狀態還在
   try {
-    // 假設你的 API路徑是 /api/read-status
-    // 這裡的 item.id 對應你 JSON 裡的 he_pregnancy_id (請依實際欄位名稱調整)
-    
-    /* 範例程式碼：
-    await fetch('http://你的後端網址/api/read-status', {
+    // 發送 POST 請求新增紀錄
+    const response = await fetch('http://localhost:3000/api/read_records', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        article_id: item.id, // 或 item.he_pregnancy_id
-        user_id: '目前登入的使用者ID' 
+        user_id: "U001",       // 暫時寫死為 1 號使用者
+        article_id: item.he_pregnancy_id // 傳送 JSON 裡定義的文章 ID
       })
     });
-    */
-    console.log(`文章 "${item.title}" 已標記為已讀`);
+
+    if (!response.ok) throw new Error('寫入已讀失敗');
+    console.log(`已成功將文章 ${item.id} 標記為已讀！`);
     
   } catch (error) {
     console.error("更新閱讀狀態失敗", error);
-    // 如果 API 失敗，視情況決定是否要將 checked 改回 false
-    // item.checked = false; 
+    // 如果資料庫寫入失敗，把畫面上的打勾取消
+    item.checked = false; 
+    alert('儲存已讀狀態失敗，請稍後再試');
   }
 };
 
 /* --- 搜尋結果用資料 --- */
-const filteredSections = ref([...sections.value]); // 初始化顯示原始內容
 const hasResult = ref(true);
 const keyword = ref("");
+
 /* --- 搜尋功能 --- */
 const handleSearch = (key) => {
   keyword.value = key; // 記錄目前搜尋文字
@@ -165,6 +205,8 @@ const handleSearch = (key) => {
   filteredSections.value = result;
   hasResult.value = result.length > 0;
 };
+
+
 </script>
 
 <style scoped>
