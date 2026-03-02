@@ -276,7 +276,7 @@ const fetchGrowthData = async (week) => {
 };
 
 onMounted(async () => {
-  const loginUser = JSON.parse(localStorage.getItem("user") || "{}");
+  const loginUser = JSON.parse(sessionStorage.getItem("user") || "{}");
   console.log("登入使用者:", loginUser);
 
   if (!loginUser.user_id) return;

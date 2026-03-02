@@ -105,7 +105,7 @@ const verification = async () => {
     });
 
     if (res.data.success) {
-      localStorage.setItem("temp_user_id", res.data.user_id);
+      sessionStorage.setItem("temp_user_id", res.data.user_id);
       showIdPhone.value = false;
       startCountdown();
     }
@@ -116,7 +116,7 @@ const verification = async () => {
 
 // 3. 第二步：驗證驗證碼並登入 (sendsms)
 const sendsms = async () => {
-  const tempId = localStorage.getItem("temp_user_id"); 
+  const tempId = sessionStorage.getItem("temp_user_id"); 
   
   if (!tempId) {
     smsError.value = "請先獲取驗證碼";
@@ -131,17 +131,20 @@ const sendsms = async () => {
     });
 
     if (res.data.success) {
-      // 登入成功，儲存使用者資訊並導向首頁(在localstorage)
-      // 儲存完整 user 物件（包含 user_id, name, national_id, phone_number）
-      sessionStorage.setItem("user", JSON.stringify(res.data.user));
-      
-      // 儲存 App.vue 側邊欄專用的基本資訊
-      sessionStorage.setItem("currentUser", JSON.stringify({
-        name: res.data.user.name,
-        email: res.data.user.email || "",
+      // 這裡要確保把後端回傳的所有可用欄位都存進去
+      sessionStorage.setItem("user", JSON.stringify({
+        user_id: res.data.user_id,
+        name: res.data.name,
+        email: res.data.email, // 確保後端有回傳這個欄位
+        avatar: res.data.user_file_path // 將 user_file_path 統一存為頭像 Key
       }));
 
       sessionStorage.setItem("loggedIn", "true");
+      sessionStorage.setItem("justLoggedIn", "true");
+      
+      // 觸發自定義事件讓 App.vue 能在不重整的情況下即時獲取資料
+      window.dispatchEvent(new Event("user-data-updated"));
+      
       router.push("/home");
     }
   } catch (err) {

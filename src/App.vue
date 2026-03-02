@@ -215,7 +215,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted,onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -240,30 +240,29 @@ const userAvatar = ref("");
 
 // 載入使用者名字和頭像
 
+// App.vue 中的 loadUserData 修正
 const loadUserData = () => {
-  const userData = localStorage.getItem("user");
-  const profileData = localStorage.getItem("userProfile");
+  const userStr = sessionStorage.getItem("user");
   
-  if (userData) {
-    const parsedUser = JSON.parse(userData);
-    currentUser.value.name = parsedUser.name || "未命名使用者";
-    
-    if (profileData) {
-      const parsedProfile = JSON.parse(profileData);
-      
-      // 安全檢查：如果 profile 裡的 ID 跟登入者的 ID 不符，說明是上一個人的殘留資料
-      if (parsedProfile.user_id && parsedProfile.user_id !== parsedUser.user_id) {
-        console.warn("偵測到非當前使用者的快取資料，已自動清除。");
-        localStorage.removeItem("userProfile"); // 清除髒資料
-        userAvatar.value = "";
-        return;
-      }
+  if (userStr) {
+    const parsed = JSON.parse(userStr);
+    console.log("App.vue 載入中的使用者資料:", parsed); // 幫助你在 Console 除錯
 
-      // 資料正確才載入
-      userAvatar.value = parsedProfile.avatar || "";
-      if (parsedProfile.email) currentUser.value.email = parsedProfile.email;
-      if (parsedProfile.name) currentUser.value.name = parsedProfile.name;
+    // 更新個人基本資訊 (信箱如果沒有就顯示空或預設值)
+    currentUser.value.name = parsed.name || "未登入";
+    currentUser.value.email = parsed.email || "未提供電子信箱";
+
+    // 優先讀取 avatar，如果沒有就讀取資料庫原始欄位 user_file_path
+    const avatarPath = parsed.avatar || parsed.user_file_path || "";
+    
+    // 如果路徑存在才賦值給 userAvatar
+    if (avatarPath) {
+      userAvatar.value = avatarPath;
+    } else {
+      userAvatar.value = ""; // 顯示預設圖標
     }
+  } else {
+    console.warn("未偵測到 sessionStorage 中的 user 資料");
   }
 };
 
@@ -327,7 +326,7 @@ const confirmLogout = () => {
 
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
   sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
-  localStorage.clear(); // 清除 localStorage 中的 userProfile 和其他資料
+  
 
   // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
@@ -347,6 +346,13 @@ const cancelLogout = () => {
 
 onMounted(() => {
   loadUserData();
+  // 監聽自訂事件，當 profile.vue 更新使用者資料後觸發，以便即時更新 App.vue 的顯示
+  window.addEventListener("user-data-updated", loadUserData);
+});
+
+onUnmounted(() => {
+  // 移除監聽，避免記憶體洩漏
+  window.removeEventListener("user-data-updated", loadUserData);
 });
 
 // 監聽 localStorage 變化 (當使用者在 profile 頁面上傳頭像時)

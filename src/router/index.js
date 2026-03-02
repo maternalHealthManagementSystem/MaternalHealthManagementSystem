@@ -89,9 +89,9 @@ export default router;
 router.beforeEach((to, from, next) => {
   const publicPages = ['login']; 
   const authRequired = !publicPages.includes(to.name);
-  
-  // 檢查 login.vue 存入的 'user'
-  const isLoggedIn = sessionStorage.getItem('user'); 
+
+  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+  const isLoggedIn = user && user.user_id;
 
   if (authRequired && !isLoggedIn) {
     console.warn("未偵測到登入資訊，跳回登入頁");
