@@ -296,13 +296,16 @@ onMounted(async () => {
       profileData.dueDate = db.edc ? dayjs(db.edc).format("YYYY-MM-DD") : "未設定";
 
       const syncedUser = {
-        user_id: loginUser.user_id,
+        ...loginUser,
         name: profileData.name,
         email: profileData.email,
         avatar: profileData.avatar
       };
 
       sessionStorage.setItem("user", JSON.stringify(syncedUser));
+
+      // 觸發即時更新通知
+      window.dispatchEvent(new Event("user-data-updated"));
 
       console.log("資料庫個人資料載入成功！");
     }

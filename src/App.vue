@@ -355,13 +355,6 @@ onUnmounted(() => {
   window.removeEventListener("user-data-updated", loadUserData);
 });
 
-// 監聽 localStorage 變化 (當使用者在 profile 頁面上傳頭像時)
-window.addEventListener("storage", (e) => {
-  if (e.key === "userProfile") {
-    loadUserData();
-  }
-});
-
 /* -----------------------------
    自動行為：換頁處理與通知彈窗
 ----------------------------- */
