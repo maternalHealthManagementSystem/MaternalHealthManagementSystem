@@ -138,6 +138,16 @@ import { useCalendarStore } from '../stores/calendarStore.js'
 const route = useRoute()
 const calendarStore = useCalendarStore()
 
+const getLoggedInUserId = () => {
+  const userJson = sessionStorage.getItem("user");
+  if (userJson) {
+    const user = JSON.parse(userJson);
+    return user.user_id; // 確保與你 Login.vue 存入的 key 一致
+  }
+  return null;
+};
+const currentUserId = getLoggedInUserId();
+
 // 彈窗狀態
 const showEventDetail = ref(false)
 const showEditForm = ref(false)
@@ -176,7 +186,14 @@ const combinedCalendarData = computed(() => {
 });
 
 onMounted(async () => {
-  await calendarStore.fetchAllData('U001');
+  //await calendarStore.fetchAllData('U001');
+  if (!currentUserId) {
+    alert("登入逾時或尚未登入，請重新登入");
+    route.push("/"); // 導回登入頁
+    return;
+  }
+
+  await calendarStore.fetchAllData(currentUserId);
 
   if (route.query.date) {
     newDiary.value.date = route.query.date;
@@ -351,6 +368,12 @@ const saveDiary = async () => {
     alert('請輸入內容或上傳圖片 (兩者至少擇一)')
     return
   }
+  // 建立要送給後端的 payload
+  const diaryData = {
+    ...newDiary.value,
+    user_id: currentUserId // 確保每一筆新增的資料都有主人 ID
+  };
+
 
   // 建立日記資料物件
   try {
@@ -364,7 +387,9 @@ const saveDiary = async () => {
     console.error('儲存失敗:', error)
     alert('儲存失敗')
   }
-}
+};
+
+
 
 // 重置日記表單
 function resetDiaryForm() {
@@ -400,12 +425,13 @@ function handleEditDiary(diary) {
 // 處理儲存編輯後的日記
 function handleSaveDiary(updatedDiary) {
     console.log('儲存編輯日記:', updatedDiary)
+    const dataWithUser = { ...updatedDiary, user_id: currentUserId };
     // *** 呼叫 Store 的 Action ***
-    calendarStore.updateDiary(updatedDiary, updatedDiary.newImageFile)
+    calendarStore.updateDiary(dataWithUser, updatedDiary.newImageFile)
     .then(() => {
       alert('日記已更新！');
       showDiaryEdit.value = false;
-      calendarStore.fetchAllData('U001');
+      calendarStore.fetchAllData('currentUserId');
     })
     .catch(err => {
       console.error('更新出錯:', err);

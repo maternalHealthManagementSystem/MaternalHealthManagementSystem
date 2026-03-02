@@ -27,7 +27,7 @@ export const requestOtp = async (req, res) => {
 
     // 查詢使用者
     const [rows] = await db.query(
-      `SELECT user_id, name, national_id, phone_number 
+      `SELECT user_id, name, national_id, phone_number, email, user_file_path
        FROM personal_information 
        WHERE national_id = ? AND phone_number = ?`,
       [national_id, phone_number]

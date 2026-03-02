@@ -215,7 +215,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted,onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 const route = useRoute();
@@ -239,40 +239,30 @@ const currentUser = ref({
 const userAvatar = ref("");
 
 // 載入使用者名字和頭像
-// const loadUserData = () => {
-//   // 優先從currentUser拿名字（側邊欄顯示）
-//   const userData = localStorage.getItem("currentUser");
-//   if (userData) {
-//     currentUser.value = JSON.parse(userData);
-//   } else {
-//     // 如果沒有，試著從登入時存的 user 拿
-//     const user = localStorage.getItem("user");
-//     if (user) {
-//       const parsedUser = JSON.parse(user);
-//       currentUser.value.name = parsedUser.name;
-//     }
+
+// App.vue 中的 loadUserData 修正
 const loadUserData = () => {
-  const user = localStorage.getItem("user");
-  const profile = localStorage.getItem("userProfile");
+  const userStr = sessionStorage.getItem("user");
   
-  console.log("LocalStorage User:", user);
-  console.log("LocalStorage Profile:", profile);
+  if (userStr) {
+    const parsed = JSON.parse(userStr);
+    console.log("App.vue 載入中的使用者資料:", parsed); // 幫助你在 Console 除錯
 
-    if (user) {
-      const parsed = JSON.parse(user);
-      console.log("解析後的 User 物件內容:", parsed);
-      currentUser.value.name = parsed.name || "找不到名稱欄位";
-    }
+    // 更新個人基本資訊 (信箱如果沒有就顯示空或預設值)
+    currentUser.value.name = parsed.name || "未登入";
+    currentUser.value.email = parsed.email || "未提供電子信箱";
 
-  // 載入頭像
-  const profileData = localStorage.getItem("userProfile");
-  if (profileData) {
-    const profile = JSON.parse(profileData);
-    userAvatar.value = profile.avatar || "";
-    // 同步更新 email，如果 profile 裡有的話
-    if (profile.email) {
-      currentUser.value.email = profile.email;
+    // 優先讀取 avatar，如果沒有就讀取資料庫原始欄位 user_file_path
+    const avatarPath = parsed.avatar || parsed.user_file_path || "";
+    
+    // 如果路徑存在才賦值給 userAvatar
+    if (avatarPath) {
+      userAvatar.value = avatarPath;
+    } else {
+      userAvatar.value = ""; // 顯示預設圖標
     }
+  } else {
+    console.warn("未偵測到 sessionStorage 中的 user 資料");
   }
 };
 
@@ -335,14 +325,8 @@ const confirmLogout = () => {
   showLogoutConfirm.value = false;
 
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
-  sessionStorage.removeItem("user");        // login.vue 存的
-  sessionStorage.removeItem("loggedIn");    // router 守衛檢查的
+  sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
   
-  // 3. 其他資料清理
-  sessionStorage.removeItem("currentUser");
-  sessionStorage.removeItem("homeNotificationShown");
-  sessionStorage.removeItem("userProfile");
-  sessionStorage.removeItem("temp_user_id");
 
   // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
@@ -362,13 +346,13 @@ const cancelLogout = () => {
 
 onMounted(() => {
   loadUserData();
+  // 監聽自訂事件，當 profile.vue 更新使用者資料後觸發，以便即時更新 App.vue 的顯示
+  window.addEventListener("user-data-updated", loadUserData);
 });
 
-// 監聽 localStorage 變化 (當使用者在 profile 頁面上傳頭像時)
-window.addEventListener("storage", (e) => {
-  if (e.key === "userProfile") {
-    loadUserData();
-  }
+onUnmounted(() => {
+  // 移除監聽，避免記憶體洩漏
+  window.removeEventListener("user-data-updated", loadUserData);
 });
 
 /* -----------------------------
