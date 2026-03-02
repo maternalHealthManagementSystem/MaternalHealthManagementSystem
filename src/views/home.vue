@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-=======
-
->>>>>>> d6b977e9c7c7633226c05ba9cbfab9dc9904dbde
 <template>
   <div class="maternal-dashboard">
     <div class="main-content-container">
@@ -112,7 +108,7 @@ const combinedCalendarData = computed(() => {
 });
 
 onMounted(async () => {
-  // await calendarStore.fetchAllData('U001');
+  await calendarStore.fetchAllData('U001');
 
   if (router.query.date) {
     newDiary.value.date = router.query.date;
