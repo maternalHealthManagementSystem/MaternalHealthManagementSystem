@@ -112,7 +112,7 @@ const combinedCalendarData = computed(() => {
 });
 
 onMounted(async () => {
-  await calendarStore.fetchAllData('U001');
+  // await calendarStore.fetchAllData('U001');
 
   if (router.query.date) {
     newDiary.value.date = router.query.date;
