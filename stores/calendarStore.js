@@ -1,300 +1,194 @@
-// src/stores/calendarStore.js
-
 import { defineStore } from 'pinia';
+import axios from 'axios';
 import dayjs from 'dayjs';
 
-const INITIAL_EVENTS = [
-    {
-    id: 1,
-    date: '2025-11-30',
-    startDate: '2025-11-30',
-    title: '第一次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '確認懷孕週數、抽血檢驗、超音波檢查'
-  },
-  {
-    id: 2,
-    date: '2025-12-07',
-    startDate: '2025-12-07',
-    title: '第二次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎心音監測'
-  },
-  {
-    id: 3,
-    date: '2025-12-21',
-    startDate: '2025-12-21',
-    title: '第三次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '唐氏症篩檢、超音波檢查'
-  },
-  {
-    id: 4,
-    date: '2026-01-04',
-    startDate: '2026-01-04',
-    title: '第四次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎兒發育監測'
-  },
-  {
-    id: 5,
-    date: '2026-01-18',
-    startDate: '2026-01-18',
-    title: '第五次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '妊娠糖尿病篩檢、血壓監測'
-  },
-  {
-    id: 6,
-    date: '2026-02-01',
-    startDate: '2026-02-01',
-    title: '第六次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎動與羊水量檢查'
-  },
-  {
-    id: 7,
-    date: '2026-02-15',
-    startDate: '2026-02-15',
-    title: '第七次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '超音波檢查、胎兒位置確認'
-  },
-  {
-    id: 8,
-    date: '2026-03-01',
-    startDate: '2026-03-01',
-    title: '第八次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎心音監測'
-  },
-  {
-    id: 9,
-    date: '2026-03-15',
-    startDate: '2026-03-15',
-    title: '第九次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '胎兒發育監測、血壓與體重檢查'
-  },
-  {
-    id: 10,
-    date: '2026-03-29',
-    startDate: '2026-03-29',
-    title: '第十次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '例行產檢、胎兒位置與羊水量檢查'
-  },
-  {
-    id: 11,
-    date: '2026-04-05',
-    startDate: '2026-04-05',
-    title: '第十一至十四次產檢',
-    type: 'checkup',
-    startTime: '09:00',
-    endTime: '10:00',
-    location: '台中榮總',
-    description: '每週一次例行產檢，監測胎兒狀況直到臨盆'
-  },
-  {
-    id: 12,
-    date: '2026-03-20',
-    startDate: '2026-03-20',
-    title: '待產包準備提醒',
-    type: 'reminder',
-    startTime: '20:00',
-    endTime: '21:00',
-    location: '家中',
-    description: '準備待產包：證件、換洗衣物、嬰兒用品'
-  },
-  {
-    id: 13,
-    date: '2025-12-05',
-    startDate: '2025-12-05',
-    title: '產檢後運動提醒',
-    type: 'reminder',
-    startTime: '18:00',
-    endTime: '18:30',
-    location: '社區公園',
-    description: '輕鬆散步 30 分鐘，促進血液循環'
-  }
-];
-
 const BASE_URL = import.meta.env.BASE_URL;
-const INITIAL_DIARIES = [
-    {
-    id: 201,
-    date: '2025-11-29',
-    title: '美食冒險',
-    content: '今天突然想吃酸酸甜甜的水果，切了鳳梨和奇異果，滿足了味蕾。',
-    image: `${BASE_URL}images/fruit.jpg`,
-    createdAt: '2025-11-29T12:45:00Z',
-    updatedAt: ''
-  },
-  {
-    id: 202,
-    date: '2025-11-30',
-    title: '產檢的安心感',
-    content: '今天去產檢，聽到寶寶的心跳聲，覺得很安心，醫生說一切正常。',
-    image: `${BASE_URL}images/Ultrasoundsmall.jpg`,
-    
-    updatedAt: '2025-11-30T12:45:00Z'
-  },
-  {
-    id: 203,
-    date: '2025-12-01',
-    title: '孕婦的購物日',
-    content: '今天去買了幾件孕婦裝，穿起來舒服又好看，心情大好。',
-    image: `${BASE_URL}images/shopping.jpg`,
-    createdAt: '2025-12-01T18:20:00Z',
-    updatedAt: ''
-  },
-  {
-    id: 204,
-    date: '2025-12-03',
-    title: '甜點時光',
-    content: '今天做了黑糖紅豆湯，暖暖的甜味讓心情也變得溫柔。',
-    image: `${BASE_URL}images/sweetsoup.jpg`,
-    createdAt: '2025-12-03T16:00:00Z',
-    updatedAt: ''
-  },
-  {
-    id: 205,
-    date: '2025-12-05',
-    title: '瑜伽練習',
-    content: '跟著影片做孕婦瑜伽，伸展身體的同時覺得很放鬆，呼吸也更順暢。',
-    image: `${BASE_URL}images/yoga.jpg`,
-    createdAt: '2025-12-05T19:00:00Z',
-    updatedAt: ''
-  }
-];
+// 定義類型對照表
+  const TYPE_MAP = {
+    '產檢': 'checkup',
+    '提醒': 'reminder',
+    '預約': 'appointment',
+    '其他': 'other'
+  };
+const REVERSE_TYPE_MAP = Object.fromEntries(
+  Object.entries(TYPE_MAP).map(([key, value]) => [value, key])
+);
 
+export const useCalendarStore = defineStore('schedule', {
+  state: () => ({
+    events: [],
+    diaries: [],
+    loading: false,
+    currentUserId: null
+  }),
 
-const getNextEventId = (events) => {
-    const maxId = events.reduce((max, event) => Math.max(max, event.id), 0);
-    return maxId + 1;
-};
+  actions: {
+    async fetchAllData(user_id) {
+      if (!user_id) return;
+      this.currentUserId = user_id; // 儲存 ID 供後續 action 使用
+      this.loading = true;
+      try {
+        // 呼叫後端 API 
+        const response = await axios.get(`http://localhost:3001/api/schedule/${user_id}`);
+        console.log("後端原始資料:", response.data);
+        const { dbEvents, dbDiaries } = response.data;
+        console.log("解構後的行程:", dbEvents);
 
-export const useCalendarStore = defineStore('calendar', {
-    // 1. STATE: 集中管理行程和日記
-    state: () => ({
-        events: INITIAL_EVENTS,
-        diaries: INITIAL_DIARIES,
-    }),
+        // 行程 (Events) 
+        this.events = dbEvents.map(item => ({
+          id: item.event_id,
+          date: dayjs(item.event_start_date).format('YYYY-MM-DD'),      
+          startDate: dayjs(item.event_start_date).format('YYYY-MM-DD'),
+          title: item.event_title,
+          type: TYPE_MAP[item.event_type] || 'other',
+          rawType: item.event_type,
+          startTime: item.event_start_time ? item.event_start_time.substring(0, 5) : '', 
+          endTime: item.event_end_time ? item.event_end_time.substring(0, 5) : '',
+          location: item.event_place,
+          description: item.event_describe,
+          isAuto: item.event_is_auto === 1,
+          isEditable: item.event_is_editable === 1
+        }));
 
-    // 2. GETTERS: 取得合併或計算後的資料
-    getters: {
-        // 取得所有行程和日記，用於日曆顯示
-        allEvents: (state) => {
-            const diaryEvents = state.diaries.map(diary => ({
-                ...diary,
-                type: 'diary',
-                isDiary: true, // 增加一個標記以區分日記
-            }));
-            // 合併兩者，並確保 ID 不會衝突 (因為 diaries 和 events 的 ID 是分開計算的)
-            return [...state.events, ...diaryEvents];
-        },
-        // 取得特定日期的所有事件（如果您在其他元件需要）
-        getEventsByDate: (state) => (date) => {
-            return state.allEvents.filter(event => event.date === date);
-        }
+        // 日記 (Diaries) 
+        this.diaries = dbDiaries.map(item => ({
+          id: item.diary_id,
+          date: dayjs(item.diary_date).format('YYYY-MM-DD'),
+          title: item.diary_title,
+          content: item.diary_description,
+          // 如果資料庫存的是相對路徑，這裡補上 BASE_URL
+          image: item.diary_file_path|| null,
+          createdAt: item.diary_created_datetime,
+          updatedAt: item.diary_modified_datetime
+        }));
+
+      console.log("資料轉換完成，行程筆數:", this.events.length);
+      } catch (error) {
+        console.error('獲取資料庫資料失敗:', error);
+      } finally {
+        this.loading = false;
+      }
+    },
+    // 新增行程
+    async addEvent(newEvent) {
+      try {
+        const payload = {
+          event_title: newEvent.title,
+          event_type: REVERSE_TYPE_MAP[newEvent.type] || '其他',
+          event_start_date: newEvent.date,
+          event_start_time: newEvent.startTime.length === 5 ? `${newEvent.startTime}:00` : newEvent.startTime,
+          event_end_time: newEvent.endTime.length === 5 ? `${newEvent.endTime}:00` : newEvent.endTime,
+          event_place: newEvent.location || '',
+          event_describe: newEvent.description || '',
+          personal_informations_user_id: this.currentUserId,
+        };
+        await axios.post('http://localhost:3001/api/schedule', payload);
+        await this.fetchAllData(this.currentUserId); // 重新整理資料
+      } catch (error) {
+        console.error('新增失敗:', error);
+        throw error;
+      }
     },
 
-    // 3. ACTIONS: 所有修改 state 的方法
-    actions: {
-      async fetchAllData(userId) {
-            this.loading = true;
-            try {
-                // 這裡假設你的後端 API 路徑是這樣
-                // 如果後端還沒寫好，這裡會噴 500
-                const response = await api.get(`/api/calendar/${userId}`); 
-                
-                // 確保後端回傳的是正確格式
-                if (response.data) {
-                    this.events = response.data.events || [];
-                    this.diaries = response.data.diaries || [];
-                }
-            } catch (error) {
-                console.error("獲取資料庫資料失敗:", error);
-                // 發生 500 錯誤時，保留 INITIAL_EVENTS 不要清空，畫面才不會崩潰
-                alert("伺服器連線失敗，目前顯示離線預設資料");
-            } finally {
-                this.loading = false;
-            }
-        },
-        // --- 行程 (Events) 相關 Actions ---
+    // 編輯行程 
+    async updateEvent(updatedEvent) {
+      try {
+        console.log("準備更新的 ID:", updatedEvent.id);
 
-        // 新增行程 (對應 handleAddNewEvent)
-        addEvent(newEvent) {
-            // 在實際專案中，這裡通常會呼叫 API，成功後才加入 Store
-            const newId = getNextEventId(this.events);
-            this.events.push({ ...newEvent, id: newId });
-        },
+        const payload = {
+          event_title: updatedEvent.title,
+          event_type: REVERSE_TYPE_MAP[updatedEvent.type] || '其他',
+          event_start_date: updatedEvent.date,
+          event_start_time: updatedEvent.startTime,
+          event_end_time: updatedEvent.endTime,
+          event_place: updatedEvent.location,
+          event_describe: updatedEvent.description,
+          personal_informations_user_id: this.currentUserId
+        };
+        await axios.put(`http://localhost:3001/api/schedule/${updatedEvent.id}`, payload);
+        await this.fetchAllData(this.currentUserId);
+      } catch (error) { console.error('更新失敗:', error); }
+    },
 
-        // 更新行程 (對應 handleSaveEvent)
-        updateEvent(updatedEvent) {
-            const index = this.events.findIndex(e => e.id === updatedEvent.id);
-            if (index !== -1) {
-                this.events[index] = updatedEvent;
-            }
-        },
-
-        // 刪除行程 (對應 handleDeleteEvent)
-        deleteEvent(eventId) {
-            this.events = this.events.filter(e => e.id !== eventId);
-        },
-
-        // --- 日記 (Diaries) 相關 Actions ---
-
-        // 新增日記 (對應 saveDiary)
-        addDiary(newDiary) {
-            // newDiary 已經是您在 saveDiary 裡組裝好的物件
-            this.diaries.push(newDiary);
-        },
-
-        // 更新日記 (對應 handleSaveDiary)
-        updateDiary(updatedDiary) {
-            const index = this.diaries.findIndex(d => d.id === updatedDiary.id);
-            if (index !== -1) {
-                // Pinia/Vue 會自動解包 ref，所以這裡直接賦值即可
-                this.diaries[index] = updatedDiary;
-            }
-        },
-
-        // 刪除日記 (對應 handleDeleteDiary)
-        deleteDiary(diaryId) {
-            this.diaries = this.diaries.filter(d => d.id !== diaryId);
-        }
+    // 刪除行程
+   async deleteEvent(eventId) {
+    try {
+      // 發送 DELETE 請求
+      await axios.delete(`http://localhost:3001/api/schedule/${eventId}`);
+      
+      // 刪除成功後，立即重新抓取資料庫，讓日曆畫面更新
+      await this.fetchAllData(this.currentUserId); 
+      console.log(`行程 ${eventId} 刪除成功`);
+    } catch (error) {
+      console.error('刪除失敗:', error);
+      alert('刪除行程失敗，請稍後再試');
     }
-});
+  },
 
+    // 新增日記 
+    async addDiary(diary, imageFile) {
+      try {
+      const formData = new FormData();
+      formData.append('date', diary.date);
+      formData.append('title', diary.title || '今日日記');
+      formData.append('content', diary.content || '');
+      formData.append('personal_informations_user_id', this.currentUserId);
+      
+      if (imageFile) {
+        formData.append('image', imageFile); // 這裡的 imageFile 是使用者在本機選取的原始檔案
+      }
+
+      await axios.post('http://localhost:3001/api/diary', formData);
+      console.log("日記儲存成功");
+      await this.fetchAllData(this.currentUserId);
+      } catch (error) {
+        console.error("儲存日記失敗:", error);
+        throw error;
+      }
+    },
+
+    // 編輯日記
+    async updateDiary(updatedDiary,imageFile) {
+      try {
+        const formData = new FormData();
+        formData.append('title', updatedDiary.title || '今日日記');
+        formData.append('date', updatedDiary.date);
+        formData.append('content', updatedDiary.content || '');
+        formData.append('personal_informations_user_id', this.currentUserId);
+        
+      if (imageFile) {
+        // 如果有新檔案，只傳送檔案
+        console.log('上傳新檔案:', imageFile.name);
+        formData.append('image', imageFile); 
+      } else {
+        // 如果沒有新檔案，則傳送舊網址字串 (如果是空字串代表刪除圖片)
+        console.log('傳送舊網址或空值:', updatedDiary.image);
+        formData.append('image', updatedDiary.image || '');
+      }
+        await axios.put(`http://localhost:3001/api/diary/${updatedDiary.id}`, formData);
+        
+        console.log("日記更新成功");
+        await this.fetchAllData(this.currentUserId); // 重新整理畫面
+      } catch (error) {
+        console.error('更新日記失敗:', error);
+        throw error;
+      }
+    },
+
+    // 刪除日記
+    async deleteDiary(diaryId) {
+      try {
+        // 發送 DELETE 請求到後端
+        await axios.delete(`http://localhost:3001/api/diary/${diaryId}`);
+        
+        // 2. 刪除成功後，重新抓取所有資料以更新畫面
+        await this.fetchAllData(this.currentUserId); 
+        console.log(`日記 ${diaryId} 刪除成功`);
+      } catch (error) {
+        console.error('刪除日記失敗:', error);
+        alert('刪除日記失敗，請稍後再試');
+      }
+    },
+  }
+});
 

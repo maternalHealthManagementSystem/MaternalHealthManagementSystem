@@ -33,7 +33,7 @@ cloudinary.api.ping()
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
   waitForConnections: true,
@@ -67,6 +67,9 @@ app.get('/api/schedule/:userId', async (req, res) => {
 // 新增行程 
 app.post('/api/schedule', async (req, res) => {
     const data = req.body;
+    if (!data.personal_informations_user_id) {
+        return res.status(400).json({ success: false, message: "缺少使用者 ID" });
+    }
     try {
         // 取得最後一個 ID 並 +1
         const [rows] = await db.query("SELECT event_id FROM schedule ORDER BY event_id DESC LIMIT 1");
@@ -165,6 +168,10 @@ app.put('/api/schedule/:eventId', async (req, res) => {
 app.post('/api/diary', upload.single('image'), async (req, res) => {
     const { title, date, content, personal_informations_user_id } = req.body;
     let imageUrl = ''; 
+
+    if (!personal_informations_user_id) {
+        return res.status(400).json({ success: false, message: '使用者 ID 為必填項目' });
+    }
 
     try {
         if (!date) {
