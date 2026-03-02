@@ -270,7 +270,9 @@ const loadUserData = () => {
     const profile = JSON.parse(profileData);
     userAvatar.value = profile.avatar || "";
     // 同步更新 email，如果 profile 裡有的話
-    if (profile.email) currentUser.value.email = profile.email;
+    if (profile.email) {
+      currentUser.value.email = profile.email;
+    }
   }
 };
 
