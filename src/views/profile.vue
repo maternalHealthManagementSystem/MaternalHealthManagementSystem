@@ -490,8 +490,12 @@ const saveProfile = async () => {
         profileData.avatar = res.data.imageUrl;
       }
 
+      const cacheData = {
+        ...profileData,
+        user_id: loginUser.user_id // 這裡一定要加，App.vue 的安全機制才跑得通
+      };
       // 更新本地快取，確保重新整理後也是最新的
-      localStorage.setItem("userProfile", JSON.stringify(profileData));
+      localStorage.setItem("userProfile", JSON.stringify(cacheData));
       
       // 同步更新 App.vue 的側邊欄頭像與姓名
       localStorage.setItem("currentUser", JSON.stringify({

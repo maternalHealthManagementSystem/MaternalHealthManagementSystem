@@ -239,38 +239,31 @@ const currentUser = ref({
 const userAvatar = ref("");
 
 // 載入使用者名字和頭像
-// const loadUserData = () => {
-//   // 優先從currentUser拿名字（側邊欄顯示）
-//   const userData = localStorage.getItem("currentUser");
-//   if (userData) {
-//     currentUser.value = JSON.parse(userData);
-//   } else {
-//     // 如果沒有，試著從登入時存的 user 拿
-//     const user = localStorage.getItem("user");
-//     if (user) {
-//       const parsedUser = JSON.parse(user);
-//       currentUser.value.name = parsedUser.name;
-//     }
+
 const loadUserData = () => {
-  const user = localStorage.getItem("user");
-  const profile = localStorage.getItem("userProfile");
-  
-  console.log("LocalStorage User:", user);
-  console.log("LocalStorage Profile:", profile);
-
-    if (user) {
-      const parsed = JSON.parse(user);
-      console.log("解析後的 User 物件內容:", parsed);
-      currentUser.value.name = parsed.name || "找不到名稱欄位";
-    }
-
-  // 載入頭像
+  const userData = localStorage.getItem("user");
   const profileData = localStorage.getItem("userProfile");
-  if (profileData) {
-    const profile = JSON.parse(profileData);
-    userAvatar.value = profile.avatar || "";
-    // 同步更新 email，如果 profile 裡有的話
-    if (profile.email) currentUser.value.email = profile.email;
+  
+  if (userData) {
+    const parsedUser = JSON.parse(userData);
+    currentUser.value.name = parsedUser.name || "未命名使用者";
+    
+    if (profileData) {
+      const parsedProfile = JSON.parse(profileData);
+      
+      // 安全檢查：如果 profile 裡的 ID 跟登入者的 ID 不符，說明是上一個人的殘留資料
+      if (parsedProfile.user_id && parsedProfile.user_id !== parsedUser.user_id) {
+        console.warn("偵測到非當前使用者的快取資料，已自動清除。");
+        localStorage.removeItem("userProfile"); // 清除髒資料
+        userAvatar.value = "";
+        return;
+      }
+
+      // 資料正確才載入
+      userAvatar.value = parsedProfile.avatar || "";
+      if (parsedProfile.email) currentUser.value.email = parsedProfile.email;
+      if (parsedProfile.name) currentUser.value.name = parsedProfile.name;
+    }
   }
 };
 
@@ -333,14 +326,8 @@ const confirmLogout = () => {
   showLogoutConfirm.value = false;
 
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
-  sessionStorage.removeItem("user");        // login.vue 存的
-  sessionStorage.removeItem("loggedIn");    // router 守衛檢查的
-  
-  // 3. 其他資料清理
-  sessionStorage.removeItem("currentUser");
-  sessionStorage.removeItem("homeNotificationShown");
-  sessionStorage.removeItem("userProfile");
-  sessionStorage.removeItem("temp_user_id");
+  sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
+  localStorage.clear(); // 清除 localStorage 中的 userProfile 和其他資料
 
   // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
