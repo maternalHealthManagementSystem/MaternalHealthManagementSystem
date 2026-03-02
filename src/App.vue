@@ -239,30 +239,19 @@ const currentUser = ref({
 const userAvatar = ref("");
 
 // 載入使用者名字和頭像
-
-// App.vue 中的 loadUserData 修正
 const loadUserData = () => {
   const userStr = sessionStorage.getItem("user");
-  
   if (userStr) {
-    const parsed = JSON.parse(userStr);
-    console.log("App.vue 載入中的使用者資料:", parsed); // 幫助你在 Console 除錯
+    try {
+      const parsed = JSON.parse(sessionStorage.getItem("user") || "{}");
 
-    // 更新個人基本資訊 (信箱如果沒有就顯示空或預設值)
-    currentUser.value.name = parsed.name || "未登入";
-    currentUser.value.email = parsed.email || "未提供電子信箱";
-
-    // 優先讀取 avatar，如果沒有就讀取資料庫原始欄位 user_file_path
-    const avatarPath = parsed.avatar || parsed.user_file_path || "";
-    
-    // 如果路徑存在才賦值給 userAvatar
-    if (avatarPath) {
-      userAvatar.value = avatarPath;
-    } else {
-      userAvatar.value = ""; // 顯示預設圖標
+      currentUser.value.name = parsed.name || "使用者";
+      currentUser.value.email = parsed.email || "未提供電子信箱";
+      userAvatar.value = parsed.user_file_path || "";
+      
+    } catch (e) {
+      console.error("解析使用者資料失敗", e);
     }
-  } else {
-    console.warn("未偵測到 sessionStorage 中的 user 資料");
   }
 };
 
@@ -273,8 +262,6 @@ const showLogoutConfirm = ref(false);
 
 const isSidebarOpen = ref(false);
 const openSidebar = () => {
-  // 每次開啟側邊欄時重新載入資料,確保顯示最新頭像
-  loadUserData();
   isSidebarOpen.value = true
 };
 const closeSidebar = () => {
@@ -361,6 +348,7 @@ onUnmounted(() => {
 watch(
   () => route.path,
   (newPath) => {
+    loadUserData();
     // 1. 處理「剛登入後第一次進首頁」的彈窗通知
     if (newPath === "/home") {
       // 統一檢查 sessionStorage 中的旗標

@@ -87,20 +87,32 @@ export default router;
 
 //登入後才可以訪問其他頁面，否則導回登入頁
 router.beforeEach((to, from, next) => {
-  const publicPages = ['login']; 
-  const authRequired = !publicPages.includes(to.name);
-
-  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
-  const isLoggedIn = user && user.user_id;
-
-  if (authRequired && !isLoggedIn) {
-    console.warn("未偵測到登入資訊，跳回登入頁");
-    return next({ name: 'login' });
+  // 1. 取得並解析使用者資料
+  let user = null;
+  try {
+    const userStr = sessionStorage.getItem('user');
+    user = userStr ? JSON.parse(userStr) : null;
+  } catch (e) {
+    user = null;
   }
 
-  if (!authRequired && isLoggedIn) {
-    return next({ name: 'home' });
-  }
+  // 2. 核心登入判斷：是否存在 user 且包含 user_id
+  const isLoggedIn = !!(user && user.user_id);
+  
+  // 3. 判斷目標路徑是否為登入頁 (檢查路徑 '/' 或 名稱 'login')
+  const isGoingToLogin = to.path === '/' || to.name === 'login';
 
-  next();
+  console.log(`[Router Guard] Path: ${to.path}, LoggedIn: ${isLoggedIn}`);
+
+  if (!isLoggedIn && !isGoingToLogin) {
+    // 情況 A：未登入且要去保護頁面 -> 強制回登入頁
+    console.warn("未偵測到登入資訊，重定向至登入頁");
+    next({ name: 'login' });
+  } else if (isLoggedIn && isGoingToLogin) {
+    // 情況 B：已登入但想去登入頁 -> 強制去首頁
+    next({ name: 'home' });
+  } else {
+    // 情況 C：其他正常情況 -> 放行
+    next();
+  }
 });

@@ -115,9 +115,9 @@ const verification = async () => {
 };
 
 // 3. 第二步：驗證驗證碼並登入 (sendsms)
+// login.vue 中的 sendsms 函式
 const sendsms = async () => {
   const tempId = sessionStorage.getItem("temp_user_id"); 
-  
   if (!tempId) {
     smsError.value = "請先獲取驗證碼";
     return;
@@ -131,23 +131,26 @@ const sendsms = async () => {
     });
 
     if (res.data.success) {
-      // 這裡要確保把後端回傳的所有可用欄位都存進去
-      sessionStorage.setItem("user", JSON.stringify({
-        user_id: res.data.user_id,
-        name: res.data.name,
-        email: res.data.email, // 確保後端有回傳這個欄位
-        avatar: res.data.user_file_path // 將 user_file_path 統一存為頭像 Key
-      }));
+      console.log("登入成功，後端資料：", res.data);
 
-      sessionStorage.setItem("loggedIn", "true");
+      // 必須從 res.data.user 裡面拿資料
+      const backendUser = res.data.user; 
+      // 這裡可以選擇直接使用後端回傳的資料，或者再發一次請求拿完整的 profile 資料
+      const profileRes = await api.get(`/api/profile/${backendUser.user_id}`);
+      const userData = {
+        user_id: backendUser.user_id,
+        name: profileRes.data.name,
+        email: profileRes.data.email || "",
+        user_file_path: profileRes.data.user_file_path || ""
+      };
+      
+      sessionStorage.setItem("user", JSON.stringify(userData));
       sessionStorage.setItem("justLoggedIn", "true");
-      
-      // 觸發自定義事件讓 App.vue 能在不重整的情況下即時獲取資料
-      window.dispatchEvent(new Event("user-data-updated"));
-      
+
       router.push("/home");
     }
   } catch (err) {
+    console.error("Login Error:", err);
     smsError.value = err.response?.data?.message || "驗證碼錯誤";
   }
 };
