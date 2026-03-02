@@ -107,8 +107,25 @@ const combinedCalendarData = computed(() => {
   ];
 });
 
+const getLoggedInUserId = () => {
+  const userJson = sessionStorage.getItem("user");
+  if (userJson) {
+    const user = JSON.parse(userJson);
+    return user.user_id; // 確保與你 Login.vue 存入的 key 一致
+  }
+  return null;
+};
+const currentUserId = getLoggedInUserId();
+
 onMounted(async () => {
-  await calendarStore.fetchAllData('U001');
+  //await calendarStore.fetchAllData('U001');
+  if (!currentUserId) {
+    alert("登入逾時或尚未登入，請重新登入");
+    route.push("/"); // 導回登入頁
+    return;
+  }
+
+  await calendarStore.fetchAllData(currentUserId);
 
   if (router.query.date) {
     newDiary.value.date = router.query.date;
