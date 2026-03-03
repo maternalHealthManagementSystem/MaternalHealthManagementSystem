@@ -681,7 +681,7 @@ border-radius: 6px;
 }
 
 .btn-save:disabled {
-  background: #ccc;
+  background: #bab9b9;
   cursor: not-allowed;
 }
 
