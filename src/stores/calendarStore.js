@@ -191,4 +191,3 @@ export const useCalendarStore = defineStore('schedule', {
     },
   }
 });
-

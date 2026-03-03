@@ -225,7 +225,7 @@ app.post('/api/diary', upload.single('image'), async (req, res) => {
             date,
             content || '',
             imageUrl, // 有圖就是網址，沒圖就是空字串
-            personal_informations_user_id || 'U001'
+            personal_informations_user_id 
         ]);
 
         res.json({ success: true, message: '日記儲存成功' });
