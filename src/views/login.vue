@@ -105,7 +105,7 @@ const verification = async () => {
     });
 
     if (res.data.success) {
-      localStorage.setItem("temp_user_id", res.data.user_id);
+      sessionStorage.setItem("temp_user_id", res.data.user_id);
       showIdPhone.value = false;
       startCountdown();
     }
@@ -115,9 +115,9 @@ const verification = async () => {
 };
 
 // 3. 第二步：驗證驗證碼並登入 (sendsms)
+// login.vue 中的 sendsms 函式
 const sendsms = async () => {
-  const tempId = localStorage.getItem("temp_user_id"); 
-  
+  const tempId = sessionStorage.getItem("temp_user_id"); 
   if (!tempId) {
     smsError.value = "請先獲取驗證碼";
     return;
@@ -131,20 +131,26 @@ const sendsms = async () => {
     });
 
     if (res.data.success) {
-      // 登入成功，儲存使用者資訊並導向首頁(在localstorage)
-      // 儲存完整 user 物件（包含 user_id, name, national_id, phone_number）
-      sessionStorage.setItem("user", JSON.stringify(res.data.user));
-      
-      // 儲存 App.vue 側邊欄專用的基本資訊
-      sessionStorage.setItem("currentUser", JSON.stringify({
-        name: res.data.user.name,
-        email: res.data.user.email || "",
-      }));
+      console.log("登入成功，後端資料：", res.data);
 
-      sessionStorage.setItem("loggedIn", "true");
+      // 必須從 res.data.user 裡面拿資料
+      const backendUser = res.data.user; 
+      // 這裡可以選擇直接使用後端回傳的資料，或者再發一次請求拿完整的 profile 資料
+      const profileRes = await api.get(`/api/profile/${backendUser.user_id}`);
+      const userData = {
+        user_id: backendUser.user_id,
+        name: profileRes.data.name,
+        email: profileRes.data.email || "",
+        user_file_path: profileRes.data.user_file_path || ""
+      };
+      
+      sessionStorage.setItem("user", JSON.stringify(userData));
+      sessionStorage.setItem("justLoggedIn", "true");
+
       router.push("/home");
     }
   } catch (err) {
+    console.error("Login Error:", err);
     smsError.value = err.response?.data?.message || "驗證碼錯誤";
   }
 };
