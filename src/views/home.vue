@@ -11,11 +11,11 @@
             class="baby-size-info"
             v-if="currentData.length || currentData.weight"
           >
-            <p class="size-item">
+            <p class="size-item-length">
               <span class="label">平均長度:</span>
               <strong>{{ currentData.length }}</strong>
             </p>
-            <p class="size-item">
+            <p class="size-item-weight">
               <span class="label">平均重量:</span>
               <strong>{{ currentData.weight }}</strong>
             </p>
@@ -346,22 +346,28 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  min-height: 600px; /* min-height 確保高度，但允許內容超出 */
-  padding: 20px 10px 20px 10px;
+  /* 1. 修改對齊方式並使用 gap 控制間距 */
+  justify-content: flex-start; 
+  gap: 25px; /* 設定為你需要的 20~30px 之間 */
+  min-height: 700px; 
+  padding: 20px;
   flex-grow: 1;
+}
+
+.top-info-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
 
 .image-placeholder { 
   flex-grow: 0; 
   width: 100%;
   display: flex;
-  flex-direction: column; /* 垂直排列子元素 */
   justify-content: center;
   align-items: center;
-  background-color: none;
-  border-radius: 15px;
-  margin-bottom: 0; /* 確保底部沒有多餘的邊距推開 pregnancy-tracker */
 }
 
 .placeholder-icon {
@@ -394,12 +400,19 @@ onMounted(async () => {
   flex-direction: column; /* 垂直排列長度和重量 */
   gap: 8px;
   text-align: left;
-  width: 90%; /* 限制寬度 */
-  max-width: 250px;
+  width: 100%; /* 限制寬度 */
+  max-width: 300px;
   font-size: 16px;
 }
 
-.size-item {
+.size-item-length {
+  margin: 0;
+  display: flex;
+  justify-content: flex-start; /* 文字靠左 */
+  align-items: center;
+  width: 100%;
+}
+.size-item-weight {
   margin: 0;
   display: flex;
   justify-content: flex-start; /* 文字靠左 */
@@ -407,10 +420,10 @@ onMounted(async () => {
   width: 100%;
 }
 
-.size-item strong {
+.size-item-length strong, .size-item-weight strong {
   margin-left: 10px;
   color: #57aee2;
-  font-weight: 600;
+  font-weight: 750;
 }
 
 .label {
@@ -421,7 +434,8 @@ onMounted(async () => {
 /* 水果示意圖 */
 .baby-fruit-img {
   max-width: 100%;
-  height: auto;
+  height: 100%;
+  border-radius: 15px;
 }
 
 .fruit-text {
@@ -493,8 +507,7 @@ onMounted(async () => {
   }
 
   .baby-fruit-img {
-    width: 130px;
-    height: auto;
+    max-width: 180px; /* 極小螢幕的微調 */
   }
 
   .fruit-text {
@@ -502,11 +515,11 @@ onMounted(async () => {
   }
 
   .pregnancy-tracker {
-    font-size: 22px;
+    font-size: 24px;
   }
 
   .baby-size-info {
-    width: 100%;
+    width: auto;
     max-width: 100%; /* 讓它不要比 panel 還大 */
   }
 
@@ -518,6 +531,10 @@ onMounted(async () => {
   .calendar-section > * {
     padding: 10px;
   }
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+  } 
 }
 
 /* =====================================
