@@ -325,18 +325,35 @@ function triggerFileUpload() {
 // 處理檔案上傳
 function handleFileUpload(event) {
   const file = event.target.files[0]
-  if (file) {
-    // 檢查檔案類型
-    if (!file.type.startsWith('image/')) {
-      alert('請上傳圖片檔案')
-      return
-    }
+  // if (file) {
+  //   // 檢查檔案類型
+  //   if (!file.type.startsWith('image/')) {
+  //     alert('請上傳圖片檔案')
+  //     return
+  //   }
     
-    // 檢查檔案大小 (限制 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('圖片大小不能超過5MB')
-      return
-    }
+  //   // 檢查檔案大小 (限制 5MB)
+  //   if (file.size > 5 * 1024 * 1024) {
+  //     alert('圖片大小不能超過5MB')
+  //     return
+  //   }
+
+  if (!file) return
+
+  // 1. 嚴格檢查格式
+  const allowedTypes = ['image/jpeg', 'image/png'];
+  if (!allowedTypes.includes(file.type)) {
+    alert('格式不符，僅支援 JPG 與 PNG 格式')
+    event.target.value = '' // 清空 input
+    return
+  }
+  
+  // 2. 檢查大小
+  if (file.size > 5 * 1024 * 1024) {
+    alert('圖片大小不能超過 5MB')
+    event.target.value = '' // 清空 input
+    return
+  }
     
     // 讀取圖片預覽
     const reader = new FileReader()
@@ -345,7 +362,7 @@ function handleFileUpload(event) {
       newDiary.value.imageFile = file
     }
     reader.readAsDataURL(file)
-  }
+  // }
 }
 
 // 移除圖片
