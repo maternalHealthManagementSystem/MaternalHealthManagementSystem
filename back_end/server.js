@@ -33,7 +33,7 @@ cloudinary.api.ping()
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
+  password: process.env.DB_PASS,
   database: process.env.DB_NAME,
   port: process.env.DB_PORT,
   waitForConnections: true,
@@ -225,7 +225,7 @@ app.post('/api/diary', upload.single('image'), async (req, res) => {
             date,
             content || '',
             imageUrl, // 有圖就是網址，沒圖就是空字串
-            personal_informations_user_id || 'U001'
+            personal_informations_user_id 
         ]);
 
         res.json({ success: true, message: '日記儲存成功' });

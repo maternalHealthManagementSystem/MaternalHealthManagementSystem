@@ -19,10 +19,13 @@ export const useCalendarStore = defineStore('schedule', {
     events: [],
     diaries: [],
     loading: false,
+    currentUserId: null
   }),
 
   actions: {
     async fetchAllData(user_id) {
+      if (!user_id) return;
+      this.currentUserId = user_id; // 儲存 ID 供後續 action 使用
       this.loading = true;
       try {
         // 呼叫後端 API 
@@ -77,10 +80,10 @@ export const useCalendarStore = defineStore('schedule', {
           event_end_time: newEvent.endTime.length === 5 ? `${newEvent.endTime}:00` : newEvent.endTime,
           event_place: newEvent.location || '',
           event_describe: newEvent.description || '',
-          personal_informations_user_id: 'U001',
+          personal_informations_user_id: this.currentUserId,
         };
         await axios.post('http://localhost:3001/api/schedule', payload);
-        await this.fetchAllData('U001'); // 重新整理資料
+        await this.fetchAllData(this.currentUserId); // 重新整理資料
       } catch (error) {
         console.error('新增失敗:', error);
         throw error;
@@ -99,10 +102,11 @@ export const useCalendarStore = defineStore('schedule', {
           event_start_time: updatedEvent.startTime,
           event_end_time: updatedEvent.endTime,
           event_place: updatedEvent.location,
-          event_describe: updatedEvent.description
+          event_describe: updatedEvent.description,
+          personal_informations_user_id: this.currentUserId
         };
         await axios.put(`http://localhost:3001/api/schedule/${updatedEvent.id}`, payload);
-        await this.fetchAllData('U001');
+        await this.fetchAllData(this.currentUserId);
       } catch (error) { console.error('更新失敗:', error); }
     },
 
@@ -113,7 +117,7 @@ export const useCalendarStore = defineStore('schedule', {
       await axios.delete(`http://localhost:3001/api/schedule/${eventId}`);
       
       // 刪除成功後，立即重新抓取資料庫，讓日曆畫面更新
-      await this.fetchAllData('U001'); 
+      await this.fetchAllData(this.currentUserId); 
       console.log(`行程 ${eventId} 刪除成功`);
     } catch (error) {
       console.error('刪除失敗:', error);
@@ -128,7 +132,7 @@ export const useCalendarStore = defineStore('schedule', {
       formData.append('date', diary.date);
       formData.append('title', diary.title || '今日日記');
       formData.append('content', diary.content || '');
-      formData.append('personal_informations_user_id', 'U001');
+      formData.append('personal_informations_user_id', this.currentUserId);
       
       if (imageFile) {
         formData.append('image', imageFile); // 這裡的 imageFile 是使用者在本機選取的原始檔案
@@ -136,7 +140,7 @@ export const useCalendarStore = defineStore('schedule', {
 
       await axios.post('http://localhost:3001/api/diary', formData);
       console.log("日記儲存成功");
-      await this.fetchAllData('U001');
+      await this.fetchAllData(this.currentUserId);
       } catch (error) {
         console.error("儲存日記失敗:", error);
         throw error;
@@ -150,6 +154,7 @@ export const useCalendarStore = defineStore('schedule', {
         formData.append('title', updatedDiary.title || '今日日記');
         formData.append('date', updatedDiary.date);
         formData.append('content', updatedDiary.content || '');
+        formData.append('personal_informations_user_id', this.currentUserId);
         
       if (imageFile) {
         // 如果有新檔案，只傳送檔案
@@ -163,7 +168,7 @@ export const useCalendarStore = defineStore('schedule', {
         await axios.put(`http://localhost:3001/api/diary/${updatedDiary.id}`, formData);
         
         console.log("日記更新成功");
-        await this.fetchAllData('U001'); // 重新整理畫面
+        await this.fetchAllData(this.currentUserId); // 重新整理畫面
       } catch (error) {
         console.error('更新日記失敗:', error);
         throw error;
@@ -177,7 +182,7 @@ export const useCalendarStore = defineStore('schedule', {
         await axios.delete(`http://localhost:3001/api/diary/${diaryId}`);
         
         // 2. 刪除成功後，重新抓取所有資料以更新畫面
-        await this.fetchAllData('U001'); 
+        await this.fetchAllData(this.currentUserId); 
         console.log(`日記 ${diaryId} 刪除成功`);
       } catch (error) {
         console.error('刪除日記失敗:', error);
@@ -186,5 +191,4 @@ export const useCalendarStore = defineStore('schedule', {
     },
   }
 });
-
 
