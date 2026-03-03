@@ -248,8 +248,10 @@ function formatDateTime(datetime) {
 
 .diary-image img {
   width: 100%;
-  height: auto;
-  object-fit: cover;
+  /* height: auto;
+  object-fit: cover; */
+  max-height: 550px;
+  object-fit: contain;
   display: block;
 
 

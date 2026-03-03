@@ -67,9 +67,26 @@
           </div>
           
           <!-- 底部按鈕 -->
-          <div class="form-actions">
+          <!-- <div class="form-actions">
             <button class="btn-cancel" @click="resetDiaryForm">清除</button>
             <button class="btn-save" @click="saveDiary" :disabled="!newDiary.date">儲存</button>
+          </div> -->
+          <div class="form-actions">
+            <button 
+              class="btn-cancel" 
+              @click="resetDiaryForm" 
+              :disabled="isSubmitting"
+            >
+              清除
+            </button>
+            <button 
+              class="btn-save" 
+              @click="saveDiary" 
+              :disabled="!newDiary.date || isSubmitting"
+            >
+              <span v-if="isSubmitting" class="loading-spinner">資料上傳中，請稍候～</span>
+              <span v-else>儲存</span>
+            </button>
           </div>
         </div>
       </div>
@@ -168,6 +185,9 @@ const newDiary = ref({
   imageFile: null
 })
 
+// 控制日記儲存狀態
+const isSubmitting = ref(false)
+
 
 // 合併事件和日記（用於顯示在日曆上）
 const combinedCalendarData = computed(() => {
@@ -213,7 +233,7 @@ onMounted(async () => {
     if (diaryToEdit) {
       console.log("偵測到日記編輯請求:", diaryToEdit);
       selectedDiary.value = { ...diaryToEdit };
-      showDiaryEdit.value = true; // 關鍵：開啟日記編輯彈窗
+      showDiaryEdit.value = true; // 開啟日記編輯彈窗
     }
   }
 });
@@ -325,22 +345,9 @@ function triggerFileUpload() {
 // 處理檔案上傳
 function handleFileUpload(event) {
   const file = event.target.files[0]
-  // if (file) {
-  //   // 檢查檔案類型
-  //   if (!file.type.startsWith('image/')) {
-  //     alert('請上傳圖片檔案')
-  //     return
-  //   }
-    
-  //   // 檢查檔案大小 (限制 5MB)
-  //   if (file.size > 5 * 1024 * 1024) {
-  //     alert('圖片大小不能超過5MB')
-  //     return
-  //   }
-
   if (!file) return
 
-  // 1. 嚴格檢查格式
+  // 檢查格式
   const allowedTypes = ['image/jpeg', 'image/png'];
   if (!allowedTypes.includes(file.type)) {
     alert('格式不符，僅支援 JPG 與 PNG 格式')
@@ -348,7 +355,7 @@ function handleFileUpload(event) {
     return
   }
   
-  // 2. 檢查大小
+  // 檢查大小
   if (file.size > 5 * 1024 * 1024) {
     alert('圖片大小不能超過 5MB')
     event.target.value = '' // 清空 input
@@ -385,12 +392,9 @@ const saveDiary = async () => {
     alert('請輸入內容或上傳圖片 (兩者至少擇一)')
     return
   }
-  // 建立要送給後端的 payload
-  const diaryData = {
-    ...newDiary.value,
-    user_id: currentUserId // 確保每一筆新增的資料都有主人 ID
-  };
 
+  // 開始上傳日記
+  isSubmitting.value = true
 
   // 建立日記資料物件
   try {
@@ -403,6 +407,9 @@ const saveDiary = async () => {
   } catch (error) {
     console.error('儲存失敗:', error)
     alert('儲存失敗')
+  }finally {
+    // 無論成功或失敗都關閉載入狀態顯示
+    isSubmitting.value = false 
   }
 };
 
@@ -676,6 +683,29 @@ border-radius: 6px;
 .btn-save:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 等待上傳動畫 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner::before {
+  content: " ";
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 /* iPad Air*/
