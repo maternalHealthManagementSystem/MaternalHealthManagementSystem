@@ -259,7 +259,7 @@ function calculatePregnancyByLMP(lmpDate) {
 
   const diffDays = today.diff(lmp, "day");// 計算從 LMP 到今天總共過了多少天
 
-  if (diffDays < 0) { //// 如果今天比 LMP 還早，表示還沒懷孕或日期錯誤
+  if (diffDays < 0) { // 如果今天比 LMP 還早，表示還沒懷孕或日期錯誤
     currentWeek.value = 0;
     currentDay.value = 0;
     return;
@@ -273,7 +273,7 @@ function calculatePregnancyByLMP(lmpDate) {
   console.log(`LMP: ${lmpDate}, 目前已過: ${currentTotalDays} 天`);
 }
 
-// 2. 核心邏輯：抓取水果資料
+// 2. 抓取水果資料
 const fetchGrowthData = async (week) => {
   try {
     const targetWeek = Math.max(4, Math.min(40, week));

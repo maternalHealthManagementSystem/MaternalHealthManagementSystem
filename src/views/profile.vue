@@ -6,8 +6,8 @@
         <div class="avatar-section">
           <div class="avatar-placeholder" @click="triggerFileInput">
             <img
-              v-if="profileData.avatar"
-              :src="profileData.avatar"
+              v-if="profileData.user_file_path"
+              :src="profileData.user_file_path"
               class="avatar-img"
               alt="avatar"
             />
@@ -241,7 +241,7 @@ const profileData = reactive({
   weight: "",
   dueDate: "",
   address: "",
-  avatar: "",
+  user_file_path: "",
 });
 
 const bloodTypes = ["A型", "B型", "AB型", "O型", "Rh-型", "未知"];
@@ -260,62 +260,54 @@ const toStandardDate = (dateStr) => {
   return ""; // 格式錯誤則不回傳
 };
 
+// profile.vue 內的同步邏輯
+const syncToStorage = () => {
+  const existingUser = JSON.parse(sessionStorage.getItem("user")) || {};
+
+  const syncedUser = {
+    ...existingUser,
+    name: profileData.name,
+    email: profileData.email,
+    user_file_path: profileData.user_file_path
+  };
+
+  sessionStorage.setItem("user", JSON.stringify(syncedUser));
+  window.dispatchEvent(new Event("user-data-updated"));
+};
+
 // onMounted 載入資料並修正格式
+// profile.vue
 onMounted(async () => {
-  // 1. 先從 sessionStorage 拿登入時存的 user_id
   const loginUser = JSON.parse(sessionStorage.getItem("user"));
-  
-  if (!loginUser || !loginUser.user_id) {
-    console.warn("未偵測到登入資訊");
-    return;
-  }
+  if (!loginUser || !loginUser.user_id) return;
 
   try {
-    // 2. 呼叫後端 API 取得真實資料庫紀錄
-    // 注意：這裡使用你測試成功的路徑 /api/profile/${user_id}
     const res = await api.get(`/api/profile/${loginUser.user_id}`);
-
     if (res.data) {
       const db = res.data;
-
+      
+      // 賦值給表單
       profileData.name = db.name;
       profileData.mobile = db.phone_number;
       profileData.landline = db.landline;
-      profileData.email = db.email;
+      profileData.email = db.email || ""; // 這裡抓到了資料庫的 email
       profileData.address = db.address;
       profileData.height = db.height;
       profileData.weight = db.weight;
-      profileData.avatar = db.user_file_path || "";
+      profileData.user_file_path = db.user_file_path || ""; // 這裡抓到了資料庫的頭像路徑
 
       profileData.emergencyContact = db.ice_name;
       profileData.emergencyRelation = db.ice_relationship;
       profileData.emergencyPhone = db.ice_phone_number;
-
       profileData.bloodType = db.blood_type ? `${db.blood_type}型` : "";
       profileData.dob = db.birthday ? dayjs(db.birthday).format("YYYY-MM-DD") : "";
       profileData.dueDate = db.edc ? dayjs(db.edc).format("YYYY-MM-DD") : "未設定";
 
-      const syncedUser = {
-        ...loginUser,
-        name: profileData.name,
-        email: profileData.email,
-        avatar: profileData.avatar
-      };
-
-      sessionStorage.setItem("user", JSON.stringify(syncedUser));
-
-      // 觸發即時更新通知
-      window.dispatchEvent(new Event("user-data-updated"));
-
-      console.log("資料庫個人資料載入成功！");
+      // ✅ 修正：在這裡執行同步，確保 sessionStorage 裡的 user 物件含有 email
+      syncToStorage();
     }
   } catch (error) {
-    console.error("從資料庫載入失敗，嘗試載入本地暫存:", error);
-    // 備援方案：載入上次儲存的 userProfile
-    const savedProfile = sessionStorage.getItem("userProfile");
-    if (savedProfile) {
-      Object.assign(profileData, JSON.parse(savedProfile));
-    }
+    console.error("載入失敗:", error);
   }
 });
 
@@ -455,18 +447,15 @@ const saveProfile = async () => {
     customAlert("資料格式有誤，請檢查！");
     return;
   }
-
   try {
     const loginUser = JSON.parse(sessionStorage.getItem("user"));
-    if (!loginUser?.user_id) throw new Error("找不到 User ID");
-
     const payload = {
       name: profileData.name,
       edc: profileData.dueDate === "未設定" ? null : profileData.dueDate,
       birthday: profileData.dob,
       phone_number: profileData.mobile,
       landline: profileData.landline,
-      email: profileData.email,
+      email: profileData.email, // 傳給後端
       address: profileData.address,
       ice_name: profileData.emergencyContact,
       ice_relationship: profileData.emergencyRelation,
@@ -474,41 +463,27 @@ const saveProfile = async () => {
       blood_type: profileData.bloodType.replace("型", ""),
       height: profileData.height ? Number(profileData.height) : null,
       weight: profileData.weight ? Number(profileData.weight) : null,
-      avatar: profileData.avatar
+      user_file_path: profileData.user_file_path
     };
 
     const res = await api.put(`/api/profile/${loginUser.user_id}`, payload);
 
     if (res.data.success) {
-
-      // 如果後端回傳雲端圖片
-      if (res.data.imageUrl) {
-        profileData.avatar = res.data.imageUrl;
-      }
-
-      // ✅ 只更新 user（唯一來源）
-      const updatedUser = {
-        ...loginUser,
-        name: profileData.name,
-        email: profileData.email,
-        avatar: profileData.avatar
-      };
-      sessionStorage.setItem("user", JSON.stringify(updatedUser));
-      window.dispatchEvent(new Event("user-data-updated"));
+      if (res.data.imageUrl) profileData.user_file_path = res.data.imageUrl;
       
-      customAlert("🎉 個人資料與照片已成功儲存至雲端！");
+      syncToStorage();
+      
+      customAlert("🎉 個人資料已成功儲存！");
     }
-
   } catch (error) {
-    console.error("儲存失敗:", error);
-    customAlert(`儲存失敗: ${error.response?.data?.message || "網路連線異常"}`);
+    customAlert("儲存失敗");
   }
 };
 
 const backbtn = () => router.back();
 const clean = () => {
   // 定義不需要被清除的欄位的key
-  const keepFields = ["dueDate", "avatar"];
+  const keepFields = ["dueDate", "user_file_path"];
 
   Object.keys(profileData).forEach((k) => {
     // 只有當 key 不在排除名單內時，才執行清除
@@ -612,7 +587,7 @@ const handleFileUpload = (event) => {
         return;
       }
 
-      profileData.avatar = compressedBase64;
+      profileData.user_file_path = compressedBase64;
       customAlert("頭像上傳成功！");
     };
     img.src = e.target.result;

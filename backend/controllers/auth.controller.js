@@ -115,9 +115,9 @@ export const verifyOtp = async (req, res) => {
     delete otpStore[user_id];
 
     // 撈使用者資料
-    //在 SELECT 語法中加入 email 與 user_file_path
+    //在 SELECT 語法中加入
     const [rows] = await db.query(
-      `SELECT user_id, name, national_id, phone_number, email, user_file_path
+      `SELECT user_id, name, national_id, phone_number
        FROM personal_information 
        WHERE user_id = ?`,
       [user_id]
