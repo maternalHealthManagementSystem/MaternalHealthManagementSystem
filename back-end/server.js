@@ -9,49 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 建立第一支 API：測試撈取資料庫資料
-// 假設你有一個資料表叫做 personal_information
-// app.get("/api/personal_information", async (req, res) => {
-//   try {
-//     // 確保這裡的 SELECT 語法對應到你 MySQL 裡的個人資訊資料表名稱
-//     const [rows] = await db.query("SELECT * FROM personal_information"); 
-//     res.json(rows); // 把撈出來的資料回傳給前端
-//   } catch (error) {
-//     console.error("查詢個人資訊錯誤：", error);
-//     res.status(500).json({ message: "伺服器讀取資料失敗" });
-//   }
-// });
 
-// [GET] 獲取使用者個人資料的預產期 (用於愛丁堡表單自動代入身分和預產期)
-// app.get("/api/personal_information/:user_id", async (req, res) => {
-//   const { user_id } = req.params; // 取得路徑中的 user_id
-
-//   try {
-//     // 撰寫 SQL 語法：抓取預產期 
-//     const sql = "SELECT edc FROM personal_information WHERE user_id = ?";
-//     const [rows] = await db.query(sql, [user_id]);
-
-//     // 檢查是否有這筆資料
-//     if (rows.length === 0) {
-//       return res.status(404).json({ success: false, message: "找不到該使用者的資料" });
-//     }
-
-//     // 回傳 JSON
-//     res.json({
-//       success: true,
-//       data: {
-//         // 如果你在 db.js 有設定 dateStrings: true，這裡拿到的會是 YYYY-MM-DD
-//         dueDate: rows[0].edc 
-//       }
-//     });
-
-//   } catch (error) {
-//     console.error("獲取個人資料錯誤：", error);
-//     res.status(500).json({ success: false, message: "伺服器讀取錯誤" });
-//   }
-// });
-
-// [GET] 獲取使用者個人詳細資料 (用於產前照護和愛丁堡表單自動代入)
+// [GET] 獲取使用者個人詳細資料 (用於產前照護和愛丁堡表單自動代入、衛教資訊專區的目前懷孕週數)
 app.get("/api/personal_information/:user_id", async (req, res) => {
   const { user_id } = req.params;
 
@@ -59,7 +18,7 @@ app.get("/api/personal_information/:user_id", async (req, res) => {
     // 撰寫 SQL 語法：一次抓取所有基本資料欄位
     // 欄位名稱對應資料表：name, national_id, birthday, phone_number, landline, address, edc
     const sql = `
-      SELECT name, national_id, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, phone_number, landline, address, DATE_FORMAT(edc, '%Y-%m-%d') AS edc 
+      SELECT  DATE_FORMAT(lmp, '%Y-%m-%d') AS lmp, name, national_id, DATE_FORMAT(birthday, '%Y-%m-%d') AS birthday, phone_number, landline, address, DATE_FORMAT(edc, '%Y-%m-%d') AS edc
       FROM personal_information 
       WHERE user_id = ?
     `;
@@ -74,6 +33,7 @@ app.get("/api/personal_information/:user_id", async (req, res) => {
     res.json({
       success: true,
       data: {
+        lmpDate: rows[0].lmp,            // 最後一次月經
         userName: rows[0].name,          // 姓名
         idNumber: rows[0].national_id,   // 身分證字號
         birthday: rows[0].birthday,      // 出生日期
@@ -89,7 +49,6 @@ app.get("/api/personal_information/:user_id", async (req, res) => {
     res.status(500).json({ success: false, message: "伺服器讀取錯誤" });
   }
 });
-
 
 
 //  獲取使用者的已讀文章列表 (GET)

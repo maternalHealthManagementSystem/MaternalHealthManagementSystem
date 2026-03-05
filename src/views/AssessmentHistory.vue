@@ -31,10 +31,24 @@ const router = useRouter();
 const records = ref([]);
 const isLoading = ref(true);
 
+// 建立一個取得當前登入者 ID 的輔助函式
+const getCurrentUserId = () => {
+  const userStr = sessionStorage.getItem("user");
+  if (!userStr) return null;
+  try {
+    const user = JSON.parse(userStr);
+    return user.user_id;
+  } catch (error) {
+    console.error("解析登入資料失敗", error);
+    return null;
+  }
+};
+
 // 使用 fetch 呼叫後端 API
 const fetchAssessmentHistory = async () => {
   try {
-    const userId = 'U001'; // 這裡之後可以改成從登入資訊取得
+    // 動態取得 userId
+    const userId = getCurrentUserId();
     
     // fetch 的 GET 請求：參數必須直接寫在網址後面
     const url = `http://localhost:3000/api/assessment_history?user_id=${userId}`;
