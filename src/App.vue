@@ -663,7 +663,7 @@ const isEducationActive = computed(() => {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
 }
 
-/* 導覽列連結 (新增) */
+/* 導覽列連結*/
 .sidebar-nav-links {
   display: flex;
   flex-direction: column;
@@ -962,7 +962,7 @@ const isEducationActive = computed(() => {
 }
 
 /* =========================================================
-   Responsive rules (RWD 斷點)
+   Responsive rules 
    ========================================================= */
 
 /* ---------------------------
@@ -970,11 +970,9 @@ const isEducationActive = computed(() => {
    --------------------------- */
 @media (max-width: 1024px) {
   .nav {
-    gap: 1rem;
+    display: none;
   }
-  .nav a {
-    font-size: 0.9rem;
-  }
+  
   .logo {
     font-size: 1.25rem;
   }
