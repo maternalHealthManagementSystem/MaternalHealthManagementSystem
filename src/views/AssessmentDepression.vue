@@ -124,6 +124,21 @@ import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
 // 引入 JSON 資料檔
 import depressionQuestions from '../assets/data/depressionQuestions.json';
+
+const router = useRouter();
+// 取得當前登入者 ID 的輔助函式
+const getCurrentUserId = () => {
+  const userStr = sessionStorage.getItem("user");
+  if (!userStr) return null;
+  try {
+    const user = JSON.parse(userStr);
+    return user.user_id;
+  } catch (error) {
+    console.error("解析登入資料失敗", error);
+    return null;
+  }
+};
+
 // 使用 JSON 資料初始化 questions
 // 使用深拷貝確保每次進入頁面都是乾淨的狀態，不會被快取影響
 const questions = reactive(JSON.parse(JSON.stringify(depressionQuestions)));
@@ -134,11 +149,11 @@ const form = reactive({
   date: ''        // 預產期 YYYY-MM-DD
 });
 
-// 1. 定義分頁狀態 
+// 定義分頁狀態 
 const currentStep = ref(1);
 const totalSteps = 2; // 共 2 頁
 const panelRef = ref(null);
-// 2. 下一頁函式
+// 下一頁函式
 const nextStep = () => {
   if (validateCurrentStep()) {
     currentStep.value++;
@@ -146,7 +161,7 @@ const nextStep = () => {
   }
 };
 
-//  3. 上一頁函式 
+// 上一頁函式 
 const prevStep = () => {
   if (currentStep.value > 1) {
     currentStep.value--;
@@ -154,7 +169,7 @@ const prevStep = () => {
   }
 };
 
-//  4. 分頁驗證邏輯 
+// 分頁驗證邏輯 
 const validateCurrentStep = () => {
   if (currentStep.value === 1) {
     // 檢查基本資料
@@ -181,36 +196,7 @@ const validateCurrentStep = () => {
   return true;
 };
 
-// ==========================================
-// 自動代入功能：網頁載入後，讀取個人資料並判定身分
-// ==========================================
-// onMounted(() => {
-//   const savedProfileStr = localStorage.getItem("userProfile");
-  
-//   if (savedProfileStr) {
-//     try {
-//       const profile = JSON.parse(savedProfileStr);
-      
-//       if (profile.dueDate) {
-//         // 將 YYYY/MM/DD 轉換為 YYYY-MM-DD 以符合 <input type="date"> 格式
-//         const formattedDate = profile.dueDate.replace(/\//g, '-');
-//         form.date = formattedDate;
-
-//         // 自動判定邏輯
-//         const today = new Date();
-//         const targetDate = new Date(formattedDate);
-//         today.setHours(0, 0, 0, 0);
-//         targetDate.setHours(0, 0, 0, 0);
-
-//         // 如果日期在今天之後(含今天) = 準媽媽(1)，否則 = 寶寶媽媽(2)
-//         form.identity = targetDate >= today ? '1' : '2';
-//       }
-//     } catch (e) {
-//       console.error("自動代入個人資料失敗:", e);
-//     }
-//   }
-// });
-// --- 2. 判定身分的邏輯函式 ---
+// --- 判定身分的邏輯函式 ---
 const updateMaternalStatus = (dateStr) => {
   if (!dateStr) return;
   const today = new Date().setHours(0, 0, 0, 0);
@@ -220,15 +206,16 @@ const updateMaternalStatus = (dateStr) => {
   form.identity = targetDate >= today ? '1' : '2';
 };
 
-// --- 3. 監聽日期變動 (當使用者手動修改日期時，身分也會跟著變) ---
+// --- 監聽日期變動 (當使用者手動修改日期時，身分也會跟著變) ---
 watch(() => form.date, (newVal) => {
   updateMaternalStatus(newVal);
 });
 
-// --- 4. 頁面載入時從後端 API 自動代入 ---
+// --- 頁面載入時從後端 API 自動代入 ---
 onMounted(async () => {
   try {
-    const userId = 'U001'; 
+    // 動態獲取 userId 來代入預產期
+    const userId = getCurrentUserId();
     const response = await fetch(`http://localhost:3000/api/personal_information/${userId}`);
     const result = await response.json();
 
@@ -310,7 +297,8 @@ const submitForm = async () => {
   }
 
   try {
-    const userId = 'U001'; // 實務上從 Pinia 或登入資訊取得
+    // 動態獲取 userId 來送出表單
+    const userId = getCurrentUserId();
     
     const response = await fetch("http://localhost:3000/api/submit_edinburgh", {
       method: "POST",
@@ -338,7 +326,7 @@ const submitForm = async () => {
   }
 };
 
-const router = useRouter();
+
 // 關閉函式
 const closeModal = () => {
   showResultModal.value = false;

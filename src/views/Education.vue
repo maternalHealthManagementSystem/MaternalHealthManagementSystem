@@ -16,6 +16,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import dayjs from 'dayjs';
 import EducationCard from '../components/EducationCard.vue';
 import ScrollTop from '../components/ScrollTop.vue';
 // 引入JSON 資料
@@ -25,7 +26,63 @@ import vaccineData from '../assets/data/vaccineData.json';
 const router = useRouter();
 
 // 將初始值設為 0 (代表資料還沒載入)
-const currentWeek = ref(18); 
+const currentWeek = ref(0); 
+const isLoading = ref(true); // 用來控制畫面載入狀態
+
+// --- 利用lmp計算懷孕週數 ---
+const calculatePregnancyByLMP = (lmpDate) => {
+  if (!lmpDate) return;
+
+  const today = dayjs().startOf("day");   
+  const lmp = dayjs(lmpDate).startOf("day");
+  const diffDays = today.diff(lmp, "day"); // 計算總天數
+
+  if (diffDays < 0) { 
+    currentWeek.value = 0;
+    return;
+  }
+  
+  // 醫療邏輯：通常以 280 天為限
+  const currentTotalDays = Math.min(diffDays, 280);
+  currentWeek.value = Math.floor(currentTotalDays / 7);
+
+  console.log(`LMP: ${lmpDate}, 計算結果為第 ${currentWeek.value} 週`);
+};
+
+// --- 頁面載入時從後端獲取 LMP ---
+onMounted(async () => {
+  try {
+    isLoading.value = true;
+    
+    // 從 sessionStorage 取出使用者資料
+    const userDataStr = sessionStorage.getItem("user");
+
+    // 解析 JSON 並取得 user_id
+    const user = JSON.parse(userDataStr);
+    const userId = user.user_id; // 這就是動態的 'U001', 'U002', 或 'U003'
+
+    // 發送請求
+    const response = await fetch(`http://localhost:3000/api/personal_information/${userId}`);
+    const result = await response.json();
+
+    if (result.success && result.data) {
+      // 判斷後端是否有傳回 lmpDate (來自你之前修改的 API)
+      if (result.data.lmpDate) {
+        calculatePregnancyByLMP(result.data.lmpDate);
+      } else if (result.data.dueDate) {
+        // 備案：如果沒有 LMP，用預產期往前推 280 天反推
+        const manualLmp = dayjs(result.data.dueDate).subtract(280, 'day').format('YYYY-MM-DD');
+        calculatePregnancyByLMP(manualLmp);
+      }
+    }
+  } catch (error) {
+    console.error("無法獲取週數資料，將使用預設值 0:", error);
+  } finally {
+    isLoading.value = false;
+  }
+});
+
+
 
 // --- 核心邏輯 1: 純數字比對 ---
 // 只要項目沒有 minWeek，或是週數不符，就回傳 false
@@ -115,32 +172,6 @@ const goMore = (path) => {
   router.push(path);
 };
 
-// // 撰寫向後端索取週數的非同步函式
-// const fetchCurrentWeek = async () => {
-//   try {
-//     // 這裡替換成你實際的 API 網址，並帶上測試用的使用者 ID (例如 U001)
-//     const response = await fetch('http://localhost:3000/api/personal_information?user_id=U001');
-    
-//     if (!response.ok) throw new Error('無法取得孕婦個人資訊');
-    
-//     // 將後端回傳的資料解析成 JSON
-//     const data = await response.json(); 
-
-//     // 將後端算好的週數，賦值給我們的響應式變數
-//     // 假設後端回傳的欄位名稱叫做 current_week
-//     currentWeek.value = data.current_week; 
-
-//   } catch (error) {
-//     console.error("取得孕期週數失敗:", error);
-//     // 防呆機制：如果 API 壞掉或資料庫沒連上，可以給個預設值，避免畫面一片空白
-//     currentWeek.value = 12; 
-//   }
-// };
-
-// // 在元件掛載時，自動執行這支函式
-// onMounted(() => {
-//   fetchCurrentWeek();
-// });
 </script>
 
 <style scoped>
