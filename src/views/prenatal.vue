@@ -61,6 +61,7 @@ import axios from "axios";
 const isMobile = ref(false);
 // 一進入產檢資料專區就顯示最近一筆產檢報告
 onMounted(async () => {
+  checkupRecords.value = [];
   try {
     const token = localStorage.getItem("token");
 
@@ -70,10 +71,13 @@ onMounted(async () => {
       },
     });
 
+    console.log("前端收到的原始 JSON:", res.data);
+
     checkupRecords.value = res.data.map((item, index, arr) => {
       const formattedDate = item.visit_date.split("T")[0];
       return {
-        date: item.visit_date.split("T")[0], // 只取日期部分
+
+        date: formattedDate, // 只取日期部分
         checkupNumber: arr.length - index,
         details: {
           gestational_age_wks: item.gestational_age_wks,
@@ -82,8 +86,8 @@ onMounted(async () => {
           para: item.para,
           SA: item.SA,
           AA: item.AA,
-          LMP: item.LMP,
-          PMP: item.PMP,
+          LMP: item.LMP.split("T")[0],
+          PMP: item.PMP.split("T")[0],
           married_status: item.married_status,
           body_weight: item.body_weight,
           blood_pressure_sys: item.blood_pressure_sys,
