@@ -56,12 +56,57 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import axios from "axios";
 
 const isMobile = ref(false);
 // 一進入產檢資料專區就顯示最近一筆產檢報告
-onMounted(() => {
-  if (checkupRecords.value.length > 0) {
-    activeIndex.value = 0; // 預設顯示最新一筆
+onMounted(async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await axios.get("http://localhost:3002/api/prenatal", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    checkupRecords.value = res.data.map((item, index, arr) => {
+      const formattedDate = item.visit_date.split("T")[0];
+      return {
+        date: item.visit_date.split("T")[0], // 只取日期部分
+        checkupNumber: arr.length - index,
+        details: {
+          gestational_age_wks: item.gestational_age_wks,
+          gestational_age_days: item.gestational_age_days,
+          gravida: item.gravida,
+          para: item.para,
+          SA: item.SA,
+          AA: item.AA,
+          LMP: item.LMP,
+          PMP: item.PMP,
+          married_status: item.married_status,
+          body_weight: item.body_weight,
+          blood_pressure_sys: item.blood_pressure_sys,
+          blood_pressure_dia: item.blood_pressure_dia,
+          body_height: item.body_height,
+          BMI: item.bmi,
+          pre_pregnancy_weight: item.pre_pregnancy_weight,
+          pre_pregnancy_bmi: item.pre_pregnancy_bmi,
+          urine_sugar: item.urine_sugar,
+          urine_protein: item.urine_protein,
+          Insemination: item.insemination,
+          cohabitants_smoke: item.cohabitants_smoke,
+          cohabitants_smoke_relationship:
+            item.cohabitants_smoke_relationship,
+        },
+      };
+    });
+
+    if (checkupRecords.value.length > 0) {
+      activeIndex.value = 0;
+    }
+  } catch (err) {
+    console.error("抓取產檢資料失敗", err);
   }
 });
 
@@ -119,96 +164,6 @@ const fieldDetails = {
   cohabitants_smoke_relationship: { unit: "", reference: "" },
 };
 
-/* -----------------------------
-   模擬資料 mockData（含所有欄位）
------------------------------ */
-const mockData = [
-  {
-    date: "2025/9/24",
-    checkupNumber: 1,
-    details: {
-      gestational_age_wks: 8,
-      gestational_age_days: 1,
-      gravida: 1,
-      para: 0,
-      SA: 0,
-      AA: 0,
-      LMP: "2024/07/29",
-      PMP: "2024/07/01",
-      married_status: "1",
-      body_weight: "50",
-      blood_pressure_sys: "110",
-      blood_pressure_dia: "70",
-      body_height: "160",
-      BMI: "19.5",
-      pre_pregnancy_weight: "48",
-      pre_pregnancy_bmi: "18.8",
-      urine_sugar: "0",
-      urine_protein: "0",
-      Insemination: "自然受孕",
-      cohabitants_smoke: "N",
-      cohabitants_smoke_relationship: "",
-    },
-  },
-
-  {
-    date: "2025/10/22",
-    checkupNumber: 2,
-    details: {
-      gestational_age_wks: 12,
-      gestational_age_days: 2,
-      gravida: 1,
-      para: 0,
-      SA: 0,
-      AA: 0,
-      LMP: "2024/07/29",
-      PMP: "2024/07/01",
-      married_status: "1",
-      body_weight: "52",
-      blood_pressure_sys: "112",
-      blood_pressure_dia: "72",
-      body_height: "160",
-      BMI: "20.3",
-      pre_pregnancy_weight: "48",
-      pre_pregnancy_bmi: "18.8",
-      urine_sugar: "0",
-      urine_protein: "0",
-      Insemination: "自然受孕",
-      cohabitants_smoke: "N",
-      cohabitants_smoke_relationship: "",
-    },
-  },
-  {
-    date: "2025/11/19",
-    checkupNumber: 3,
-    details: {
-      gestational_age_wks: 16,
-      gestational_age_days: 0,
-      gravida: 1,
-      para: 0,
-      SA: 0,
-      AA: 0,
-      LMP: "2024/07/29",
-      PMP: "2024/07/01",
-      married_status: "1",
-      body_weight: "53",
-      blood_pressure_sys: "108",
-      blood_pressure_dia: "65",
-      body_height: "160",
-      BMI: "20.3",
-      pre_pregnancy_weight: "48",
-      pre_pregnancy_bmi: "18.8",
-      urine_sugar: "1+",
-      urine_protein: "0",
-      Insemination: "自然受孕",
-      cohabitants_smoke: "N",
-      cohabitants_smoke_relationship: "",
-    },
-  },
-  
-];
-
-
 
 const filteredFields = computed(() => {
   if (!activeRecord.value) return [];
@@ -218,9 +173,7 @@ const filteredFields = computed(() => {
 });
 
 // 產檢紀錄倒敘排序
-const checkupRecords = ref(
-  [...mockData].sort((a, b) => new Date(b.date) - new Date(a.date))
-);
+const checkupRecords = ref([]);
 
 const tableHeaders = ref(["檢驗項目名稱", "檢驗結果", "單位", "參考值"]);
 const activeIndex = ref(null);
@@ -459,7 +412,7 @@ td {
     }
     
     /* -------------------------------------- */
-    /* 📌 右側報告 - 內嵌顯示 (不再覆蓋) */
+    /* 右側報告 - 內嵌顯示 (不再覆蓋) */
     /* -------------------------------------- */
     .report-area {
         /* 🔥 移除所有固定定位和全屏樣式 */
@@ -500,10 +453,84 @@ td {
 }
 
 /* 平板：微調左右欄位比例 */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .checkup-list-panel {
-    width: 200px;
+@media (min-width: 768px) and (max-width: 1180px) {
+  /* 1. 關鍵：將容器改為垂直堆疊 */
+  .dashboard-container {
+      flex-direction: column;
+      margin: 20px auto;
+      padding: 0;
+      max-width: 92%; /* 讓平板邊緣留一點空間 */
   }
+
+  .dashboard-container.expanded {
+      justify-content: initial; 
+  }
+
+  /* 2. 列表面板設定 */
+  .checkup-list-panel {
+      width: 100% !important; /* 強制覆蓋之前的 200px */
+      margin-bottom: 0;
+      border-radius: 0;
+      border: none;
+      border-bottom: 1px solid #ddd;
+      padding: 8px 0;
+      overflow-x: auto;
+      white-space: nowrap;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      position: sticky; 
+      top: 0; 
+      z-index: 10;
+      background: #fafafa;
+      display: block; /* 確保它是區塊顯示 */
+  }
+
+  .indicator-icon {
+      display: none; /* 平板模式下不需要指示圖示 */
+  }
+
+  .checkup-list-panel.centered {
+      margin: 0;
+  }
+
+  /* 讓項目在橫向排列時能正確顯示 */
+  .checkup-item {
+      display: inline-block;
+      border-left: none;
+      border-bottom: 3px solid transparent;
+      padding: 12px 20px;
+      margin: 0;
+  }
+
+  .item-text {
+        text-decoration: none;
+        font-size: 18px;
+        font-weight: 500;
+    }
+
+  .checkup-item.is-active {
+      border-left: none;
+      border-bottom: 3px solid #1677ff;
+      background-color: transparent;
+  }
+
+  /* 3. 右側內容區塊修正 */
+  .report-area {
+      position: relative;
+      width: 100%;
+      padding: 20px 0; /* 調整間距 */
+      margin: 0;
+      flex: none;
+  }
+
+  .report-card {
+      width: 100%;
+      box-sizing: border-box; /* 防止 padding 撐破寬度 */
+  }
+
+  .close-btn {
+      display: none; /* 平板模式下不需要關閉按鈕 */
+  }
+
 }
 
 /* 大螢幕：保持原本 layout */
