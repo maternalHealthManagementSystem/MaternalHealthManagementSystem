@@ -260,12 +260,30 @@ import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
 // 引入 JSON 資料
 import prenatalQuestions from '../assets/data/prenatalQuestions.json'; 
+
+// 初始化 router
+const router = useRouter();
+
+//  取得當前登入者 ID 的輔助函式
+const getCurrentUserId = () => {
+  const userStr = sessionStorage.getItem("user");
+  if (!userStr) return null;
+  try {
+    const user = JSON.parse(userStr);
+    return user.user_id;
+  } catch (error) {
+    console.error("解析登入資料失敗", error);
+    return null;
+  }
+};
+
 // 使用 JSON 資料初始化變數
 const generalMedicalOptions = prenatalQuestions.generalMedicalOptions;
 const seriousComplications = prenatalQuestions.seriousComplications;
 // 因為 educationTopics 裡的 value 需要響應式 (v-model 綁定)
 // 用 reactive 包起來，或是深拷貝一份
 const educationTopics = reactive(JSON.parse(JSON.stringify(prenatalQuestions.educationTopics)));
+
 // 定義步驟狀態
 const currentStep = ref(1);
 const totalSteps = 5;
@@ -356,42 +374,6 @@ const validateCurrentStep = () => {
   return true;
 };
 
-// onMounted(() => {
-//   const savedProfileStr = localStorage.getItem("userProfile");
-  
-//   if (savedProfileStr) {
-//     try {
-//       const profile = JSON.parse(savedProfileStr);
-      
-//       console.log("讀取到的資料:", profile); // 可以用F12確認資料有沒有進來
-
-//       // 1. 帶入姓名
-//       if (profile.name) form.name = profile.name;
-      
-//       // 2. 帶入身分證 (修正 Login.vue 後這裡才會有值)
-//       if (profile.idNumber) form.idNumber = profile.idNumber;
-      
-//       // 3. 帶入出生日期 (格式轉換)
-//       if (profile.dob) {
-//         // 將 "1990/05/15" 轉換為 "1990-05-15"
-//         // <input type="date"> 只接受 "YYYY-MM-DD"
-//         form.birthDate = profile.dob.replace(/\//g, '-');
-//       }
-      
-//       // 4. 帶入手機
-//       if (profile.mobile) form.phone = profile.mobile;
-      
-//       // 5. 帶入市話
-//       if (profile.landline) form.homePhone = profile.landline;
-      
-//       // 6. 帶入地址
-//       if (profile.address) form.address = profile.address;
-
-//     } catch (e) {
-//       console.error("解析使用者資料失敗:", e);
-//     }
-//   }
-// });
 
 
 // 計算填寫進度
@@ -437,15 +419,14 @@ const isSevereComplicationChecked = computed(() => {
   return form.medicalHistory.selectedItems.includes('8');
 });
 
-// 初始化 router
-const router = useRouter();
 // 控制彈窗顯示的狀態
 const showSuccessModal = ref(false);
 
 // --- 從後端 API 自動代入基本資料 ---
 onMounted(async () => {
   try {
-    const userId = 'U001'; 
+    // 動態獲取 userId 進行資料代入
+    const userId = getCurrentUserId();
     const response = await fetch(`http://localhost:3000/api/personal_information/${userId}`);
     const result = await response.json();
 
@@ -483,7 +464,8 @@ const submitForm = async () => {
   }
 
   try {
-    const userId = 'U001'; // 實務上請從 profile 獲取，如 profile.user_id
+    // 動態獲取 userId 來送出表單
+    const userId = getCurrentUserId();
 
     const response = await fetch("http://localhost:3000/api/submit_prenatal", {
       method: "POST",

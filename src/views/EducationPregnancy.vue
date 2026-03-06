@@ -82,6 +82,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+
 import SearchBar from "../components/SearchBar.vue";
 import ScrollTop from "../components/ScrollTop.vue";
 // 引入 JSON 檔案
@@ -91,6 +92,20 @@ import pregnancyData from "../assets/data/pregnancyData.json";
 const sections = ref(JSON.parse(JSON.stringify(pregnancyData)));
 const isLoading = ref(true);
 const filteredSections = ref([]);
+
+
+// 建立一個取得當前登入者 ID 的輔助函式
+const getCurrentUserId = () => {
+  const userStr = sessionStorage.getItem("user");
+  if (!userStr) return null;
+  try {
+    const user = JSON.parse(userStr);
+    return user.user_id;
+  } catch (error) {
+    console.error("解析登入資料失敗", error);
+    return null;
+  }
+}
 
 // 平滑捲動功能
 const scrollToSection = (id) => {
@@ -111,9 +126,18 @@ const scrollToSection = (id) => {
 const fetchReadRecords = async () => {
   try {
     isLoading.value = true;
+
+    // 動態取得 userId
+    const userId = getCurrentUserId();
+
+    // 如果沒有登入資訊，直接中斷執行，畫面顯示未讀狀態即可
+    if (!userId) {
+      console.warn("未取得登入資訊，將不載入已讀紀錄");
+      filteredSections.value = [...sections.value];
+      return;
+    }
     
-    // 這裡我們先寫死測試用的使用者 ID：U001
-    const response = await fetch('http://localhost:3000/api/read_records?user_id=U001');
+    const response = await fetch(`http://localhost:3000/api/read_records?user_id=${userId}`);
     
     if (!response.ok) throw new Error('無法取得已讀紀錄');
     
@@ -157,12 +181,14 @@ const handleLinkClick = async (item) => {
   // 呼叫後端 API 儲存狀態
   // 這裡需要搭配你前面設計的 API，確保重新整理頁面後狀態還在
   try {
+    // 動態取得 userId
+    const userId = getCurrentUserId();
     // 發送 POST 請求新增紀錄
     const response = await fetch('http://localhost:3000/api/read_records', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        user_id: "U001",       // 暫時寫死為 1 號使用者
+        user_id: userId,      
         article_id: item.he_pregnancy_id // 傳送 JSON 裡定義的文章 ID
       })
     });
