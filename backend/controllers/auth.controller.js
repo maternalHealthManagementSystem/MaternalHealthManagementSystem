@@ -1,4 +1,5 @@
 import db from '../db/connection.js';
+import jwt from "jsonwebtoken";
 
 // 暫存 OTP（正式專案建議用 Redis）
 const otpStore = {};
@@ -27,7 +28,7 @@ export const requestOtp = async (req, res) => {
 
     // 查詢使用者
     const [rows] = await db.query(
-      `SELECT user_id, name, national_id, phone_number, email, user_file_path
+      `SELECT user_id, name, national_id, phone_number 
        FROM personal_information 
        WHERE national_id = ? AND phone_number = ?`,
       [national_id, phone_number]
@@ -117,16 +118,31 @@ export const verifyOtp = async (req, res) => {
     // 撈使用者資料
     const [rows] = await db.query(
       `SELECT user_id, name, national_id, phone_number 
-       FROM personal_information 
-       WHERE user_id = ?`,
+      FROM personal_information 
+      WHERE user_id = ?`,
       [user_id]
     );
 
     const user = rows[0];
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "使用者不存在",
+      });
+    }
+
+    // 🔥 產生 JWT（關鍵步驟）
+    const token = jwt.sign(
+      { user_id: user.user_id },   // 一定要放 user_id
+      process.env.JWT_SECRET,
+      { expiresIn: "2h" }
+    );
+
     return res.json({
       success: true,
-      message: '登入成功',
+      message: "登入成功",
+      token,     // 🔥 回傳 token
       user,
     });
 

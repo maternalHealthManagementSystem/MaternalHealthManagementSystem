@@ -133,6 +133,8 @@ const sendsms = async () => {
     if (res.data.success) {
       console.log("登入成功，後端資料：", res.data);
 
+      localStorage.setItem("token", res.data.token); // 儲存 JWT 以供後續 API 認證使用
+
       // 必須從 res.data.user 裡面拿資料
       const backendUser = res.data.user; 
       // 這裡可以選擇直接使用後端回傳的資料，或者再發一次請求拿完整的 profile 資料

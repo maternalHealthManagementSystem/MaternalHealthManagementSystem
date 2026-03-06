@@ -7,6 +7,7 @@ import { v2 as cloudinary } from 'cloudinary';
 import authRoutes from './routes/auth.routes.js';
 
 
+
 dotenv.config();
 // Cloudinary 配置
 cloudinary.config({
@@ -128,5 +129,10 @@ app.put("/api/profile/:user_id", async (req, res) => {
   }
 });
 
+// 引入並使用產檢資料的路由
+import prenatalRoutes from "./routes/prenatal.routes.js";
+app.use("/api/prenatal", prenatalRoutes);
+
+// 引入並使用寶寶水果示意圖的路由
 import growthRoutes from "./routes/growth.routes.js";
 app.use("/api/growth", growthRoutes);
