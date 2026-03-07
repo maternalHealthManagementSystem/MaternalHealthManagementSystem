@@ -313,7 +313,10 @@ const confirmLogout = () => {
 
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
   sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
-  
+  localStorage.removeItem("token"); // 如果有使用 localStorage 儲存 JWT，這裡也要清除
+  router.push('/login').then(() => {
+    window.location.reload(); // 強制重新整理，清空所有 Pinia/Vuex 或組件狀態
+  });
 
   // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
