@@ -7,6 +7,7 @@
       :title="item.title"
       :desc="item.desc"
       @click-more="goMore(item.path)"
+      @article-click="handleArticleClick"
     />
 
   </div>
@@ -123,6 +124,7 @@ const formattedInfoList = computed(() => {
     .filter(item => isWeekMatch(item, currentWeek.value)) 
     .flatMap(item => item.items)
     .map(item => ({
+      article_id: item.he_pregnancy_id, // 把文章 ID 傳遞下去
       text: item.title,
       link: item.link
     }));
@@ -172,6 +174,34 @@ const goMore = (path) => {
   router.push(path);
 };
 
+// --- 寫入已讀紀錄 API ---
+const handleArticleClick = async (clickedItem) => {
+  // 1. 檢查這個項目有沒有 article_id (因為產檢和疫苗目前可能沒有獨立的 ID)
+  if (!clickedItem.article_id) return; 
+
+  try {
+    // 2. 從 sessionStorage 取出目前登入的使用者 ID
+    const userDataStr = sessionStorage.getItem("user");
+    if (!userDataStr) return;
+    const userId = JSON.parse(userDataStr).user_id;
+
+    // 3. 呼叫我們之前寫好的 POST API
+    const response = await fetch('http://localhost:3000/api/read_records', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: userId,
+        article_id: clickedItem.article_id
+      })
+    });
+
+    if (!response.ok) throw new Error('寫入已讀失敗');
+    console.log(`成功將推薦文章 ${clickedItem.article_id} 標記為已讀！`);
+    
+  } catch (error) {
+    console.error("更新閱讀狀態失敗", error);
+  }
+};
 </script>
 
 <style scoped>
