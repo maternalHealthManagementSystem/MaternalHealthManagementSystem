@@ -136,3 +136,7 @@ app.use("/api/prenatal", prenatalRoutes);
 // 引入並使用寶寶水果示意圖的路由
 import growthRoutes from "./routes/growth.routes.js";
 app.use("/api/growth", growthRoutes);
+
+// 引入並使用通知的路由
+import notificationRoutes from "./routes/notification.routes.js";
+app.use("/api/notifications", notificationRoutes);
