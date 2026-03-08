@@ -7,6 +7,7 @@
           :href="segment.link" 
           target="_blank" 
           class="desc-link"
+          @click="emitClick(segment)"
         >
           {{ segment.text }}
         </a>
@@ -24,7 +25,14 @@ defineProps({
   title: { type: String, required: true },
   desc: { type: Array, required: true, default: () => [] }
 })
-defineEmits(['click-more'])
+
+// 宣告要傳給父元件的事件
+const emit = defineEmits(['click-more', 'article-click']);
+
+// 當文章連結被點擊時，把該文章的資料 (segment) 往外傳
+const emitClick = (segment) => {
+  emit('article-click', segment);
+};
 </script>
 
 <style scoped>
