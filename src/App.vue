@@ -200,11 +200,33 @@
       <div class="modal-window">
         <span class="close" @click="closeNotificationModal">×</span>
 
-        <h2>🔔 近期行程提醒</h2>
-        <p>1. 下一次產檢是2025年12月17日（第四次產檢）。<br>　將進行例行檢查項目、第二次超音波檢查。<br>　請攜帶健保卡！</p>
+        <div v-if="checkupNotifications.length > 0">
+          <h2>🔔 近期產檢提醒</h2>
+          <div v-for="n in checkupNotifications" :key="'checkup-' + n.id" style="margin-left: 15px; margin-bottom: 20px;">
+            <h3 style="margin-bottom: 5px; color: #57aee2;">{{ n.title }}</h3>
+            <p style="margin: 0; line-height: 1.6; font-weight: 500;">
+              日期：{{ formatDate(n.date) }}<br>
+              {{ n.message }}
+            </p>
+          </div>
+        </div>
 
-        <h2>📝 待辦事項</h2>
-        <p>1. 您尚未閱讀「16~20週」的孕期衛教資訊！<br>　請盡快參閱。</p>
+        <div v-if="educationNotifications.length > 0">
+          <h2>📝 衛教提醒</h2>
+          <ul style="margin-left: 15px; padding-left: 20px; list-style-type: disc;">
+            <li v-for="n in educationNotifications" :key="'edu-' + n.id" style="margin-bottom: 12px; font-weight: 500; line-height: 1.5;">
+              {{ n.message }}
+              <br>
+              <a :href="n.link" target="_blank" style="color: #57aee2; text-decoration: underline; font-size: 0.95rem;">
+                查看衛教內容
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div v-if="checkupNotifications.length === 0 && educationNotifications.length === 0" style="text-align: center; padding: 20px;">
+          <p>目前暫無新提醒</p>
+        </div>
 
         <button class="confirm-btn" @click="closeNotificationModal">
           確認
@@ -286,9 +308,13 @@ const closeNotificationModal = () => {
   showNotificationModal.value = false;
 };
 
-const handleNotificationClick = () => {
-  // 桌面版點擊通知圖標,或行動版點擊側邊欄內的通知區塊,都會開啟 Modal
+// 點擊通知圖標的處理函式：先取得最新通知，再開啟 Modal
+const handleNotificationClick = async () => {
+
+  await fetchNotifications();
+
   openNotificationModal();
+
 };
 
 /* 登出 */
@@ -334,9 +360,12 @@ const cancelLogout = () => {
   showLogoutConfirm.value = false;
 };
 
-onMounted(() => {
+onMounted(async () => {
   loadUserData();
-  // 監聽自訂事件，當 profile.vue 更新使用者資料後觸發，以便即時更新 App.vue 的顯示
+
+  await fetchNotifications(); // ⭐ 頁面載入時取得通知
+  setInterval(fetchNotifications, 300000); // 每5分鐘自動更新通知
+
   window.addEventListener("user-data-updated", loadUserData);
 });
 
@@ -350,7 +379,7 @@ onUnmounted(() => {
 ----------------------------- */
 watch(
   () => route.path,
-  (newPath) => {
+  async (newPath) => {
     loadUserData();
     // 1. 處理「剛登入後第一次進首頁」的彈窗通知
     if (newPath === "/home") {
@@ -360,6 +389,7 @@ watch(
 
       // 觸發條件：有剛登入旗標，且「本次會話」尚未顯示過通知
       if (justLoggedIn === "true" || !hasShown) {
+        await fetchNotifications(); // 確保通知是最新的
         showNotificationModal.value = true;
         
         // 顯示後立刻標記為已顯示，並移除登入旗標
@@ -379,15 +409,67 @@ watch(
 
 
 /*通知數量控制 */
-// 通知列表(未來可從 API / sessionStorage 取得)
-const notifications = ref([
-  { id: 1, title: "今日產檢提醒", read: false }, 
-  { id: 2, title: "產後填寫問卷提醒", read: false }, // <--- 修正：將此項設為未讀
-]);
+// 通知列表
+const formatDate = (dateStr) => {
+  const d = new Date(dateStr);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+const notifications = ref([]);
+
+// 分離產檢提醒
+const checkupNotifications = computed(() => {
+  return notifications.value.filter(n => n.type === 'checkup');
+});
+
+// 分離衛教提醒
+const educationNotifications = computed(() => {
+  return notifications.value.filter(n => n.type === 'education');
+});
+
+// 計算週數函式(與home.vue一致)
+const getPregnancyWeek = (lmpDate) => {
+  if (!lmpDate) return null;
+  const today = new Date();
+  const lmp = new Date(lmpDate);
+  const diffTime = Math.abs(today - lmp);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return Math.floor(diffDays / 7);
+};
+
+// 從後端 API 取得通知
+const fetchNotifications = async () => {
+  const userStr = sessionStorage.getItem("user");
+  if (!userStr) return;
+  const user = JSON.parse(userStr);
+
+  try {
+    // 1. 先取得 LMP 計算週數 (或者你也可以直接從 API 傳 userId，讓後端算，但你想從前端傳)
+    const profileRes = await fetch(`http://localhost:3002/api/profile/${user.user_id}`);
+    const profileData = await profileRes.json();
+    const currentWeek = getPregnancyWeek(profileData.LMP);
+
+    // 2. 將週數作為參數傳給通知 API
+    // 使用 URLSearchParams 組合： /api/notifications/U001?week=15
+    const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`);
+    const data = await res.json();
+
+    notifications.value = data.map((n, index) => ({
+      id: index + 1,
+      ...n,
+      read: false
+    }));
+  } catch (error) {
+    console.error("通知取得失敗", error);
+  }
+};
+
 // 計算未讀通知數量
 const notificationCount = computed(() => {
-  // 現在 count 會是 2
-  return notifications.value.filter((n) => !n.read).length; 
+  // 直接加總過濾後的未讀陣列長度
+  const checkupUnread = checkupNotifications.value.filter(n => !n.read).length;
+  const eduUnread = educationNotifications.value.filter(n => !n.read).length;
+  return checkupUnread + eduUnread;
 });
 
 // 衛教專區是否為當前頁面

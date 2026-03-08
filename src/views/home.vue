@@ -521,8 +521,8 @@ onMounted(async () => {
   }
 
   .baby-size-info {
+    align-items: center;
     width: 100%;
-    max-width: 100%; /* 讓它不要比 panel 還大 */
   }
 
   .calendar-section {
@@ -569,7 +569,7 @@ onMounted(async () => {
   }
 
   .fruit-text{
-    font-size: 30px;
+    font-size: 25px;
   }
 
   .pregnancy-tracker {
