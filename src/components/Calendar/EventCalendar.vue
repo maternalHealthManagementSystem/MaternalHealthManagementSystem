@@ -582,7 +582,7 @@ onUnmounted(() => {
 }
 
 .event-item {
-  font-size: 11px;
+  font-size: 13px;
   padding: 2px 4px;
   margin-bottom: 2px;
   border-radius: 3px;
@@ -630,7 +630,7 @@ onUnmounted(() => {
 }
 
 .more-events {
-  font-size: 10px;
+  font-size: 12px;
   color: #666;
   margin-top: 2px;
   cursor: pointer;
