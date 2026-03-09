@@ -66,11 +66,6 @@
             <p class="upload-hint">支援 JPG、PNG 格式，檔案大小不超過 5MB</p>
           </div>
           
-          <!-- 底部按鈕 -->
-          <!-- <div class="form-actions">
-            <button class="btn-cancel" @click="resetDiaryForm">清除</button>
-            <button class="btn-save" @click="saveDiary" :disabled="!newDiary.date">儲存</button>
-          </div> -->
           <div class="form-actions">
             <button 
               class="btn-cancel" 
@@ -193,10 +188,20 @@ const isSubmitting = ref(false)
 const combinedCalendarData = computed(() => {
   const ev = calendarStore.events || [];
   const di = calendarStore.diaries || [];
+
+  // 取得今天的日期字串 (YYYY-MM-DD)
+  const today = dayjs().format('YYYY-MM-DD');
+
+  // 過濾日記：只有日期小於或等於今天的才會被放入
+  const filteredDiaries = di.filter(d => {
+    // 假設 d.date 的格式是 'YYYY-MM-DD'
+    // isBefore 或 isSame，或者直接比較字串
+    return d.date <= today;
+  });
   
   return [
     ...ev.map(e => ({ ...e, isDiary: false })),
-    ...di.map(d => ({ 
+    ...filteredDiaries.map(d => ({ 
       ...d, 
       isDiary: true, 
       title: `${d.title}`, 
@@ -309,26 +314,35 @@ const selectedDateDisplay = computed(() => {
   return date.format('MM/DD')
 })
 
-/// 建立下拉選單日期（依目前月份）
+// 建立下拉選單日期（依目前月份）
 const currentMonth = ref(dayjs())
 const dateOptions = computed(() => {
-const daysInMonth = currentMonth.value.daysInMonth()
-const year = currentMonth.value.year()
-const month = currentMonth.value.month() + 1
+  const daysInMonth = currentMonth.value.daysInMonth()
+  const year = currentMonth.value.year()
+  const month = currentMonth.value.month() + 1
+  const today = dayjs(); // 取得現在時間
+
   return Array.from({ length: daysInMonth }, (_, i) => {
     const d = i + 1
     const fullDate = dayjs(`${year}-${month}-${d}`).format('YYYY-MM-DD')
     const label = dayjs(fullDate).format('MM/DD')
     return {
       value: fullDate,
-      label
+      label,
+      // 增加一個屬性標記是否為未來
+      isFuture: dayjs(fullDate).isAfter(today, 'day')
     }
-  })
+  }).filter(option => !option.isFuture); // 直接過濾掉未來的日期選項
 })
 
 // 處理點擊日曆
 function handleDayClick(day) {
-    console.log('選擇日期:', day)
+  const today = dayjs().format('YYYY-MM-DD');
+  if (day.fullDate > today) {
+    alert('還不能寫未來的日記喔！');
+    return;
+  }
+  console.log('選擇日期:', day)
   newDiary.value.date = day.fullDate
 }
 

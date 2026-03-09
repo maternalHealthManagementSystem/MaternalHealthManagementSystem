@@ -95,13 +95,23 @@ const router = useRouter();
 const combinedCalendarData = computed(() => {
   const ev = calendarStore.events || [];
   const di = calendarStore.diaries || [];
+
+  // 取得今天的日期字串 (YYYY-MM-DD)
+  const today = dayjs().format('YYYY-MM-DD');
+
+  // 過濾日記：只有日期小於或等於今天的才會被放入
+  const filteredDiaries = di.filter(d => {
+    // 假設 d.date 的格式是 'YYYY-MM-DD'
+    // isBefore 或 isSame，或者直接比較字串
+    return d.date <= today;
+  });
   
   return [
     ...ev.map(e => ({ ...e, isDiary: false })),
-    ...di.map(d => ({ 
+    ...filteredDiaries.map(d => ({ 
       ...d, 
       isDiary: true, 
-      title: `${d.title}`,
+      title: `${d.title}`, 
       type: 'diary' 
     }))
   ];
