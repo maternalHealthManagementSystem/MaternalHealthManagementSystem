@@ -1,126 +1,133 @@
 <template>
-  <div class="calendar-container">
+  <transition name="modal">
+    <div class="calendar-container">
+      <!-- 月份標題和導航 -->
+      <div class="calendar-header">
+        <!-- 年月（點擊打開選單） -->
+        <h2 class="month-title" @click.stop="openMonthPicker">
+          {{ currentYear }}年{{ currentMonth }}月
+        </h2>
 
-    <!-- 月份標題和導航 -->
-    <div class="calendar-header">
-      <!-- 年月（點擊打開選單） -->
-      <h2 class="month-title" @click="openMonthPicker">
-        {{ currentYear }}年{{ currentMonth }}月
-      </h2>
-
-      <!-- 年月 選擇器 -->
-      <div v-if="showMonthPicker" class="month-picker-popup">
-        <div class="picker-title">選擇年月</div>
-        <div class="picker-columns">
-          <!-- 年份 -->
-          <div class="picker-column">
-            <div 
-              v-for="y in yearOptions" 
-              :key="y"
-              class="picker-item"
-              :class="{ active: y === tempYear }"
-              @click="tempYear = y"
-            >
-              {{ y }} 年
-            </div>
-          </div>
-          <!-- 月份 -->
-          <div class="picker-column">
-            <div 
-              v-for="m in 12" 
-              :key="m"
-              class="picker-item"
-              :class="{ active: m === tempMonth }"
-              @click="tempMonth = m"
-            >
-              {{ m }} 月
-            </div>
-          </div>
-        </div>
-        <div class="picker-actions">
-          <button class="confirm-btn" @click="closeMonthPicker()">取消</button>
-          <button class="confirm-btn" @click="applyMonth()">確認</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="calender-header-bar">
-      <div class="header-left">
-        <button class="nav-btn" @click="previousMonth">◀</button>
-        <button class="today-btn" @click="goToday">Today</button>
-        <button class="nav-btn" @click="nextMonth">▶</button>
-      </div>
-      <div class="header-right">
-        <button class="add-event-btn" @click="openAddEvent">＋</button>
-      </div>
-    </div>
-
-    <!-- 星期標題 -->
-    <div class="weekdays">
-      <div class="weekday">一</div>
-      <div class="weekday">二</div>
-      <div class="weekday">三</div>
-      <div class="weekday">四</div>
-      <div class="weekday">五</div>
-      <div class="weekday">六</div>
-      <div class="weekday">日</div>
-    </div>
-
-    <!-- 日期格子 -->
-    <div class="calendar-grid">
-      <div
-        v-for="day in calendarDays"
-        :key="day.id"
-        class="day-cell"
-        :class="{
-          'other-month': !day.isCurrentMonth,
-          'today': day.isToday,
-          'has-event': day.events.length > 0
-        }"
-        @click="selectDay(day)"
-      >
-        <div class="day-number">{{ day.date }}</div>
-
-        <!-- 顯示事件 -->
-        <div class="events">
-          <div
-            v-for="event in day.events.slice(0, 2)"
-            :key="event.id"
-            class="event-item"
-            :class="`event-${event.type}`"
-            @click.stop="handleEventClick(event)"
-          >
-            {{ event.title }}
-          </div>
-
+        <!-- 年月 選擇器 -->
+        <div v-if="showMonthPicker" class="month-picker-popup">
           <div 
-            v-if="day.events.length > 2" 
-            class="more-events"
-            @click.stop="showMoreEvents(day)"
-          >
-            +{{ day.events.length - 2 }} 更多
+              v-if="showMonthPicker" 
+              ref="pickerRef" 
+              @click.stop
+            >
+            <div class="picker-title">選擇年月</div>
+              <div class="picker-columns">
+                <!-- 年份 -->
+                <div class="picker-column">
+                  <div 
+                    v-for="y in yearOptions" 
+                    :key="y"
+                    class="picker-item"
+                    :class="{ active: y === tempYear }"
+                    @click="tempYear = y"
+                  >
+                    {{ y }} 年
+                  </div>
+                </div>
+                <!-- 月份 -->
+                <div class="picker-column">
+                  <div 
+                    v-for="m in 12" 
+                    :key="m"
+                    class="picker-item"
+                    :class="{ active: m === tempMonth }"
+                    @click="tempMonth = m"
+                  >
+                    {{ m }} 月
+                  </div>
+                </div>
+              </div>
+              <div class="picker-actions">
+                <button class="confirm-btn" @click="closeMonthPicker()">取消</button>
+                <button class="confirm-btn" @click="applyMonth()">確認</button>
+              </div>
           </div>
         </div>
       </div>
+
+      <div class="calender-header-bar">
+        <div class="header-left">
+          <button class="nav-btn" @click="previousMonth">◀</button>
+          <button class="today-btn" @click="goToday">Today</button>
+          <button class="nav-btn" @click="nextMonth">▶</button>
+        </div>
+        <div class="header-right">
+          <button class="add-event-btn" @click="openAddEvent">＋</button>
+        </div>
+      </div>
+
+      <!-- 星期標題 -->
+      <div class="weekdays">
+        <div class="weekday">一</div>
+        <div class="weekday">二</div>
+        <div class="weekday">三</div>
+        <div class="weekday">四</div>
+        <div class="weekday">五</div>
+        <div class="weekday">六</div>
+        <div class="weekday">日</div>
+      </div>
+
+      <!-- 日期格子 -->
+      <div class="calendar-grid">
+        <div
+          v-for="day in calendarDays"
+          :key="day.id"
+          class="day-cell"
+          :class="{
+            'other-month': !day.isCurrentMonth,
+            'today': day.isToday,
+            'has-event': day.events.length > 0
+          }"
+          @click="selectDay(day)"
+        >
+          <div class="day-number">{{ day.date }}</div>
+
+          <!-- 顯示事件 -->
+          <div class="events">
+            <div
+              v-for="event in day.events.slice(0, 2)"
+              :key="event.id"
+              class="event-item"
+              :class="`event-${event.type}`"
+              @click.stop="handleEventClick(event)"
+            >
+              {{ event.title }}
+            </div>
+
+            <div 
+              v-if="day.events.length > 2" 
+              class="more-events"
+              @click.stop="showMoreEvents(day)"
+            >
+              +{{ day.events.length - 2 }} 更多
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 更多事件彈窗 -->
+      <EventListModal
+        v-if="showEventModal"
+        :events="modalEvents"
+        :date="modalDate"
+        @close="showEventModal = false"
+        @eventClick="handleEventClick"
+      />
     </div>
-
-    <!-- 更多事件彈窗 -->
-    <EventListModal
-      v-if="showEventModal"
-      :events="modalEvents"
-      :date="modalDate"
-      @close="showEventModal = false"
-      @eventClick="handleEventClick"
-    />
-
-  </div>
+  </transition>
 </template>
 
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import dayjs from 'dayjs'
 import EventListModal from './EventListModal.vue'
+
 
 
 // Props
@@ -154,6 +161,7 @@ function goToday() {
 
 // 年月選擇器
 const showMonthPicker = ref(false)
+const pickerRef = ref(null)
 const tempYear = ref(dayjs().year())
 const tempMonth = ref(dayjs().month() + 1)
 
@@ -163,10 +171,28 @@ const yearOptions = computed(() => {
   return years
 })
 
-function openMonthPicker() {
-  tempYear.value = currentYear.value
-  tempMonth.value = currentMonth.value
+// 自動捲動到選中項
+async function openMonthPicker() {
+  tempYear.value = currentDate.value.year()
+  tempMonth.value = currentDate.value.month() + 1
   showMonthPicker.value = true
+
+  // 等待 DOM 渲染後，自動捲動到選中的項目
+  await nextTick()
+  if (pickerRef.value) {
+    const activeItems = pickerRef.value.querySelectorAll('.picker-item.active')
+    activeItems.forEach(item => {
+      item.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    })
+  }
+}
+
+function handleClickOutside(event) {
+  if (event.target.classList.contains('month-title')) return;
+  // 如果選單是打開的，且點擊的目標不在 pickerRef 內
+  if (showMonthPicker.value && pickerRef.value && !pickerRef.value.contains(event.target)) {
+    closeMonthPicker()
+  }
 }
 
 function applyMonth() {
@@ -274,9 +300,12 @@ function openAddEvent() {
   emit('addEvent')
 }
 
-// 初始化
 onMounted(() => {
-  // 可以在這裡加載初始事件數據
+  window.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('click', handleClickOutside)
 })
 </script>
 
