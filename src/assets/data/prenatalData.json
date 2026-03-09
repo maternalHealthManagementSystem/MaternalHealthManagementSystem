@@ -3,7 +3,7 @@
     "id": 1, 
     "week": "8 - 13 + 6週", 
     "minWeek": 8,                
-    "maxWeek": 19,               
+    "maxWeek": 13,               
     "content": "早期子癇前症篩檢 + 子宮動脈血流量測", 
     "link": "https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=6136e0c5-61e2-4e29-9254-65c942d2ca82&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1",
     "isOpen": false 
@@ -12,7 +12,7 @@
     "id": 2, 
     "week": "11 - 13 + 6週", 
     "minWeek": 11,                
-    "maxWeek": 19,
+    "maxWeek": 13,
     "content": "第一孕期母血唐氏症篩檢", 
     "link": "https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=610672ce-8b46-472e-87fd-a2d5b670a5b0&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1",
     "isOpen": false 
@@ -128,6 +128,21 @@
     "week": "依臨床需求", 
     "content": "胎兒心臟與血流高階檢查(需預約)、破水快速檢測試劑、中晚期子癇前症篩檢", 
     "link": "https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=6136e0c5-61e2-4e29-9254-65c942d2ca82&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1",
+    "isOpen": false 
+  },
+  { 
+    "id": 14, 
+    "week": "親子教室", 
+    "subItems": [
+      {
+        "title": "產前親子教室 (建議24週以後攜伴參與)",
+        "url": "https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=972d92b2-b54c-4337-9b14-753f5fc4421a&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1"
+      },
+      {
+        "title": "中榮母乳會",
+        "url": "https://www.vghtc.gov.tw/UnitPage/RowViewDetail?WebRowsID=8849b38c-2409-4572-ad8d-58528a71b757&UnitID=349b6142-4637-4356-8a17-a553d01d0b52&CompanyID=e8e0488e-54a0-44bf-b10c-d029c423f6e7&UnitDefaultTemplate=1"
+      }
+    ],
     "isOpen": false 
   }
 ]
