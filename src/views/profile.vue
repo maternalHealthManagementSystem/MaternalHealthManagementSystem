@@ -7,7 +7,7 @@
           <div class="avatar-placeholder" @click="triggerFileInput">
             <img
               v-if="profileData.user_file_path"
-              :src="profileData.user_file_path"
+              :src="CLOUDINARY_BASE_URL + profileData.user_file_path"
               class="avatar-img"
               alt="avatar"
             />
@@ -224,6 +224,8 @@ import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api.js";
 import dayjs from "dayjs";
+
+const CLOUDINARY_BASE_URL = import.meta.env.VITE_CLOUDINARY_BASE_URL;
 
 const router = useRouter();
 
@@ -587,7 +589,7 @@ const handleFileUpload = (event) => {
         return;
       }
 
-      profileData.user_file_path = compressedBase64;
+      profileData.user_file_path = res.data.filename;
       customAlert("頭像上傳成功！");
     };
     img.src = e.target.result;
