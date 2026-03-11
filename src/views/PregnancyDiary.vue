@@ -1,3 +1,4 @@
+
 <template>
   <div class="calendar-dashboard">
     <div class="content-wrapper">
@@ -173,11 +174,11 @@ const selectedEvent = ref({})
 
 // 新增日記表單
 const newDiary = ref({
-  date: '',
-  title: '',
-  content: '',
-  imagePreview: null,
-  imageFile: null
+  date: '',
+  title: '',
+  content: '',
+  imagePreview: null,
+  imageFile: null
 })
 
 // 控制日記儲存狀態
@@ -263,10 +264,10 @@ function handleEditEvent(event) {
 }
 
 // 處理儲存編輯後的行程事件
-function handleSaveEvent(updatedEvent) {
+async function handleSaveEvent(updatedEvent) {
     console.log('儲存編輯行程:', updatedEvent)
     // *** 呼叫 Store 的 Action ***
-    calendarStore.updateEvent(updatedEvent)
+    await calendarStore.updateEvent(updatedEvent)
     alert('行程已更新！')
 
     showEditForm.value = false
@@ -414,7 +415,6 @@ const saveDiary = async () => {
   try {
   // 呼叫 Store 的 Action
   await calendarStore.addDiary(newDiary.value, newDiary.value.imageFile);
-
   alert(`日記已儲存！`)
   // 重置日記表單
   resetDiaryForm()
@@ -464,12 +464,11 @@ function handleEditDiary(diary) {
 function handleSaveDiary(updatedDiary) {
     console.log('儲存編輯日記:', updatedDiary)
     const dataWithUser = { ...updatedDiary, user_id: currentUserId };
-    // *** 呼叫 Store 的 Action ***
+
     calendarStore.updateDiary(dataWithUser, updatedDiary.newImageFile)
     .then(() => {
       alert('日記已更新！');
       showDiaryEdit.value = false;
-      calendarStore.fetchAllData('currentUserId');
     })
     .catch(err => {
       console.error('更新出錯:', err);

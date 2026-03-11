@@ -1,5 +1,4 @@
 <template>
-  <transition name="modal">
     <div class="calendar-container">
       <!-- 月份標題和導航 -->
       <div class="calendar-header">
@@ -76,7 +75,7 @@
       <div class="calendar-grid">
         <div
           v-for="day in calendarDays"
-          :key="day.id"
+          :key="day.fullDate"
           class="day-cell"
           :class="{
             'other-month': !day.isCurrentMonth,
@@ -119,7 +118,6 @@
         @eventClick="handleEventClick"
       />
     </div>
-  </transition>
 </template>
 
 
@@ -128,7 +126,18 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import dayjs from 'dayjs'
 import EventListModal from './EventListModal.vue'
 
+const eventsMap = computed(() => {
+  const map = {}
 
+  props.events.forEach(event => {
+    if (!map[event.date]) {
+      map[event.date] = []
+    }
+    map[event.date].push(event)
+  })
+
+  return map
+})
 
 // Props
 const props = defineProps({
@@ -150,13 +159,17 @@ const modalDate = ref('')
 const currentDate = ref(dayjs())
 const selectedDate = ref(null)
 
-// 回到today
-function goToday() {
-  currentDate.value = dayjs()
+function emitMonthChange() {
   emit('monthChange', {
     year: currentYear.value,
     month: currentMonth.value
   })
+}
+
+// 回到today
+function goToday() {
+  currentDate.value = dayjs()
+  emitMonthChange()
 }
 
 // 年月選擇器
@@ -199,10 +212,7 @@ function applyMonth() {
   currentDate.value = dayjs(`${tempYear.value}-${tempMonth.value}-01`)
   showMonthPicker.value = false
 
-  emit("monthChange", {
-    year: currentYear.value,
-    month: currentMonth.value
-  })
+  emitMonthChange()
 }
 function closeMonthPicker() {
   tempYear.value = currentYear.value
@@ -251,25 +261,20 @@ const calendarDays = computed(() => {
 // 獲取特定日期的事件
 function getEventsForDay(date) {
   const dateStr = date.format('YYYY-MM-DD')
-  return props.events.filter(event => event.date === dateStr)
+  //return props.events.filter(event => event.date === dateStr)
+  return eventsMap.value[dateStr] || []
 }
 
 // 上個月
 function previousMonth() {
   currentDate.value = currentDate.value.subtract(1, 'month')
-  emit('monthChange', {
-    year: currentYear.value,
-    month: currentMonth.value
-  })
+  emitMonthChange()
 }
 
 // 下個月
 function nextMonth() {
   currentDate.value = currentDate.value.add(1, 'month')
-  emit('monthChange', {
-    year: currentYear.value,
-    month: currentMonth.value
-  })
+  emitMonthChange()
 }
 
 // 選擇日期
