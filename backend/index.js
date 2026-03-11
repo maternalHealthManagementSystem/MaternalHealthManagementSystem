@@ -63,12 +63,13 @@ app.put("/api/profile/:user_id", async (req, res) => {
   try {
     // 檢查是否有新的圖片 (如果是 Base64 字串，代表是新上傳的)
     if (data.avatar && data.avatar.startsWith('data:image')) {
+      console.log("偵測到新圖片，準備上傳 Cloudinary...");
       try {
         const uploadResponse = await cloudinary.uploader.upload(data.avatar, {
           upload_preset: 'ml_default',
           folder: '專題/頭像', 
           // 使用user_id固定檔名，覆蓋原先舊的頭像檔案
-          public_id: user_id, 
+          public_id: `user_${user_id}`, 
           overwrite: true,
           invalidate: true // 確保CDN緩存會更新，否則舊照片可能還會出現一陣子
         });
@@ -76,7 +77,7 @@ app.put("/api/profile/:user_id", async (req, res) => {
         console.log("Cloudinary 上傳成功:", imageUrl);
       } catch (error) {
         console.error("Cloudinary 上傳失敗:", error);
-        throw error;
+        return res.status(500).json({ success: false, message: "圖片上傳失敗" });
       }
     }
 
@@ -140,3 +141,7 @@ app.use("/api/growth", growthRoutes);
 // 引入並使用通知的路由
 import notificationRoutes from "./routes/notification.routes.js";
 app.use("/api/notifications", notificationRoutes);
+
+// 引入並使用上傳圖片的路由
+import uploadRoutes from "./routes/upload.routes.js";
+app.use("/api", uploadRoutes);

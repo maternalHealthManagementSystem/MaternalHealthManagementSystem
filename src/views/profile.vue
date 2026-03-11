@@ -7,7 +7,7 @@
           <div class="avatar-placeholder" @click="triggerFileInput">
             <img
               v-if="profileData.user_file_path"
-              :src="profileData.user_file_path"
+              :src="profileData.user_file_path" 
               class="avatar-img"
               alt="avatar"
             />
@@ -224,6 +224,10 @@ import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api.js";
 import dayjs from "dayjs";
+
+const CLOUDINARY_BASE_URL = import.meta.env.VITE_CLOUDINARY_BASE_URL;
+console.log(import.meta.env.VITE_CLOUDINARY_BASE_URL);
+
 
 const router = useRouter();
 
@@ -455,7 +459,7 @@ const saveProfile = async () => {
       birthday: profileData.dob,
       phone_number: profileData.mobile,
       landline: profileData.landline,
-      email: profileData.email, // 傳給後端
+      email: profileData.email, 
       address: profileData.address,
       ice_name: profileData.emergencyContact,
       ice_relationship: profileData.emergencyRelation,
@@ -463,7 +467,8 @@ const saveProfile = async () => {
       blood_type: profileData.bloodType.replace("型", ""),
       height: profileData.height ? Number(profileData.height) : null,
       weight: profileData.weight ? Number(profileData.weight) : null,
-      user_file_path: profileData.user_file_path
+      user_file_path: profileData.user_file_path,
+      // avatar: profileData.user_file_path, // 同步傳給後端的 avatar 欄位
     };
 
     const res = await api.put(`/api/profile/${loginUser.user_id}`, payload);
@@ -534,67 +539,41 @@ const triggerFileInput = () => {
   fileInput.value.click();
 };
 
-const handleFileUpload = (event) => {
+const handleFileUpload = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
 
-  if (!file.type.startsWith("image/")) {
-    customAlert("請上傳圖片格式!");
-    return;
-  }
+  const loginUser = JSON.parse(sessionStorage.getItem("user")); // 取得當前使用者 ID
 
-  // 壓縮圖片
   const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      // 建立 canvas 來壓縮圖片
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+    
+    // 這裡可以先做前端預覽（選完圖立刻變，不用等 API）
+    // profileData.user_file_path = base64; 
 
-      // 限制最大尺寸為 300x300 (符合你的頭像顯示大小)
-      const maxSize = 300;
-      let width = img.width;
-      let height = img.height;
+    try {
+      const res = await api.post("/api/upload-avatar", {
+        image: base64, // 對應後端解構的 { image }
+        user_id: loginUser.user_id // 對應後端解構的 { user_id }
+      });
 
-      if (width > height) {
-        if (width > maxSize) {
-          height = (height * maxSize) / width;
-          width = maxSize;
-        }
-      } else {
-        if (height > maxSize) {
-          width = (width * maxSize) / height;
-          height = maxSize;
-        }
+      if (res.data.imageUrl) {
+        // 核心：將後端回傳的 Cloudinary 網址存入變數
+        profileData.user_file_path = `${res.data.imageUrl}?t=${new Date().getTime()}`;
+        customAlert("頭像已同步至雲端");
       }
-
-      canvas.width = width;
-      canvas.height = height;
-
-      // 繪製壓縮後的圖片
-      ctx.drawImage(img, 0, 0, width, height);
-
-      // 轉換為 Base64,品質設為 0.7 (可調整 0.1-1.0)
-      const compressedBase64 = canvas.toDataURL("image/jpeg", 0.7);
-
-      // 檢查壓縮後大小
-      const sizeInMB = (compressedBase64.length * 0.75) / (1024 * 1024);
-      console.log(`圖片壓縮後大小: ${sizeInMB.toFixed(2)} MB`);
-
-      if (sizeInMB > 2) {
-        customAlert("圖片仍然太大,請選擇較小的圖片!");
-        return;
-      }
-
-      profileData.user_file_path = compressedBase64;
-      customAlert("頭像上傳成功！");
-    };
-    img.src = e.target.result;
+    } catch (err) {
+      console.error("上傳失敗:", err);
+      customAlert("圖片上傳失敗");
+    }
   };
+
   reader.readAsDataURL(file);
+  event.target.value = ""; 
 };
 </script>
+
 <style scoped>
 /* 頁面容器 */
 .profile-container {
