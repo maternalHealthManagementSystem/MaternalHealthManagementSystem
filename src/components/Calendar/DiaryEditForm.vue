@@ -98,11 +98,24 @@
 
         <!-- 底部按鈕 -->
         <div class="modal-footer">
-          <button type="button" class="btn-cancel" @click="closeModal">
+          <button 
+            type="button" 
+            class="btn-cancel" 
+            @click="closeModal"
+            :disabled="isUpdatingDiary"
+          >
             取消
           </button>
-          <button type="button" class="btn-save" @click="saveDiary">
-            儲存
+          <button 
+            type="button" 
+            class="btn-save" 
+            :disabled="isUpdatingDiary"
+            @click="saveDiary"
+          >
+            <span v-if="isUpdatingDiary" class="loading-spinner">
+              日記更新中，請稍候～
+            </span>
+            <span v-else>儲存</span>
           </button>
         </div>
       </div>
@@ -122,7 +135,8 @@ const props = defineProps({
   diary: {
     type: Object,
     default: () => ({})
-  }
+  },
+  isUpdatingDiary: Boolean
 })
 
 // Emits
@@ -239,13 +253,13 @@ function saveDiary() {
     content: formData.value.content,
     image: formData.value.imagePreview,
     newImageFile: formData.value.imageFile,
-    createdAt: props.diary.createdAt, // 保留原建立時間
-    updatedAt: new Date().toISOString() // 新增更新時間
+    createdAt: props.diary.createdAt,
+    updatedAt: new Date().toISOString()
   }
 
   emit('save', updatedDiary)
-  closeModal()
 }
+
 </script>
 
 <style scoped>
@@ -522,6 +536,40 @@ background: rgba(255, 255, 255, 0.15);
 .btn-save:hover {
   background: #4a9fd4;
 }
+
+.btn-save:hover:not(:disabled) {
+  background: #4a9fd4;
+  box-shadow: 0 4px 8px rgba(94, 179, 228, 0.4);
+}
+
+.btn-save:disabled {
+  background: #bab9b9;
+  cursor: not-allowed;
+}
+
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* 等待上傳動畫 */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner::before {
+  content: " ";
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 
 /* 動畫效果 */
 .modal-enter-active,

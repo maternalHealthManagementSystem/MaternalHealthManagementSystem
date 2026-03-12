@@ -17,6 +17,7 @@ router.get("/:userId", async (req, res) => {
     const [events] = await db.query(`
       SELECT 
         event_title,
+        event_type,
         event_start_date,
         event_describe,
         DATEDIFF(event_start_date, CURDATE()) AS days_left
@@ -28,12 +29,55 @@ router.get("/:userId", async (req, res) => {
     `, [userId]);
 
     events.forEach(e => {
+
+      let message = "";
+
+      switch (e.event_type) {
+
+        case "產檢":
+          message = `您距離下一次產檢「${e.event_title}」，還有 ${e.days_left} 天。`;
+          break;
+
+        case "預約":
+          message = `您有一個預約「${e.event_title}」，距離預約還有 ${e.days_left} 天。`;
+          break;
+
+        case "提醒":
+          message = `提醒您：「${e.event_title}」還有 ${e.days_left} 天。`;
+          break;
+
+        case "其他":
+          message = `即將到來的行程：「${e.event_title}」，${e.days_left} 天後開始。`;
+          break;
+
+        default:
+          message = `距離「${e.event_title}」還有 ${e.days_left} 天。`;
+      }
+
+      if (e.event_describe) {
+        message += ` ${e.event_describe}`;
+      }
+
+      // 特別提示今天的行程
+      if (e.days_left === 0) {
+        message = `今天有行程：「${e.event_title}」`;
+      }
+
+      let notificationType = "event";
+
+      // 產檢特別分類
+      if (e.event_type === "產檢") {
+        notificationType = "checkup";
+      } else {
+        notificationType = "event";
+      }
+
       notifications.push({
-        id: `check_${e.event_start_date}`,
-        type: "checkup",
+        id: `event_${e.event_start_date}`,
+        type: notificationType,
         title: e.event_title,
         date: e.event_start_date,
-        message: `距離產檢還有 ${e.days_left} 天。${e.event_describe}`
+        message: message
       });
     });
 

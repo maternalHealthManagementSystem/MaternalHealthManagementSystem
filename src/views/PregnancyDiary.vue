@@ -1,3 +1,4 @@
+
 <template>
   <div class="calendar-dashboard">
     <div class="content-wrapper">
@@ -79,7 +80,9 @@
               @click="saveDiary" 
               :disabled="!newDiary.date || isSubmitting"
             >
-              <span v-if="isSubmitting" class="loading-spinner">資料上傳中，請稍候～</span>
+              <span v-if="isSubmitting" class="loading-spinner">
+                日記上傳中，請稍候～
+              </span>
               <span v-else>儲存</span>
             </button>
           </div>
@@ -126,6 +129,7 @@
     <DiaryEditForm
       :show="showDiaryEdit"
       :diary="selectedDiary"
+      :isUpdatingDiary="isUpdatingDiary"
       @close="showDiaryEdit = false"
       @save="handleSaveDiary"
     />
@@ -171,18 +175,20 @@ const defaultAddDate = ref("")
 const selectedDiary = ref({})
 const selectedEvent = ref({})
 
-// 新增日記表單
-const newDiary = ref({
-  date: '',
-  title: '',
-  content: '',
-  imagePreview: null,
-  imageFile: null
-})
-
-// 控制日記儲存狀態
+// 等待日記儲存狀態
 const isSubmitting = ref(false)
 
+// 等待日記更新狀態
+const isUpdatingDiary = ref(false)
+
+// 新增日記表單
+const newDiary = ref({
+  date: '',
+  title: '',
+  content: '',
+  imagePreview: null,
+  imageFile: null
+})
 
 // 合併事件和日記（用於顯示在日曆上）
 const combinedCalendarData = computed(() => {
@@ -194,8 +200,6 @@ const combinedCalendarData = computed(() => {
 
   // 過濾日記：只有日期小於或等於今天的才會被放入
   const filteredDiaries = di.filter(d => {
-    // 假設 d.date 的格式是 'YYYY-MM-DD'
-    // isBefore 或 isSame，或者直接比較字串
     return d.date <= today;
   });
   
@@ -263,10 +267,10 @@ function handleEditEvent(event) {
 }
 
 // 處理儲存編輯後的行程事件
-function handleSaveEvent(updatedEvent) {
+async function handleSaveEvent(updatedEvent) {
     console.log('儲存編輯行程:', updatedEvent)
     // *** 呼叫 Store 的 Action ***
-    calendarStore.updateEvent(updatedEvent)
+    await calendarStore.updateEvent(updatedEvent)
     alert('行程已更新！')
 
     showEditForm.value = false
@@ -290,7 +294,6 @@ function handleAddNewEvent(newEvent) {
 // 處理刪除事件 
 function handleDeleteEvent(eventId) {
     console.log('刪除事件 ID:', eventId)
-    // *** 呼叫 Store 的 Action ***
     calendarStore.deleteEvent(eventId)
     showEventDetail.value = false
     alert('行程已刪除')
@@ -414,7 +417,6 @@ const saveDiary = async () => {
   try {
   // 呼叫 Store 的 Action
   await calendarStore.addDiary(newDiary.value, newDiary.value.imageFile);
-
   alert(`日記已儲存！`)
   // 重置日記表單
   resetDiaryForm()
@@ -461,20 +463,24 @@ function handleEditDiary(diary) {
 }
 
 // 處理儲存編輯後的日記
-function handleSaveDiary(updatedDiary) {
+async function handleSaveDiary(updatedDiary) {
     console.log('儲存編輯日記:', updatedDiary)
     const dataWithUser = { ...updatedDiary, user_id: currentUserId };
-    // *** 呼叫 Store 的 Action ***
-    calendarStore.updateDiary(dataWithUser, updatedDiary.newImageFile)
-    .then(() => {
-      alert('日記已更新！');
-      showDiaryEdit.value = false;
-      calendarStore.fetchAllData('currentUserId');
-    })
-    .catch(err => {
-      console.error('更新出錯:', err);
-      alert('更新失敗');
-    });
+
+  try {
+     // 開始更新日記
+    isUpdatingDiary.value = true
+    await calendarStore.updateDiary(dataWithUser, updatedDiary.newImageFile)
+
+    alert('日記已更新！')
+    showDiaryEdit.value = false
+
+  } catch (err) {
+    console.error('更新出錯:', err)
+    alert('更新失敗')
+  } finally {
+    isUpdatingDiary.value = false
+  }
 }
 </script>
 
