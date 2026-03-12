@@ -201,7 +201,7 @@
         <span class="close" @click="closeNotificationModal">×</span>
 
         <div v-if="checkupNotifications.length > 0">
-          <h2>🔔 近期產檢提醒</h2>
+          <h2>🔔 近期行程提醒</h2>
           <div v-for="n in checkupNotifications" :key="'checkup-' + n.id" style="margin-left: 15px; margin-bottom: 20px;">
             <h3 style="margin-bottom: 5px; color: #57aee2;">{{ n.title }}</h3>
             <p style="margin: 0; line-height: 1.6; font-weight: 500;">
