@@ -63,18 +63,9 @@ router.get("/:userId", async (req, res) => {
         message = `今天有行程：「${e.event_title}」`;
       }
 
-      let notificationType = "event";
-
-      // 產檢特別分類
-      if (e.event_type === "產檢") {
-        notificationType = "checkup";
-      } else {
-        notificationType = "event";
-      }
-
       notifications.push({
         id: `event_${e.event_start_date}`,
-        type: notificationType,
+        type: "checkup",
         title: e.event_title,
         date: e.event_start_date,
         message: message

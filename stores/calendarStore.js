@@ -150,6 +150,11 @@ export const useCalendarStore = defineStore('schedule', {
     // 編輯日記
     async updateDiary(updatedDiary,imageFile) {
       try {
+        const userId = this.currentUserId; 
+        if (!userId) {
+          console.error('錯誤：找不到 User ID');
+          return;
+        }
         const formData = new FormData();
         formData.append('title', updatedDiary.title || '今日日記');
         formData.append('date', updatedDiary.date);
@@ -191,4 +196,3 @@ export const useCalendarStore = defineStore('schedule', {
     },
   }
 });
-
