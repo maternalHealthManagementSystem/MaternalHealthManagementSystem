@@ -200,39 +200,40 @@
       <div class="modal-window">
         <span class="close" @click="closeNotificationModal">×</span>
 
-        <div v-if="checkupNotifications.length > 0">
-          <h2>🔔 近期行程提醒</h2>
-          <div v-for="n in checkupNotifications" :key="'checkup-' + n.id" style="margin-left: 15px; margin-bottom: 20px;">
-            <h3 style="margin-bottom: 5px; color: #57aee2;">{{ n.title }}</h3>
-            <p style="margin: 0; line-height: 1.6; font-weight: 500;">
-              日期：{{ formatDate(n.date) }}<br>
-              {{ n.message }}
-            </p>
+        <div class="notifications-scroll-area">
+          <div v-if="checkupNotifications.length > 0">
+            <h2>🔔 近期行程提醒</h2>
+            <div v-for="n in checkupNotifications" :key="'checkup-' + n.id" style="margin-left: 15px; margin-bottom: 20px;">
+              <h3 style="margin-bottom: 5px; color: #57aee2;">{{ n.title }}</h3>
+              <p style="margin: 0; line-height: 1.6; font-weight: 500;">
+                日期：{{ formatDate(n.date) }}<br>
+                {{ n.message }}
+              </p>
+            </div>
+          </div>
+
+          <div v-if="educationNotifications.length > 0">
+            <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
+            <ul style="margin-left: 15px; padding-left: 20px; list-style-type: disc;">
+              <li v-for="n in educationNotifications" :key="'edu-' + n.id">
+                {{ n.message }}
+                <br>
+
+                <a
+                  href="#"
+                  @click.prevent="openEducation(n)"
+                  style="color:#57aee2;text-decoration:underline;font-size:0.95rem;"
+                >
+                  查看衛教內容
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div v-if="checkupNotifications.length === 0 && educationNotifications.length === 0" style="text-align: center; padding: 20px;">
+          <p>目前暫無新提醒</p>
           </div>
         </div>
-
-        <div v-if="educationNotifications.length > 0">
-          <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
-          <ul style="margin-left: 15px; padding-left: 20px; list-style-type: disc;">
-            <li v-for="n in educationNotifications" :key="'edu-' + n.id">
-              {{ n.message }}
-              <br>
-
-              <a
-                href="#"
-                @click.prevent="openEducation(n)"
-                style="color:#57aee2;text-decoration:underline;font-size:0.95rem;"
-              >
-                查看衛教內容
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div v-if="checkupNotifications.length === 0 && educationNotifications.length === 0" style="text-align: center; padding: 20px;">
-          <p>目前暫無新提醒</p>
-        </div>
-
+        
         <button class="confirm-btn" @click="closeNotificationModal">
           確認
         </button>
@@ -1002,6 +1003,7 @@ const openEducation = async (notification) => {
 .confirm-btn {
   background: #758ecd; /* 確認按鈕顏色改為藍色系 */
   color: #fff;
+  font-size: 16px;
 }
 .confirm-btn:hover {
   background: #627cb2;
@@ -1098,12 +1100,77 @@ const openEducation = async (notification) => {
   background: #888888;
 }
 
-/* =========================================================
-   Responsive rules 
-   ========================================================= */
+/* 卷軸樣式 */
+.notifications-scroll-area {
+  max-height: 400px;    /* 設定最大高度，超過則出現卷軸 */
+  overflow-y: auto;     /* 垂直方向自動出現卷軸 */
+  padding-right: 10px;  /* 留一點空間給卷軸，避免擋到文字 */
+  margin-bottom: 15px;
+  
+}
+.notifications-scroll-area::-webkit-scrollbar { /* 整體卷軸 */
+  width: 8px;
+}
+.notifications-scroll-area::-webkit-scrollbar-track { /* 卷軸軌道 */
+  background: #f1f1f1;
+  border-radius: 10px;
+  margin-top: 30px;
+}
+.notifications-scroll-area::-webkit-scrollbar-thumb { /* 卷軸滑塊 */
+  background: #ccc;
+  border-radius: 10px;
+}
+.notifications-scroll-area::-webkit-scrollbar-thumb:hover { /* 滑塊 hover */
+  background: #57aee2;
+}
+
+/* 通知內容細節樣式 */
+.notification-item {
+  margin-left: 5px; 
+  margin-bottom: 20px;
+  border-left: 3px solid #57aee2; /* 增加左側條紋增加辨識度 */
+  padding-left: 12px;
+}
+.notification-item h3 {
+  margin-bottom: 5px; 
+  color: #57aee2;
+  font-size: 1.1rem;
+}
+.notification-item p {
+  margin: 0; 
+  line-height: 1.6; 
+  font-weight: 500;
+  color: #555;
+}
+
+.education-list {
+  margin-left: 5px; 
+  padding-left: 20px; 
+  list-style-type: disc;
+}
+.education-list li {
+  margin-bottom: 15px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #444;
+}
+.edu-link {
+  color: #57aee2;
+  text-decoration: underline;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-top: 4px;
+}
+
+.empty-notify {
+  text-align: center; 
+  padding: 40px 20px;
+  color: #999;
+}
+
 
 /* ---------------------------
-   Tablet Landscape (max-width: 1024px)
+    Responsive Breakpoints 
    --------------------------- */
 @media (max-width: 1024px) {
   .nav {
