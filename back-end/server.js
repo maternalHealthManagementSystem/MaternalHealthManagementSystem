@@ -102,7 +102,7 @@ app.post("/api/read_records", async (req, res) => {
 
     // 把算好的新 ID 和資料一起寫入資料庫
     await db.query(
-      "INSERT INTO read_records (read_records_id,personal_informations_user_id, he_pregnancy_id) VALUES (?,?, ?)", 
+      "INSERT IGNORE INTO read_records(read_records_id, personal_informations_user_id, he_pregnancy_id) VALUES (?, ?, ?)", 
       [newRecordId,user_id, article_id]
     );
     

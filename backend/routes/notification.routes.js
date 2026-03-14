@@ -8,6 +8,8 @@ router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
   const clientWeek = req.query.week;
 
+  console.log(`User: ${userId}, Received Week: ${clientWeek}`); // 確認收到的 userId 和 week
+
   try {
 
     const notifications = [];
@@ -64,7 +66,7 @@ router.get("/:userId", async (req, res) => {
       }
 
       notifications.push({
-        id: `event_${e.event_start_date}`,
+        id: e.event_id,
         type: "checkup",
         title: e.event_title,
         date: e.event_start_date,
@@ -80,8 +82,8 @@ router.get("/:userId", async (req, res) => {
     if (!currentWeek && currentWeek !== 0) {
 
       const [user] = await db.query(`
-        SELECT LMP 
-        FROM personal_informations
+        SELECT LMP
+        FROM personal_information
         WHERE user_id = ?
       `, [userId]);
 
@@ -104,20 +106,27 @@ router.get("/:userId", async (req, res) => {
     /* 3️⃣ 未讀衛教 */
 
     const [education] = await db.query(`
-      SELECT hp.he_pregnancy_id, hp.title_hepregnancy, hp.link_hepregnancy
+      SELECT 
+        hp.he_pregnancy_id,
+        hp.title_hepregnancy,
+        hp.link_hepregnancy
       FROM he_pregnancy hp
-      LEFT JOIN read_records rr
-        ON hp.he_pregnancy_id = rr.he_pregnancy_id
-        AND rr.personal_informations_user_id = ?
-      WHERE ? BETWEEN hp.he_pregnancy_min_week AND hp.he_pregnancy_max_week
-      AND rr.he_pregnancy_id IS NULL
-    `,[userId,currentWeek]);
+      WHERE hp.he_pregnancy_min_week <= ? 
+        AND hp.he_pregnancy_id NOT IN (
+          SELECT he_pregnancy_id 
+          FROM read_records 
+          WHERE personal_informations_user_id = ?
+        )
+      ORDER BY hp.he_pregnancy_min_week ASC
+    `, [currentWeek, userId]); 
+
+    console.log("Found Education Count:", education.length);
 
     education.forEach(e => {
 
       notifications.push({
-        id: `edu_${e.he_pregnancy_id}`,
         type: "education",
+        article_id: e.he_pregnancy_id,
         title: e.title_hepregnancy,
         link: e.link_hepregnancy,
         message: `您尚未閱讀「${e.title_hepregnancy}」孕期衛教`
