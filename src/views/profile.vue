@@ -251,18 +251,6 @@ const profileData = reactive({
 const bloodTypes = ["A型", "B型", "AB型", "O型", "Rh-型", "未知"];
 const errors = reactive({});
 
-// 格式統一函式:YYYY/MM/DD 或其他 → YYYY-MM-DD
-const toStandardDate = (dateStr) => {
-  if (!dateStr) return "";
-  // 將所有斜線替換成破折號
-  let formatted = dateStr.replace(/\//g, "-");
-  // 符合 YYYY-MM-DD 的格式才回傳
-  const validPattern = /^\d{4}-\d{2}-\d{2}$/;
-  if (validPattern.test(formatted)) {
-    return formatted;
-  }
-  return ""; // 格式錯誤則不回傳
-};
 
 // profile.vue 內的同步邏輯
 const syncToStorage = () => {
