@@ -194,7 +194,7 @@ const handleLinkClick = async (item) => {
     });
 
     if (!response.ok) throw new Error('寫入已讀失敗');
-    console.log(`已成功將文章 ${item.id} 標記為已讀！`);
+    console.log(`已成功將文章 ${item.he_pregnancy_id} 標記為已讀！`);
     
   } catch (error) {
     console.error("更新閱讀狀態失敗", error);

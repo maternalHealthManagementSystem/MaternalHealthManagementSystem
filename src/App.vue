@@ -212,12 +212,17 @@
         </div>
 
         <div v-if="educationNotifications.length > 0">
-          <h2>📝 衛教提醒</h2>
+          <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
           <ul style="margin-left: 15px; padding-left: 20px; list-style-type: disc;">
-            <li v-for="n in educationNotifications" :key="'edu-' + n.id" style="margin-bottom: 12px; font-weight: 500; line-height: 1.5;">
+            <li v-for="n in educationNotifications" :key="'edu-' + n.id">
               {{ n.message }}
               <br>
-              <a :href="n.link" target="_blank" style="color: #57aee2; text-decoration: underline; font-size: 0.95rem;">
+
+              <a
+                href="#"
+                @click.prevent="openEducation(n)"
+                style="color:#57aee2;text-decoration:underline;font-size:0.95rem;"
+              >
                 查看衛教內容
               </a>
             </li>
@@ -340,8 +345,8 @@ const confirmLogout = () => {
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
   sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
   localStorage.removeItem("token"); // 如果有使用 localStorage 儲存 JWT，這裡也要清除
-  router.push('/login').then(() => {
-    window.location.reload(); // 強制重新整理，清空所有 Pinia/Vuex 或組件狀態
+  router.push("/").then(() => {
+    window.location.reload();
   });
 
   // 4. 重置本頁變數狀態
@@ -433,6 +438,8 @@ const getPregnancyWeek = (lmpDate) => {
   const today = new Date();
   const lmp = new Date(lmpDate);
   const diffTime = Math.abs(today - lmp);
+  if (diffTime < 0) return null;
+
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return Math.floor(diffDays / 7);
 };
@@ -444,23 +451,35 @@ const fetchNotifications = async () => {
   const user = JSON.parse(userStr);
 
   try {
-    // 1. 先取得 LMP 計算週數 (或者你也可以直接從 API 傳 userId，讓後端算，但你想從前端傳)
-    const profileRes = await fetch(`http://localhost:3002/api/profile/${user.user_id}`);
+    // 1. 抓取個人資料 (Port 3000)
+    // 根據你的 server.js，路徑應為 /api/personal_information/
+    const profileRes = await fetch(`http://localhost:3000/api/personal_information/${user.user_id}`);
     const profileData = await profileRes.json();
-    const currentWeek = getPregnancyWeek(profileData.LMP);
+    
+    // 2. 檢查 API 是否成功回傳
+    if (profileData.success && profileData.data.lmpDate) {
+      // 使用正確的變數 profileData 以及正確的欄位 lmpDate
+      const currentWeek = getPregnancyWeek(profileData.data.lmpDate);
+      
+      console.log(`[通知檢查] 使用者:${user.user_id}, 目前週數:${currentWeek}`);
 
-    // 2. 將週數作為參數傳給通知 API
-    // 使用 URLSearchParams 組合： /api/notifications/U001?week=15
-    const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`);
-    const data = await res.json();
+      // 3. 抓取通知 (Port 3002)
+      const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`);
+      const data = await res.json();
 
-    notifications.value = data.map((n, index) => ({
-      id: index + 1,
-      ...n,
-      read: false
-    }));
+      // 4. 更新前端狀態
+      notifications.value = data.map((n, index) => ({
+        id: index + 1,
+        ...n,
+        read: false
+      }));
+      
+      console.log("成功取得通知列表:", notifications.value);
+    } else {
+      console.error("無法取得使用者的 LMP 資料，請檢查資料庫 personal_information 表");
+    }
   } catch (error) {
-    console.error("通知取得失敗", error);
+    console.error("通知取得流程發生錯誤:", error);
   }
 };
 
@@ -477,6 +496,39 @@ const isEducationActive = computed(() => {
   return route.path.startsWith('/education');
 });
 
+// 點擊衛教通知後，標記已讀、開啟連結、重新抓取通知
+const openEducation = async (notification) => {
+
+  const userStr = sessionStorage.getItem("user");
+  if (!userStr) return;
+
+  const user = JSON.parse(userStr);
+
+  try {
+
+    // 寫入已讀
+    await fetch("http://localhost:3000/api/read_records", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: user.user_id,
+        article_id: notification.article_id
+      })
+    });
+
+    // 開啟文章
+    window.open(notification.link, "_blank");
+
+    // 重新抓通知
+    await fetchNotifications();
+
+  } catch (error) {
+    console.error("標記已讀失敗", error);
+  }
+
+};
 </script>
 
 <style scoped>
