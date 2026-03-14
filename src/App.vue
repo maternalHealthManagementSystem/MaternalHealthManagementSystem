@@ -7,11 +7,9 @@
   <div class="app-container font-inter">
     <!-- 登入頁不顯示導覽列 -->
     <header v-if="showNavbar" class="top-bar">
-      <!-- 漢堡按鈕已移除 -->
-
       <div class="logo">孕產婦健康照護管理系統</div>
 
-      <!-- 桌面版導覽列 - Desktop/Tablet Landscape Only -->
+      <!-- 桌面版導覽列  -->
       <nav class="nav">
         <router-link to="/home">首頁</router-link>
         <router-link to="/prenatal">產檢紀錄專區</router-link>
@@ -34,7 +32,7 @@
       </nav>
 
       <div class="icons-group">
-        <!-- 通知圖標 - Desktop/Tablet Landscape Only -->
+        <!-- 通知圖標(桌面版only) -->
         <div
           class="notify-icon"
           @click="handleNotificationClick"
@@ -46,13 +44,13 @@
           </span>
         </div>
 
-        <!-- Profile 圖標 (開啟右側邊欄) -->
+        <!-- Profile圖標 (開啟右側邊欄) -->
         <div
           class="profile-icon"
           @click="openSidebar"
           aria-label="開啟個人資料側邊欄"
         >
-          <!-- 如果有頭像就顯示頭像,沒有就顯示圖標 -->
+          <!-- 如果有頭像就顯示頭像，沒有就顯示圖標 -->
           <img
             v-if="userAvatar"
             :src="userAvatar"
@@ -110,7 +108,7 @@
           </div>
         </div>
 
-        <!-- 行動版通知區塊 (點擊後開啟 Modal) -->
+        <!-- 行動版通知區塊 -->
         <div
           class="mobile-notify"
           @click="
@@ -162,7 +160,7 @@
           >
         </nav>
 
-        <!-- 個人資料按鈕 (原 sidebar-menu) -->
+        <!-- 個人資料按鈕 -->
         <div class="sidebar-menu">
           <button class="menu-btn" @click="goProfile">
             <i class="fi fi-sr-user" style="font-size: 18px"></i> 個人資料
@@ -181,7 +179,7 @@
     <!-- 登出確認視窗 -->
     <div v-if="showLogoutConfirm" class="logout-modal-overlay">
       <div class="logout-modal">
-        <!-- 上方標題列含 X 按鈕 -->
+        <!-- X 按鈕 -->
         <div class="logout-header">
           <span class="logout-title">是否登出</span>
           <button class="close-btn" @click="cancelLogout">&times;</button>
@@ -339,24 +337,24 @@ const logout = () => {
 const confirmLogout = () => {
   console.log("正在執行登出程序...");
   
-  // 1. 關閉 UI 元件
+  // 關閉 UI 元件
   isSidebarOpen.value = false;
   showLogoutConfirm.value = false;
 
-  // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
+  // 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
   sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
   localStorage.removeItem("token"); // 如果有使用 localStorage 儲存 JWT，這裡也要清除
   router.push("/").then(() => {
     window.location.reload();
   });
 
-  // 4. 重置本頁變數狀態
+  // 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
   userAvatar.value = "";
 
   console.log("SessionStorage 已清理，跳轉至登入頁");
 
-  // 5. 跳轉並重整 (確保狀態完全乾淨)
+  // 跳轉並重整 (確保狀態完全乾淨)
   router.push("/").then(() => {
     window.location.reload(); 
   });
@@ -369,7 +367,7 @@ const cancelLogout = () => {
 onMounted(async () => {
   loadUserData();
 
-  await fetchNotifications(); // ⭐ 頁面載入時取得通知
+  await fetchNotifications(); // 頁面載入時取得通知
   setInterval(fetchNotifications, 300000); // 每5分鐘自動更新通知
 
   window.addEventListener("user-data-updated", loadUserData);
@@ -381,13 +379,13 @@ onUnmounted(() => {
 });
 
 /* -----------------------------
-   自動行為：換頁處理與通知彈窗
+    監聽路由變化：處理首頁通知與自動關閉側邊欄
 ----------------------------- */
 watch(
   () => route.path,
   async (newPath) => {
     loadUserData();
-    // 1. 處理「剛登入後第一次進首頁」的彈窗通知
+    // 處理「剛登入後第一次進首頁」的彈窗通知
     if (newPath === "/home") {
       // 統一檢查 sessionStorage 中的旗標
       const justLoggedIn = sessionStorage.getItem("justLoggedIn");
@@ -407,7 +405,7 @@ watch(
       }
     }
 
-    // 2. 換頁時自動關閉側邊欄
+    // 換頁時自動關閉側邊欄
     closeSidebar();
   },
   { immediate: true }
@@ -452,23 +450,21 @@ const fetchNotifications = async () => {
   const user = JSON.parse(userStr);
 
   try {
-    // 1. 抓取個人資料 (Port 3000)
-    // 根據你的 server.js，路徑應為 /api/personal_information/
     const profileRes = await fetch(`http://localhost:3000/api/personal_information/${user.user_id}`);
     const profileData = await profileRes.json();
     
-    // 2. 檢查 API 是否成功回傳
+    // 檢查 API 是否成功回傳
     if (profileData.success && profileData.data.lmpDate) {
-      // 使用正確的變數 profileData 以及正確的欄位 lmpDate
+
       const currentWeek = getPregnancyWeek(profileData.data.lmpDate);
       
       console.log(`[通知檢查] 使用者:${user.user_id}, 目前週數:${currentWeek}`);
 
-      // 3. 抓取通知 (Port 3002)
+      // 抓取通知 (從Port 3002)
       const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`);
       const data = await res.json();
 
-      // 4. 更新前端狀態
+      // 更新前端狀態
       notifications.value = data.map((n, index) => ({
         id: index + 1,
         ...n,
@@ -533,9 +529,7 @@ const openEducation = async (notification) => {
 </script>
 
 <style scoped>
-/* ===========================================================
-   App.vue - 統一重構 RWD CSS
-   =========================================================== */
+
 .font-inter {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
@@ -543,7 +537,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Base layout
+   基礎 layout
    --------------------------- */
 .app-container {
   min-height: 100vh;
@@ -558,7 +552,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Navbar (桌機優先樣式)
+   Navbar (桌面版優先樣式)
    --------------------------- */
 .top-bar {
   display: flex;
@@ -584,7 +578,7 @@ const openEducation = async (notification) => {
 /* nav */
 .nav {
   display: flex;
-  gap: 2rem;
+  gap: 2rem; /* 增加連結間距 */
   align-items: center;
   flex: 1;
   justify-content: center; /* 桌面版導覽列置中 */
@@ -621,7 +615,7 @@ const openEducation = async (notification) => {
 }
 
 
-/* icons group (桌機時靠右) */
+/* icons group (桌面版時靠右) */
 .icons-group {
   display: flex;
   gap: 14px;
@@ -688,7 +682,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Sidebar (右側 Unified Menu)
+   Sidebar (行動版選單)
    --------------------------- */
 .sidebar-overlay {
   position: fixed;
@@ -757,7 +751,7 @@ const openEducation = async (notification) => {
   font-size: 0.9rem;
 }
 
-/* 行動版通知區塊 (取代原 mobile-nav 內通知) */
+/* 行動版通知區塊 */
 .mobile-notify {
   display: flex;
   align-items: center;
@@ -913,7 +907,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Modals (Logout Confirmation & Notification)
+   Modals (登出確認 & 通知提醒)
    --------------------------- */
 .logout-modal-overlay,
 .modal-overlay {
@@ -1001,7 +995,7 @@ const openEducation = async (notification) => {
   background: #e0e0e0;
 }
 .confirm-btn {
-  background: #758ecd; /* 確認按鈕顏色改為藍色系 */
+  background: #758ecd; 
   color: #fff;
   font-size: 16px;
 }
@@ -1009,7 +1003,7 @@ const openEducation = async (notification) => {
   background: #627cb2;
 }
 .logout-actions .confirm-btn {
-  background: #e63946; /* 登出確認按鈕維持紅色 */
+  background: #e63946; 
 }
 .logout-actions .confirm-btn:hover {
   background: #d62f3a;
@@ -1065,9 +1059,7 @@ const openEducation = async (notification) => {
   text-decoration: none;
   font-size: 16px;
 }
-/* .dropdown-content a:hover {
-  background: #f0f0f0;
-} */
+
 
 /* 滑鼠 hover 顯示下拉 */
 .dropdown:hover .dropdown-content {
@@ -1076,20 +1068,20 @@ const openEducation = async (notification) => {
 
 .dropdown:hover .dropbtn::after {
   width: 100%; /* 確保下拉選單展開時底線一直存在 */
-  background: #aaa; /* 可以使用與 router-link-active 不同的顏色來區分 */
+  background: #aaa; /* 下拉展開時底線顏色 */
 }
 
-/* 確保當 .dropbtn 已經是 active 時，:hover 樣式不會覆蓋它的顏色 */
 .dropdown:hover .dropbtn.active::after  {
     /* 確保 active 狀態優先 */
-    background: #000; /* 假設您希望 active 顏色與 Logo 一致 */
+    background: #000; /* active 時底線顏色 */
 }
 
 /* 衛教資訊專區 - 強制 active*/
 .dropbtn.active {
   font-weight: 600;
 }
-/* 讓dropbtn跟router-link-active一樣的底線效果 */
+
+/* 衛教資訊專區 active 狀態下的底線 */
 .dropbtn.active::after {
   content: "";
   position: absolute;
@@ -1104,7 +1096,7 @@ const openEducation = async (notification) => {
 .notifications-scroll-area {
   max-height: 400px;    /* 設定最大高度，超過則出現卷軸 */
   overflow-y: auto;     /* 垂直方向自動出現卷軸 */
-  padding-right: 10px;  /* 留一點空間給卷軸，避免擋到文字 */
+  padding-right: 10px;  
   margin-bottom: 15px;
   
 }
@@ -1128,7 +1120,7 @@ const openEducation = async (notification) => {
 .notification-item {
   margin-left: 5px; 
   margin-bottom: 20px;
-  border-left: 3px solid #57aee2; /* 增加左側條紋增加辨識度 */
+  border-left: 3px solid #57aee2; 
   padding-left: 12px;
 }
 .notification-item h3 {
@@ -1170,7 +1162,7 @@ const openEducation = async (notification) => {
 
 
 /* ---------------------------
-    Responsive Breakpoints 
+    平板版 (max-width: 1024px)
    --------------------------- */
 @media (max-width: 1024px) {
   .nav {
@@ -1194,8 +1186,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Mobile Landscape & Tablet Portrait (max-width: 768px)
-   - 主要行動裝置 UI 模式
+   手機版 (max-width: 768px)
    --------------------------- */
 @media (max-width: 768px) {
   /* Header 佈局變更 */
@@ -1239,7 +1230,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Extra Small Mobile (max-width: 420px)
+    超小螢幕 (max-width: 420px)
    --------------------------- */
 @media (max-width: 420px) {
   .logo {
