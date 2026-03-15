@@ -150,7 +150,7 @@ import dayjs from 'dayjs'
 
 import { useCalendarStore } from '../stores/calendarStore.js'
 
-// --- 新增路由實例 ---
+// 新增路由實例
 const route = useRoute()
 const calendarStore = useCalendarStore()
 
@@ -215,14 +215,24 @@ const combinedCalendarData = computed(() => {
 });
 
 onMounted(async () => {
-  //await calendarStore.fetchAllData('U001');
   if (!currentUserId) {
     alert("登入逾時或尚未登入，請重新登入");
     route.push("/"); // 導回登入頁
     return;
   }
 
-  await calendarStore.fetchAllData(currentUserId);
+  const localEvents = sessionStorage.getItem(`events_${currentUserId}`);
+  const localDiaries = sessionStorage.getItem(`diaries_${currentUserId}`);
+
+  if (localEvents && localDiaries) {
+    // 同步到 store 的 state
+    calendarStore.events = JSON.parse(localEvents);
+    calendarStore.diaries = JSON.parse(localDiaries);
+    console.log("已從快取載入行程與日記");
+  } else {
+    // 若無快取，則發送 API 請求
+    await calendarStore.fetchAllData(currentUserId);
+  }
 
   if (route.query.date) {
     newDiary.value.date = route.query.date;
