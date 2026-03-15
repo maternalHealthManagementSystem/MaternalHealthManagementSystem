@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import db from './db/connection.js';
 import { v2 as cloudinary } from 'cloudinary';
-
+import  verifyToken from "./middleware/verifyToken.js";
 import authRoutes from './routes/auth.routes.js';
 
 
@@ -33,7 +33,7 @@ app.listen(3002, () => {
   console.log('API running at http://localhost:3002');
 });
 
-app.get("/api/profile/:user_id", async (req, res) => {
+app.get("/api/profile/:user_id", verifyToken,async (req, res) => {
   const { user_id } = req.params;
 
   try {
@@ -54,7 +54,7 @@ app.get("/api/profile/:user_id", async (req, res) => {
 });
 
 // 更新個人資料的 API
-app.put("/api/profile/:user_id", async (req, res) => {
+app.put("/api/profile/:user_id", verifyToken, async (req, res) => {
   const { user_id } = req.params;
   const data = req.body;
 
