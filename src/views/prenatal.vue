@@ -56,28 +56,24 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
-import axios from "axios";
+import api from "../services/api.js";
 
 const isMobile = ref(false);
 // 一進入產檢資料專區就顯示最近一筆產檢報告
+
 onMounted(async () => {
   checkupRecords.value = [];
-  try {
-    const token = localStorage.getItem("token");
 
-    const res = await axios.get("http://localhost:3002/api/prenatal", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  try {
+    const res = await api.get("/api/prenatal");
 
     console.log("前端收到的原始 JSON:", res.data);
 
     checkupRecords.value = res.data.map((item, index, arr) => {
       const formattedDate = item.visit_date.split("T")[0];
-      return {
 
-        date: formattedDate, // 只取日期部分
+      return {
+        date: formattedDate,
         checkupNumber: arr.length - index,
         details: {
           gestational_age_wks: item.gestational_age_wks,
@@ -86,8 +82,8 @@ onMounted(async () => {
           para: item.para,
           SA: item.SA,
           AA: item.AA,
-          LMP: item.LMP.split("T")[0],
-          PMP: item.PMP.split("T")[0],
+          LMP: item.LMP?.split("T")[0],
+          PMP: item.PMP?.split("T")[0],
           married_status: item.married_status,
           body_weight: item.body_weight,
           blood_pressure_sys: item.blood_pressure_sys,
@@ -109,6 +105,7 @@ onMounted(async () => {
     if (checkupRecords.value.length > 0) {
       activeIndex.value = 0;
     }
+
   } catch (err) {
     console.error("抓取產檢資料失敗", err);
   }

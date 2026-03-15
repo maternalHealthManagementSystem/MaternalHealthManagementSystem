@@ -135,12 +135,10 @@ const sendsms = async () => {
 
       localStorage.setItem("token", res.data.token); // 儲存 JWT 以供後續 API 認證使用
 
-      // 必須從 res.data.user 裡面拿資料
-      const backendUser = res.data.user; 
-      // 這裡可以選擇直接使用後端回傳的資料，或者再發一次請求拿完整的 profile 資料
-      const profileRes = await api.get(`/api/profile/${backendUser.user_id}`);
+      // 獲取使用者個人資料
+      const profileRes = await api.get("/api/profile/");
       const userData = {
-        user_id: backendUser.user_id,
+        user_id: res.data.user.user_id,
         name: profileRes.data.name,
         email: profileRes.data.email || "",
         user_file_path: profileRes.data.user_file_path || ""

@@ -12,7 +12,9 @@ export default function verifyToken(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = decoded;  // 🔥 這裡一定要有 user_id
+    req.user = decoded;  
+
+    console.log("Decoded JWT:", decoded);
 
     next();
   } catch (err) {

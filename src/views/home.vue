@@ -131,7 +131,7 @@ onMounted(async () => {
   //await calendarStore.fetchAllData('U001');
   if (!currentUserId) {
     alert("登入逾時或尚未登入，請重新登入");
-    route.push("/"); // 導回登入頁
+    router.push("/"); // 導回登入頁
     return;
   }
 
@@ -309,7 +309,7 @@ onMounted(async () => {
   if (!loginUser.user_id) return;
 
   try {
-    const res = await api.get(`/api/profile/${loginUser.user_id}`);
+    const res = await api.get("/api/profile");
 
     if (res.data && res.data.LMP) {
       calculatePregnancyByLMP(res.data.LMP);
