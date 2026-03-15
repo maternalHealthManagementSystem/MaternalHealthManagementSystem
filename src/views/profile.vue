@@ -274,7 +274,7 @@ onMounted(async () => {
   if (!loginUser || !loginUser.user_id) return;
 
   try {
-    const res = await api.get(`/api/profile/${loginUser.user_id}`);
+    const res = await api.get("/api/profile/");
     if (res.data) {
       const db = res.data;
       

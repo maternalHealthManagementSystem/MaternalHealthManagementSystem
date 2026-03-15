@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import db from './db/connection.js';
 import { v2 as cloudinary } from 'cloudinary';
-
+import  verifyToken from "./middleware/verifyToken.js";
 import authRoutes from './routes/auth.routes.js';
 
 
@@ -18,7 +18,10 @@ cloudinary.config({
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 app.use(express.json({limit: '10mb' })); // 增加 JSON 請求的大小限制
 app.use(express.urlencoded({limit: '10mb', extended: true }));
 
@@ -33,8 +36,8 @@ app.listen(3002, () => {
   console.log('API running at http://localhost:3002');
 });
 
-app.get("/api/profile/:user_id", async (req, res) => {
-  const { user_id } = req.params;
+app.get("/api/profile", verifyToken,async (req, res) => {
+  const user_id = req.user.user_id;
 
   try {
     const [rows] = await db.query(
@@ -54,7 +57,7 @@ app.get("/api/profile/:user_id", async (req, res) => {
 });
 
 // 更新個人資料的 API
-app.put("/api/profile/:user_id", async (req, res) => {
+app.put("/api/profile/:user_id", verifyToken, async (req, res) => {
   const { user_id } = req.params;
   const data = req.body;
 
