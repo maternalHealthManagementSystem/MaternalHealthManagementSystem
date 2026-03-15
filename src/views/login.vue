@@ -79,6 +79,18 @@ const idError = ref("");
 const phoneError = ref("");
 const smsError = ref("");
 
+// 驗證函式：身分證字號格式 (台灣標準：1位大寫字母 + 1位(1或2) + 8位數字)
+const validateId = (id) => {
+  const re = /^[A-Z][12]\d{8}$/;
+  return re.test(id);
+};
+
+// 驗證函式：手機號碼格式 (台灣標準：09開頭 + 8位數字)
+const validatePhone = (phone) => {
+  const re = /^09\d{8}$/;
+  return re.test(phone);
+};
+
 // 1. 啟動倒數計時
 const startCountdown = () => {
   if (timer) clearInterval(timer);
@@ -98,6 +110,29 @@ const verification = async () => {
   idError.value = "";
   phoneError.value = "";
 
+  let hasError = false;
+  
+  // 檢查身分證
+  if (!idNumber.value) {
+    idError.value = "請輸入身分證字號";
+    hasError = true;
+  } else if (!validateId(idNumber.value.toUpperCase())) {
+    idError.value = "身分證格式錯誤（例：A123456789）";
+    hasError = true;
+  }
+
+  // 檢查手機號碼
+  if (!phoneNumber.value) {
+    phoneError.value = "請輸入手機號碼";
+    hasError = true;
+  } else if (!validatePhone(phoneNumber.value)) {
+    phoneError.value = "手機格式錯誤（例：0912345678）";
+    hasError = true;
+  }
+
+  // 如果有任一錯誤，停止向下執行
+  if (hasError) return;
+
   try {
     const res = await api.post("/api/auth/request-otp", {
       national_id: idNumber.value,
@@ -110,7 +145,16 @@ const verification = async () => {
       startCountdown();
     }
   } catch (err) {
-    idError.value = err.response?.data?.message || "發送失敗，請檢查資料";
+    // 從後端錯誤回應中提取訊息，並根據內容決定顯示在哪個欄位
+    const errorMsg = err.response?.data?.message || "發送失敗，請檢查資料";
+    
+    if (errorMsg.includes("身分證")) {
+      idError.value = errorMsg;
+    } else if (errorMsg.includes("手機")) {
+      phoneError.value = errorMsg;
+    } else {
+      idError.value = errorMsg; 
+    }
   }
 };
 
