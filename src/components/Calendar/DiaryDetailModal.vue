@@ -12,49 +12,46 @@
 
         <!-- 內容 -->
         <div class="modal-body">
-            <!-- 標題 -->
-            <div class="diary-title">
-                <h1>{{ diary.title || '（今日日記）' }}</h1>
-                <span class="diary-badge">日記</span>
-            </div>
-            <!-- 日期 -->
-            <div class="diary-date">
-                <span class="date-icon">📅</span>
-                <span class="date-text">{{ formatDate(diary.date) }}</span>
-            </div>
-                
-            <!-- 內容 -->
-            <div class="diary-content">
-              <span class="date-icon">📑</span>
-                <span v-if="diary.content">{{ diary.content }}</span>
-                <span v-else class="empty-content">（還沒有輸入內容喔~）</span>
-            </div>
-
-            <!-- 圖片 -->
-            <div v-if="diary.image" class="diary-image">
-                <img :src="diary.image" alt="日記圖片" />
-            </div>
+          <!-- 標題 -->
+          <div class="diary-title">
+              <h1>{{ diary.title || '（今日日記）' }}</h1>
+              <span class="diary-badge">日記</span>
+          </div>
+          <!-- 日期 -->
+          <div class="diary-date">
+              <span class="date-icon">📅</span>
+              <span class="date-text">{{ formatDate(diary.date) }}</span>
+          </div>      
+          <!-- 內容 -->
+          <div class="diary-content">
+            <span class="date-icon">📑</span>
+              <span v-if="diary.content">{{ diary.content }}</span>
+              <span v-else class="empty-content">（還沒有輸入內容喔~）</span>
+          </div>
+          <!-- 圖片 -->
+          <div v-if="diary.image" class="diary-image">
+              <img :src="diary.image" alt="日記圖片" />
+          </div>
           <div class="meta">
             <!-- 建立時間 -->
             <div class="diary-meta">
                 <span class="meta-label">建立時間：</span>
                 <span class="meta-value">{{ formatDateTime(diary.createdAt) }}</span>
             </div>
-
             <!-- 只有在有更新時間時才顯示 -->
             <div v-if="diary.updatedAt" class="meta-item">
               <span class="meta-label">最後編輯：</span>
               <span class="meta-value">{{ formatDateTime(diary.updatedAt) }}</span>
             </div>
           </div>
-          </div>
-            <!-- 底部按鈕 -->
-            <div class="modal-footer">
-              <button class="btn-delete" @click="deleteDiary">刪除日記</button>
-              <button class="btn-edit" @click="editDiary">編輯</button>
-            </div>
-          </div>
-        </div>
+      </div>
+      <!-- 底部按鈕 -->
+      <div class="modal-footer">
+        <button class="btn-delete" @click="deleteDiary">刪除日記</button>
+        <button class="btn-edit" @click="editDiary">編輯</button>
+      </div>
+    </div>
+    </div>
   </transition>
 </template>
 
@@ -101,7 +98,7 @@ function formatDate(date) {
 
 // 格式化日期時間
 function formatDateTime(datetime) {
-  if (!datetime) return ''
+  if (!datetime) return '尚無編輯紀錄'
   return dayjs(datetime).format('YYYY/MM/DD HH:mm')
 }
 </script>

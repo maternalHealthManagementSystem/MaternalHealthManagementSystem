@@ -67,11 +67,26 @@ eventdatailmodel
                     class="event-block-container"
                     :style="eventBlockStyle"
                   >
-                    <div class="event-block">
+                  <div 
+                    class="event-block" 
+                    :class="{ 
+                      'short-event': isShortEvent,
+                      'tiny-event': isTinyEvent 
+                    }"
+                  >
+                    <template v-if="!isTinyEvent">
                       <span class="timeline-title">{{ event.title }}</span>
-                      <span class="timeline-time">{{ event.startTime }} – {{ event.endTime }}</span>
-                    </div>
+
+                      <span v-if="isShortEvent" class="timeline-inline">
+                        {{ event.startTime }} – {{ event.endTime }}
+                      </span>
+                      <span v-else class="timeline-time">
+                        {{ event.startTime }} – {{ event.endTime }}
+                      </span>
+                    </template> 
+                    <div v-else class="tiny-indicator">...</div>
                   </div>
+                </div>
                 </div>
               </div>
             </div>
@@ -84,14 +99,26 @@ eventdatailmodel
               </div>
             </div>
 
-           <!-- 地圖 -->
-          <div class="detail-item" v-if="event.location">
-            <div class="detail-label">🗺️位置</div>
-            <div class="detail-content">
-              <div ref="mapContainer" class="map-container"></div>
+            <!-- 地圖 -->
+            <div class="detail-item" v-if="event.location">
+              <div class="detail-label">🗺️位置</div>
+              <div class="detail-content">
+                <div ref="mapContainer" class="map-container"></div>
+              </div>
             </div>
-          </div>
-          </div>
+            <div class="meta">
+            <!-- 建立時間 -->
+            <div class="event-meta">
+                <!-- <span class="meta-label">建立時間：</span>
+                <span class="meta-value">{{ formatDateTime(event.createdAt) }}</span> -->
+            </div>
+            <!-- 只有在有更新時間時才顯示 -->
+            <div v-if="event.updatedAt" class="meta-item">
+              <span class="meta-label">最後編輯：</span>
+              <span class="meta-value">{{ formatDateTime(event.updatedAt) }}</span>
+            </div>
+          </div>  
+        </div>
         </div>
 
         <!-- 底部按鈕 -->
@@ -124,7 +151,9 @@ const props = defineProps({
       startTime: '',
       endTime: '',
       location: '',
-      description: ''
+      description: '',
+      createdAt: '', 
+      updatedAt: ''  
     })
   }
 })
@@ -198,6 +227,26 @@ const eventBlockStyle = computed(() => {
   };
 });
 
+// 輔助函式：計算行程總分鐘數
+function getDurationMinutes(startTime, endTime) {
+  if (!startTime || !endTime) return 0;
+  const start = parseTime(startTime) * 60 + parseMinute(startTime);
+  const end = parseTime(endTime) * 60 + parseMinute(endTime);
+  return end - start;
+}
+
+// 是否為短事件 (15~35 分鐘)：顯示單行
+const isShortEvent = computed(() => {
+  const duration = getDurationMinutes(props.event.startTime, props.event.endTime);
+  return duration <= 35 && duration > 15;
+});
+
+// 是否為極小事件 (小於 15 分鐘)：隱藏所有文字
+const isTinyEvent = computed(() => {
+  const duration = getDurationMinutes(props.event.startTime, props.event.endTime);
+  return duration <= 15;
+});
+
 // 解析時間字串 (如 "10:00" -> 10)
 function parseTime(timeStr) {
   if (!timeStr) return 0;
@@ -235,6 +284,7 @@ function formatTimeDisplay(timeStr) {
 }
 
 
+
 // 關閉彈窗
 function closeModal() {
   emit('close')
@@ -257,6 +307,13 @@ function editEvent() {
 function formatDate(date) {
   if (!date) return ''
   return dayjs(date).format('YYYY 年 M 月 D 日')
+}
+
+// 格式化日期時間
+function formatDateTime(date) {
+  if (!date) return '尚無編輯紀錄'
+  const formatted = dayjs(date).format('YYYY/MM/DD')
+  return formatted === 'Invalid Date' ? '時間格式錯誤' : formatted
 }
 
 // 取得事件類型文字
@@ -556,24 +613,77 @@ onUnmounted(() => {
   color: white;
   overflow: hidden; 
   box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+  min-height: 4px;
 }
 
-.event-block ,
-.timeline-time,
-.timeline-title{
+.event-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0; 
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 標題樣式：永遠優先顯示，多出部分省略 */
+.timeline-title {
   font-size: 14px;
   font-weight: bold;
-  opacity: 0.9;
-  white-space: nowrap; 
-  overflow: hidden; 
-  text-overflow: ellipsis;
+  white-space: nowrap;      
+  overflow: hidden;         
+  text-overflow: ellipsis;  
+  flex-shrink: 1;           
 }
 
-.timeline-time,
-.timeline-title{
-  display: flex;
-  justify-content:flex-start;
-  text-align: left;
+/* 極小事件的樣式 */
+.tiny-event {
+  justify-content: center;
+  align-items: center;
+}
+
+.tiny-indicator {
+  font-size: 20px;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+/* 時間樣式：如果是短事件或空間不夠，也顯示省略號 */
+.timeline-time, .timeline-inline {
+  font-size: 14px;
+  opacity: 0.9;
+  white-space: nowrap;      
+  overflow: hidden;         
+  text-overflow: ellipsis;  
+  flex-shrink: 0;           
+}
+
+/* 針對短事件 (水平排列) */
+.event-block.short-event {
+  flex-direction: row;      
+  align-items: center;
+  gap: 6px;
+}
+
+/* 橫向排列時的截斷邏輯 */
+.event-block.short-event {
+  flex-direction: row;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.timeline-title, .timeline-inline, .timeline-time {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-block.short-event .timeline-title {
+  flex-shrink: 1;           
+}
+
+.event-block.short-event .timeline-inline {
+  flex-shrink: 0;          
+  color: rgba(255, 255, 255, 0.8);
 }
 
 .timeline-bar {
@@ -638,6 +748,33 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   text-align: center;
+}
+
+/* 元資料 */
+.event-meta {
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 15px;
+  margin-bottom: 5px;
+  justify-content: center;
+  text-align: center;
+}
+
+.meta-item {
+  margin-bottom: 15px;
+  justify-content: center;
+  text-align: center;
+  font-size: 15px
+}
+
+.meta-label  {
+  color: #999;
+}
+
+.meta-value {
+  color: #666;
+  font-weight: 500;
+  margin-right: 5px;
 }
 
 /* 底部按鈕 */
