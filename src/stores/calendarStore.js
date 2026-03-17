@@ -52,6 +52,8 @@ export const useCalendarStore = defineStore('schedule', {
           endTime: item.event_end_time ? item.event_end_time.substring(0, 5) : '',
           location: item.event_place,
           description: item.event_describe,
+          createdAt: item.event_created_datetime,
+          updatedAt: item.event_modified_datetime,
           isAuto: item.event_is_auto === 1,
           isEditable: item.event_is_editable === 1
         }));

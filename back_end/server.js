@@ -149,10 +149,16 @@ app.put('/api/schedule/:eventId', async (req, res) => {
     const eventId = req.params.eventId;
 
     const data = req.body;
+
     const sql = `UPDATE schedule SET 
-        event_title=?, event_type=?, event_start_date=?, 
-        event_start_time=?, event_end_time=?, event_place=?, 
-        event_describe=? 
+        event_title=?, 
+        event_type=?, 
+        event_start_date=?, 
+        event_start_time=?, 
+        event_end_time=?, 
+        event_place=?, 
+        event_describe=? ,
+        event_modified_datetime = NOW() 
         WHERE event_id=?`;
     try {
         await db.query(sql, [

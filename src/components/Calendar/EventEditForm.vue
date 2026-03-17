@@ -106,8 +106,6 @@
                 placeholder="請輸入備註說明"
               ></textarea>
             </div>
-
-            
           </form>
         </div>
 
@@ -170,7 +168,9 @@ watch(() => props.event, (newEvent) => {
       startTime: newEvent.startTime || '',
       endTime: newEvent.endTime || '',
       location: newEvent.location || '',
-      description: newEvent.description || ''
+      description: newEvent.description || '',
+      createdAt: newEvent.createdAt || '',
+      updatedAt: newEvent.updatedAt || ''
     }
   }
 }, { immediate: true, deep: true })
@@ -227,7 +227,9 @@ function saveEvent() {
   // 準備更新後的行程
   const updatedEvent = {
     ...formData.value,
-    date: formData.value.startDate // 同步 date 欄位
+    date: formData.value.startDate, // 同步 date 欄位
+    createdAt: props.event.createdAt,
+    updatedAt: new Date().toISOString()
   }
 
   emit('save', updatedEvent)

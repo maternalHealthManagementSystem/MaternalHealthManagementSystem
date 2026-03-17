@@ -280,6 +280,7 @@ function handleEditEvent(event) {
 async function handleSaveEvent(updatedEvent) {
     console.log('儲存編輯行程:', updatedEvent)
     await calendarStore.updateEvent(updatedEvent)
+    selectedEvent.value = { ...updatedEvent }
     alert('行程已更新！')
 
     showEditForm.value = false
