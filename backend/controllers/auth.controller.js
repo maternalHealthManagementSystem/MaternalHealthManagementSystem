@@ -132,17 +132,17 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // 🔥 產生 JWT（關鍵步驟）
+    // 產生 JWT（關鍵步驟）
     const token = jwt.sign(
-      { user_id: user.user_id },   // 一定要放 user_id
+      { user_id: user.user_id },   
       process.env.JWT_SECRET,
-      { expiresIn: "2h" }
+      { expiresIn: "1h" }
     );
 
     return res.json({
       success: true,
       message: "登入成功",
-      token,     // 🔥 回傳 token
+      token,     // 回傳 token
       user,
     });
 
