@@ -295,7 +295,7 @@ onMounted(async () => {
       profileData.dob = db.birthday ? dayjs(db.birthday).format("YYYY-MM-DD") : "";
       profileData.dueDate = db.edc ? dayjs(db.edc).format("YYYY-MM-DD") : "未設定";
 
-      // ✅ 修正：在這裡執行同步，確保 sessionStorage 裡的 user 物件含有 email
+      // 修正：在這裡執行同步，確保 sessionStorage 裡的 user 物件含有 email
       syncToStorage();
     }
   } catch (error) {
@@ -439,6 +439,8 @@ const saveProfile = async () => {
     customAlert("資料格式有誤，請檢查！");
     return;
   }
+  const loading = showLoading("個人資料儲存中..."); // 開啟 Loading
+
   try {
     const loginUser = JSON.parse(sessionStorage.getItem("user"));
     const payload = {
@@ -456,20 +458,23 @@ const saveProfile = async () => {
       height: profileData.height ? Number(profileData.height) : null,
       weight: profileData.weight ? Number(profileData.weight) : null,
       user_file_path: profileData.user_file_path,
-      // avatar: profileData.user_file_path, // 同步傳給後端的 avatar 欄位
     };
 
     const res = await api.put(`/api/profile/${loginUser.user_id}`, payload);
 
     if (res.data.success) {
       if (res.data.imageUrl) profileData.user_file_path = res.data.imageUrl;
-      
+      // customAlert("儲存中請稍候..."); 
       syncToStorage();
       
       customAlert("🎉 個人資料已成功儲存！");
     }
-  } catch (error) {
+  } catch (error) { 
+
     customAlert("儲存失敗");
+
+  }finally {
+    loading.close(); // 關閉 Loading
   }
 };
 
@@ -489,6 +494,54 @@ const clean = () => {
   Object.keys(errors).forEach((k) => (errors[k] = ""));
 };
 
+
+
+// 上傳照片頭貼
+const fileInput = ref(null);
+
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const handleFileUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const loginUser = JSON.parse(sessionStorage.getItem("user")); // 取得當前使用者 ID
+  const loading = showLoading("圖片上傳中，請稍候..."); // 開啟 Loading
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const base64 = e.target.result;
+
+    try {
+      const res = await api.post("/api/upload-avatar", {
+        image: base64, // 對應後端解構的 { image }
+        user_id: loginUser.user_id // 對應後端解構的 { user_id }
+      });
+
+      if (res.data.imageUrl) {
+        // 核心：將後端回傳的 Cloudinary 網址存入變數
+        profileData.user_file_path = `${res.data.imageUrl}?t=${new Date().getTime()}`;
+        customAlert("頭像已同步至雲端");
+      }
+    } catch (err) {
+      console.error("上傳失敗:", err);
+      customAlert("圖片上傳失敗");
+    }finally {
+      loading.close(); // 關閉 Loading
+      event.target.value = ""; // 清空 input 讓同一張圖可以重複選取
+    }
+  };
+
+  reader.readAsDataURL(file);
+};
+
+//---------------------
+//      自定義視窗
+//---------------------
+
+// 自定義提示視窗
 const customAlert = (message) => {
   const modal = document.createElement("div");
   modal.style.cssText = `
@@ -520,45 +573,54 @@ const customAlert = (message) => {
   };
 };
 
-// 上傳照片頭貼
-const fileInput = ref(null);
+// 自定義提示與載入視窗
+const showLoading = (message = "處理中，請稍候...") => {
+  const mask = document.createElement("div");
+  mask.id = "loading-mask";
+  mask.style.cssText = `
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 10000;
+  `;
 
-const triggerFileInput = () => {
-  fileInput.value.click();
-};
+  const loader = document.createElement("div");
+  loader.style.cssText = `
+    background: white;
+    padding: 25px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 15px;
+  `;
 
-const handleFileUpload = async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const loginUser = JSON.parse(sessionStorage.getItem("user")); // 取得當前使用者 ID
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const base64 = e.target.result;
-    
-    // 這裡可以先做前端預覽（選完圖立刻變，不用等 API）
-    // profileData.user_file_path = base64; 
-
-    try {
-      const res = await api.post("/api/upload-avatar", {
-        image: base64, // 對應後端解構的 { image }
-        user_id: loginUser.user_id // 對應後端解構的 { user_id }
-      });
-
-      if (res.data.imageUrl) {
-        // 核心：將後端回傳的 Cloudinary 網址存入變數
-        profileData.user_file_path = `${res.data.imageUrl}?t=${new Date().getTime()}`;
-        customAlert("頭像已同步至雲端");
-      }
-    } catch (err) {
-      console.error("上傳失敗:", err);
-      customAlert("圖片上傳失敗");
+  // 加上一個簡單的旋轉動畫 CSS
+  const spinnerStyle = document.createElement("style");
+  spinnerStyle.innerHTML = `
+    .spinner {
+      width: 30px; height: 30px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #57aee2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
     }
-  };
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  `;
+  document.head.appendChild(spinnerStyle);
 
-  reader.readAsDataURL(file);
-  event.target.value = ""; 
+  loader.innerHTML = `
+    <div class="spinner"></div>
+    <p style="margin: 0; font-weight: 600; color: #333;">${message}</p>
+  `;
+
+  mask.appendChild(loader);
+  document.body.appendChild(mask);
+
+  return {
+    close: () => mask.remove()
+  };
 };
 </script>
 

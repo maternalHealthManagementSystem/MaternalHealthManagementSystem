@@ -1,5 +1,6 @@
 import db from '../db/connection.js';
 import jwt from "jsonwebtoken";
+import {sendOtpEmail} from "../services/mail.service.js";
 
 // 暫存 OTP（正式專案建議用 Redis）
 const otpStore = {};
@@ -28,20 +29,36 @@ export const requestOtp = async (req, res) => {
 
     // 查詢使用者
     const [rows] = await db.query(
-      `SELECT user_id, name, national_id, phone_number 
-       FROM personal_information 
-       WHERE national_id = ? AND phone_number = ?`,
+      `SELECT user_id, name, national_id, phone_number, email
+      FROM personal_information 
+      WHERE national_id = ? AND phone_number = ?`,
       [national_id, phone_number]
     );
 
-    if (rows.length === 0) {
+    if (!rows.length) {
       return res.status(401).json({
         success: false,
         message: '身分證字號或手機號碼錯誤',
       });
     }
-
+    
     const user = rows[0];
+
+    const existing = otpStore[user.user_id];
+
+    if (existing && Date.now() < existing.cooldown) {
+      return res.status(429).json({
+        success: false,
+        message: "請稍後再試",
+      });
+    }
+
+    if (!user.email) {
+      return res.status(400).json({
+        success: false,
+        message: "此帳號尚未綁定 Email",
+      });
+    }
 
     // 產生 6 位 OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -50,22 +67,26 @@ export const requestOtp = async (req, res) => {
     otpStore[user.user_id] = {
       otp,
       expires: Date.now() + 5 * 60 * 1000,
+      cooldown: Date.now() + 60 * 1000, // 1分鐘內不能重複請求
     };
 
-    console.log(`使用者 ${user.user_id} OTP:`, otp);
+    await sendOtpEmail(user.email, otp); // 寄送 OTP 到使用者 Email
 
+    // 回傳成功訊息（不包含 OTP）
     return res.json({
       success: true,
-      message: '驗證碼已發送',
+      message: "OTP 已寄送到 Email",
       user_id: user.user_id,
     });
 
+    
+
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      success: false,
-      message: '伺服器錯誤',
-    });
+    return res.status(500).json({
+    success: false,
+    message: "Email 發送失敗，請洽醫護人員協助。",
+  });
   }
 };
 
@@ -117,7 +138,7 @@ export const verifyOtp = async (req, res) => {
 
     // 撈使用者資料
     const [rows] = await db.query(
-      `SELECT user_id, name, national_id, phone_number 
+      `SELECT user_id, name, national_id, phone_number, email
       FROM personal_information 
       WHERE user_id = ?`,
       [user_id]
@@ -154,3 +175,5 @@ export const verifyOtp = async (req, res) => {
     });
   }
 };
+
+
