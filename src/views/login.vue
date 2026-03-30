@@ -25,7 +25,7 @@
         <p class="error-text" v-if="phoneError">{{ phoneError }}</p>
       </div>
 
-      <button v-show="showIdPhone" @click="verification">傳送簡訊驗證</button>
+      <button v-show="showIdPhone" @click="verification">傳送OTP驗證碼至 Email</button>
 
       <div v-show="!showIdPhone">
 
@@ -142,8 +142,10 @@ const verification = async () => {
     if (res.data.success) {
       sessionStorage.setItem("temp_user_id", res.data.user_id);
       showIdPhone.value = false;
+      smsCode.value = ""; // 清空舊 OTP
       startCountdown();
     }
+
   } catch (err) {
     // 從後端錯誤回應中提取訊息，並根據內容決定顯示在哪個欄位
     const errorMsg = err.response?.data?.message || "發送失敗，請檢查資料";
