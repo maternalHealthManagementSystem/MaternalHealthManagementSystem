@@ -69,8 +69,13 @@ export const requestOtp = async (req, res) => {
       expires: Date.now() + 5 * 60 * 1000,
       cooldown: Date.now() + 60 * 1000, // 1分鐘內不能重複請求
     };
-
-    await sendOtpEmail(user.email, otp); // 寄送 OTP 到使用者 Email
+    
+    // 寄送 OTP 到使用者 Email
+    try {
+      await sendOtpEmail(user.email, otp);
+    } catch (mailErr) {
+      console.error("Email 發送錯誤:", mailErr);
+    } 
 
     // 回傳成功訊息（不包含 OTP）
     return res.json({
