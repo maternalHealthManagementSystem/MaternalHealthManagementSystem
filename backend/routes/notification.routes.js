@@ -34,30 +34,30 @@ router.get("/:userId", async (req, res) => {
 
       let message = "";
 
-      switch (e.event_type) {
+      // switch (e.event_type) {
 
-        case "產檢":
-          message = `您距離下一次產檢「${e.event_title}」，還有 ${e.days_left} 天。`;
-          break;
+      //   case "產檢":
+      //     message = `您距離下一次產檢「${e.event_title}」，還有 ${e.days_left} 天。`;
+      //     break;
 
-        case "預約":
-          message = `您有一個預約「${e.event_title}」，距離預約還有 ${e.days_left} 天。`;
-          break;
+      //   case "預約":
+      //     message = `您有一個預約「${e.event_title}」，距離預約還有 ${e.days_left} 天。`;
+      //     break;
 
-        case "提醒":
-          message = `提醒您：「${e.event_title}」還有 ${e.days_left} 天。`;
-          break;
+      //   case "提醒":
+      //     message = `提醒您：「${e.event_title}」還有 ${e.days_left} 天。`;
+      //     break;
 
-        case "其他":
-          message = `即將到來的行程：「${e.event_title}」，${e.days_left} 天後開始。`;
-          break;
+      //   case "其他":
+      //     message = `即將到來的行程：「${e.event_title}」，${e.days_left} 天後開始。`;
+      //     break;
 
-        default:
-          message = `距離「${e.event_title}」還有 ${e.days_left} 天。`;
-      }
+      //   default:
+      //     message = `距離「${e.event_title}」還有 ${e.days_left} 天。`;
+      // }
 
       if (e.event_describe) {
-        message += ` ${e.event_describe}`;
+        message += ` ${e.event_describe}` ;
       }
 
       // 特別提示今天的行程
@@ -129,7 +129,7 @@ router.get("/:userId", async (req, res) => {
         article_id: e.he_pregnancy_id,
         title: e.title_hepregnancy,
         link: e.link_hepregnancy,
-        message: `您尚未閱讀「${e.title_hepregnancy}」孕期衛教`
+        // message: `您尚未閱讀「${e.title_hepregnancy}」孕期衛教`
       });
 
     });

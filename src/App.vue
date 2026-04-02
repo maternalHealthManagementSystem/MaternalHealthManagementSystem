@@ -200,54 +200,76 @@
       <div class="modal-window">
         <span class="close" @click="closeNotificationModal">×</span>
 
-        <div class="notifications-scroll-area">
-          <div v-if="checkupNotifications.length > 0">
-            <h2>🔔 近期行程提醒</h2>
-            <div v-for="n in checkupNotifications" :key="'checkup-' + n.id" style="margin-left: 15px; margin-bottom: 20px;">
-              <h3 style="margin-bottom: 5px; color: #57aee2;">{{ n.title }}</h3>
-              <p style="margin: 0; line-height: 1.6; font-weight: 500;">
-                日期：{{ formatDate(n.date) }}<br>
-                {{ n.message }}
-              </p>
+          <div class="notifications-scroll-area">
+            <div v-if="checkupNotifications.length > 0">
+              <h2>🔔 近期行程提醒({{ checkupNotifications.length }})</h2>
+              <div class="notify-card checkup" 
+                v-for="n in checkupNotifications" 
+                :key="'checkup-' + n.id"
+                @click="openEventDetail(n)">
+                <div class="notify-icon">📆</div>
+                <div class="notify-content">
+                  <div class="notify-title">
+                    <span>🕛 {{ formatDate(n.date) }} {{ n.title }}</span>
+                    <span class="days-remaining" :class="{ 'is-today': getDaysRemaining(n.date) === '今天' }">
+                      {{ getDaysRemaining(n.date) }}
+                    </span>
+                  </div>
+                  <div class="notify-msg">{{ n.message }}</div>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div v-if="educationNotifications.length > 0">
-            <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
-            <ul style="margin-left: 15px; padding-left: 20px; list-style-type: disc;">
-              <li v-for="n in educationNotifications" :key="'edu-' + n.id">
-                {{ n.message }}
-                <br>
-
-                <a
-                  href="#"
-                  @click.prevent="openEducation(n)"
-                  style="color:#57aee2;text-decoration:underline;font-size:0.95rem;"
+            
+            <div v-if="educationNotifications.length > 0">
+              <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
+              <div class="edu-grid">
+                <div 
+                  class="edu-grid-card" 
+                  v-for="n in educationNotifications" 
+                  :key="'edu-' + n.id"
+                  @click="openEducation(n)"
                 >
-                  查看衛教內容
-                </a>
-              </li>
-            </ul>
+                <span class="status-badge" :class="{ 'unread': !n.read }">
+                  ● 未讀
+                </span>
+                <div class="card-icon-wrapper">
+                  <i class="fi fi-rr-book-alt"></i>
+                </div>
+                <div class="card-title">{{ n.title || '衛教資訊' }}</div>
+              </div>
+            </div>
           </div>
           <div v-if="checkupNotifications.length === 0 && educationNotifications.length === 0" style="text-align: center; padding: 20px;">
           <p>目前暫無新提醒</p>
           </div>
         </div>
-        
         <button class="confirm-btn" @click="closeNotificationModal">
           確認
         </button>
       </div>
     </div>
   </div>
+
+<!-- 行程詳細資訊彈窗 -->
+<!-- <EventDetailModal
+  v-if="selectedEvent"
+  :show="showEventDetail"
+  :event="selectedEvent"
+  @close="closeEventDetail"
+  @delete="handleDeleteEvent"
+  @edit="handleEditEvent"
+/> -->
 </template>
 
 <script setup>
 import { ref, computed, onMounted,onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+// import EventDetailModal from './components/Calendar/EventDetailModal.vue';
 
 const route = useRoute();
 const router = useRouter();
+
+
 
 /* 基礎狀態 */
 
@@ -530,9 +552,195 @@ const openEducation = async (notification) => {
   }
 
 };
+
+// 計算距離今天還有幾天
+const getDaysRemaining = (dateStr) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 將時間歸零，只比對日期
+  
+  const targetDate = new Date(dateStr);
+  targetDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = targetDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return "今天";
+  if (diffDays < 0) return `已過 ${Math.abs(diffDays)} 天`;
+  return `還有 ${diffDays} 天`;
+};
+
 </script>
 
 <style scoped>
+.notify-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  position: relative;
+  background: #fff;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+  margin-top: 10px;
+  border-left: 4px solid #57aee2;
+  /* cursor: pointer; */
+}
+
+.notify-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  /* border-color: #e56767; */
+}
+
+/* 左側 icon */
+.notify-icon {
+  font-size: 22px;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* 內容 */
+.notify-content {
+  flex: 1;
+}
+
+.notify-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 讓標題與天數分開在兩頭 */
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+/* 天數標籤 */
+.days-remaining {
+  font-size: 12px;
+  background-color: #66b8d1;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  white-space: nowrap; 
+}
+
+/* 「今天」樣式 */
+.days-remaining.is-today {
+  background-color: #ff4d4f;
+  color: #ffffff;
+  animation: pulse 2s infinite; 
+}
+
+/* 調整卡片內的內容佈局，確保標題不會被擠壓 */
+.notify-content {
+  flex: 1;
+  min-width: 0; 
+}
+
+.notify-date {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.notify-msg {
+  font-size: 14px;
+  color: #444;
+}
+
+/* 衛教宮格容器佈局 */
+.edu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 兩欄佈局 */
+  gap: 12px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+/* 單張卡片樣式 */
+.edu-grid-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  padding: 20px 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+}
+
+.edu-grid-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: #57aee2;
+}
+
+/* 卡片內圖示 */
+.card-icon-wrapper {
+  width: 45px;
+  height: 45px;
+  background: #f0f7ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.card-icon-wrapper i {
+  font-size: 20px;
+  color: #57aee2;
+}
+
+/* 卡片標題 */
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.4;
+  /* 限制標題長度 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 未讀標籤 */
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  color: #ff4d4f;
+}
+
+.status-badge.unread {
+  background: #fff0f0;
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+/* RWD 調整：手機版改為單欄或縮小間距 */
+@media (max-width: 480px) {
+  .edu-grid {
+    gap: 8px;
+  }
+  .edu-grid-card {
+    padding: 15px 10px;
+  }
+}
+
 /* ===========================================================
    App.vue - 統一重構 RWD CSS
    =========================================================== */
