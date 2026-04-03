@@ -36,8 +36,9 @@ export const requestOtp = async (req, res) => {
     );
 
     if (!rows.length) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
+        code: 'USER_NOT_FOUND', 
         message: '身分證字號或手機號碼錯誤',
       });
     }
