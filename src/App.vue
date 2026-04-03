@@ -7,9 +7,11 @@
   <div class="app-container font-inter">
     <!-- 登入頁不顯示導覽列 -->
     <header v-if="showNavbar" class="top-bar">
+      <!-- 漢堡按鈕已移除 -->
+
       <div class="logo">孕產婦健康照護管理系統</div>
 
-      <!-- 桌面版導覽列  -->
+      <!-- 桌面版導覽列 - Desktop/Tablet Landscape Only -->
       <nav class="nav">
         <router-link to="/home">首頁</router-link>
         <router-link to="/prenatal">產檢紀錄專區</router-link>
@@ -32,7 +34,7 @@
       </nav>
 
       <div class="icons-group">
-        <!-- 通知圖標(桌面版only) -->
+        <!-- 通知圖標 - Desktop/Tablet Landscape Only -->
         <div
           class="notify-icon"
           @click="handleNotificationClick"
@@ -44,13 +46,13 @@
           </span>
         </div>
 
-        <!-- Profile圖標 (開啟右側邊欄) -->
+        <!-- Profile 圖標 (開啟右側邊欄) -->
         <div
           class="profile-icon"
           @click="openSidebar"
           aria-label="開啟個人資料側邊欄"
         >
-          <!-- 如果有頭像就顯示頭像，沒有就顯示圖標 -->
+          <!-- 如果有頭像就顯示頭像,沒有就顯示圖標 -->
           <img
             v-if="userAvatar"
             :src="userAvatar"
@@ -108,7 +110,7 @@
           </div>
         </div>
 
-        <!-- 行動版通知區塊 -->
+        <!-- 行動版通知區塊 (點擊後開啟 Modal) -->
         <div
           class="mobile-notify"
           @click="
@@ -160,7 +162,7 @@
           >
         </nav>
 
-        <!-- 個人資料按鈕 -->
+        <!-- 個人資料按鈕 (原 sidebar-menu) -->
         <div class="sidebar-menu">
           <button class="menu-btn" @click="goProfile">
             <i class="fi fi-sr-user" style="font-size: 18px"></i> 個人資料
@@ -179,7 +181,7 @@
     <!-- 登出確認視窗 -->
     <div v-if="showLogoutConfirm" class="logout-modal-overlay">
       <div class="logout-modal">
-        <!-- X 按鈕 -->
+        <!-- 上方標題列含 X 按鈕 -->
         <div class="logout-header">
           <span class="logout-title">是否登出</span>
           <button class="close-btn" @click="cancelLogout">&times;</button>
@@ -198,54 +200,76 @@
       <div class="modal-window">
         <span class="close" @click="closeNotificationModal">×</span>
 
-        <div class="notifications-scroll-area">
-          <div v-if="checkupNotifications.length > 0">
-            <h2>🔔 近期行程提醒</h2>
-            <div v-for="n in checkupNotifications" :key="'checkup-' + n.id" style="margin-left: 15px; margin-bottom: 20px;">
-              <h3 style="margin-bottom: 5px; color: #57aee2;">{{ n.title }}</h3>
-              <p style="margin: 0; line-height: 1.6; font-weight: 500;">
-                日期：{{ formatDate(n.date) }}<br>
-                {{ n.message }}
-              </p>
+          <div class="notifications-scroll-area">
+            <div v-if="checkupNotifications.length > 0">
+              <h2>🔔 近期行程提醒({{ checkupNotifications.length }})</h2>
+              <div class="notify-card checkup" 
+                v-for="n in checkupNotifications" 
+                :key="'checkup-' + n.id"
+                @click="openEventDetail(n)">
+                <div class="notify-icon">📆</div>
+                <div class="notify-content">
+                  <div class="notify-title">
+                    <span>🕛 {{ formatDate(n.date) }} {{ n.title }}</span>
+                    <span class="days-remaining" :class="{ 'is-today': getDaysRemaining(n.date) === '今天' }">
+                      {{ getDaysRemaining(n.date) }}
+                    </span>
+                  </div>
+                  <div class="notify-msg">{{ n.message }}</div>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div v-if="educationNotifications.length > 0">
-            <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
-            <ul style="margin-left: 15px; padding-left: 20px; list-style-type: disc;">
-              <li v-for="n in educationNotifications" :key="'edu-' + n.id">
-                {{ n.message }}
-                <br>
-
-                <a
-                  href="#"
-                  @click.prevent="openEducation(n)"
-                  style="color:#57aee2;text-decoration:underline;font-size:0.95rem;"
+            
+            <div v-if="educationNotifications.length > 0">
+              <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
+              <div class="edu-grid">
+                <div 
+                  class="edu-grid-card" 
+                  v-for="n in educationNotifications" 
+                  :key="'edu-' + n.id"
+                  @click="openEducation(n)"
                 >
-                  查看衛教內容
-                </a>
-              </li>
-            </ul>
+                <span class="status-badge" :class="{ 'unread': !n.read }">
+                  ● 未讀
+                </span>
+                <div class="card-icon-wrapper">
+                  <i class="fi fi-rr-book-alt"></i>
+                </div>
+                <div class="card-title">{{ n.title || '衛教資訊' }}</div>
+              </div>
+            </div>
           </div>
           <div v-if="checkupNotifications.length === 0 && educationNotifications.length === 0" style="text-align: center; padding: 20px;">
           <p>目前暫無新提醒</p>
           </div>
         </div>
-        
         <button class="confirm-btn" @click="closeNotificationModal">
           確認
         </button>
       </div>
     </div>
   </div>
+
+<!-- 行程詳細資訊彈窗 -->
+<!-- <EventDetailModal
+  v-if="selectedEvent"
+  :show="showEventDetail"
+  :event="selectedEvent"
+  @close="closeEventDetail"
+  @delete="handleDeleteEvent"
+  @edit="handleEditEvent"
+/> -->
 </template>
 
 <script setup>
 import { ref, computed, onMounted,onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
+// import EventDetailModal from './components/Calendar/EventDetailModal.vue';
 
 const route = useRoute();
 const router = useRouter();
+
+
 
 /* 基礎狀態 */
 
@@ -337,24 +361,24 @@ const logout = () => {
 const confirmLogout = () => {
   console.log("正在執行登出程序...");
   
-  // 關閉 UI 元件
+  // 1. 關閉 UI 元件
   isSidebarOpen.value = false;
   showLogoutConfirm.value = false;
 
-  // 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
+  // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
   sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
   localStorage.removeItem("token"); // 如果有使用 localStorage 儲存 JWT，這裡也要清除
   router.push("/").then(() => {
     window.location.reload();
   });
 
-  // 重置本頁變數狀態
+  // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
   userAvatar.value = "";
 
   console.log("SessionStorage 已清理，跳轉至登入頁");
 
-  // 跳轉並重整 (確保狀態完全乾淨)
+  // 5. 跳轉並重整 (確保狀態完全乾淨)
   router.push("/").then(() => {
     window.location.reload(); 
   });
@@ -367,7 +391,7 @@ const cancelLogout = () => {
 onMounted(async () => {
   loadUserData();
 
-  await fetchNotifications(); // 頁面載入時取得通知
+  await fetchNotifications(); // ⭐ 頁面載入時取得通知
   setInterval(fetchNotifications, 300000); // 每5分鐘自動更新通知
 
   window.addEventListener("user-data-updated", loadUserData);
@@ -379,13 +403,13 @@ onUnmounted(() => {
 });
 
 /* -----------------------------
-    監聽路由變化：處理首頁通知與自動關閉側邊欄
+   自動行為：換頁處理與通知彈窗
 ----------------------------- */
 watch(
   () => route.path,
   async (newPath) => {
     loadUserData();
-    // 處理「剛登入後第一次進首頁」的彈窗通知
+    // 1. 處理「剛登入後第一次進首頁」的彈窗通知
     if (newPath === "/home") {
       // 統一檢查 sessionStorage 中的旗標
       const justLoggedIn = sessionStorage.getItem("justLoggedIn");
@@ -405,7 +429,7 @@ watch(
       }
     }
 
-    // 換頁時自動關閉側邊欄
+    // 2. 換頁時自動關閉側邊欄
     closeSidebar();
   },
   { immediate: true }
@@ -450,21 +474,23 @@ const fetchNotifications = async () => {
   const user = JSON.parse(userStr);
 
   try {
+    // 1. 抓取個人資料 (Port 3000)
+    // 根據你的 server.js，路徑應為 /api/personal_information/
     const profileRes = await fetch(`http://localhost:3000/api/personal_information/${user.user_id}`);
     const profileData = await profileRes.json();
     
-    // 檢查 API 是否成功回傳
+    // 2. 檢查 API 是否成功回傳
     if (profileData.success && profileData.data.lmpDate) {
-
+      // 使用正確的變數 profileData 以及正確的欄位 lmpDate
       const currentWeek = getPregnancyWeek(profileData.data.lmpDate);
       
       console.log(`[通知檢查] 使用者:${user.user_id}, 目前週數:${currentWeek}`);
 
-      // 抓取通知 (從Port 3002)
+      // 3. 抓取通知 (Port 3002)
       const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`);
       const data = await res.json();
 
-      // 更新前端狀態
+      // 4. 更新前端狀態
       notifications.value = data.map((n, index) => ({
         id: index + 1,
         ...n,
@@ -526,10 +552,198 @@ const openEducation = async (notification) => {
   }
 
 };
+
+// 計算距離今天還有幾天
+const getDaysRemaining = (dateStr) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // 將時間歸零，只比對日期
+  
+  const targetDate = new Date(dateStr);
+  targetDate.setHours(0, 0, 0, 0);
+  
+  const diffTime = targetDate - today;
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return "今天";
+  if (diffDays < 0) return `已過 ${Math.abs(diffDays)} 天`;
+  return `還有 ${diffDays} 天`;
+};
+
 </script>
 
 <style scoped>
+.notify-card {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 10px;
+  position: relative;
+  background: #fff;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  transition: all 0.2s ease;
+  margin-top: 10px;
+  border-left: 4px solid #57aee2;
+  /* cursor: pointer; */
+}
 
+.notify-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  /* border-color: #e56767; */
+}
+
+/* 左側 icon */
+.notify-icon {
+  font-size: 22px;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* 內容 */
+.notify-content {
+  flex: 1;
+}
+
+.notify-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 讓標題與天數分開在兩頭 */
+  font-weight: 700;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+/* 天數標籤 */
+.days-remaining {
+  font-size: 12px;
+  background-color: #66b8d1;
+  color: #ffffff;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 600;
+  margin-left: 8px;
+  white-space: nowrap; 
+}
+
+/* 「今天」樣式 */
+.days-remaining.is-today {
+  background-color: #ff4d4f;
+  color: #ffffff;
+  animation: pulse 2s infinite; 
+}
+
+/* 調整卡片內的內容佈局，確保標題不會被擠壓 */
+.notify-content {
+  flex: 1;
+  min-width: 0; 
+}
+
+.notify-date {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.notify-msg {
+  font-size: 14px;
+  color: #444;
+}
+
+/* 衛教宮格容器佈局 */
+.edu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 兩欄佈局 */
+  gap: 12px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+/* 單張卡片樣式 */
+.edu-grid-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #eef2f6;
+  border-radius: 16px;
+  padding: 20px 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+}
+
+.edu-grid-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  border-color: #57aee2;
+}
+
+/* 卡片內圖示 */
+.card-icon-wrapper {
+  width: 45px;
+  height: 45px;
+  background: #f0f7ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.card-icon-wrapper i {
+  font-size: 20px;
+  color: #57aee2;
+}
+
+/* 卡片標題 */
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  line-height: 1.4;
+  /* 限制標題長度 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 未讀標籤 */
+.status-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  color: #ff4d4f;
+}
+
+.status-badge.unread {
+  background: #fff0f0;
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
+/* RWD 調整：手機版改為單欄或縮小間距 */
+@media (max-width: 480px) {
+  .edu-grid {
+    gap: 8px;
+  }
+  .edu-grid-card {
+    padding: 15px 10px;
+  }
+}
+
+/* ===========================================================
+   App.vue - 統一重構 RWD CSS
+   =========================================================== */
 .font-inter {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
@@ -537,7 +751,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   基礎 layout
+   Base layout
    --------------------------- */
 .app-container {
   min-height: 100vh;
@@ -552,7 +766,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Navbar (桌面版優先樣式)
+   Navbar (桌機優先樣式)
    --------------------------- */
 .top-bar {
   display: flex;
@@ -578,7 +792,7 @@ const openEducation = async (notification) => {
 /* nav */
 .nav {
   display: flex;
-  gap: 2rem; /* 增加連結間距 */
+  gap: 2rem;
   align-items: center;
   flex: 1;
   justify-content: center; /* 桌面版導覽列置中 */
@@ -615,7 +829,7 @@ const openEducation = async (notification) => {
 }
 
 
-/* icons group (桌面版時靠右) */
+/* icons group (桌機時靠右) */
 .icons-group {
   display: flex;
   gap: 14px;
@@ -682,7 +896,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Sidebar (行動版選單)
+   Sidebar (右側 Unified Menu)
    --------------------------- */
 .sidebar-overlay {
   position: fixed;
@@ -751,7 +965,7 @@ const openEducation = async (notification) => {
   font-size: 0.9rem;
 }
 
-/* 行動版通知區塊 */
+/* 行動版通知區塊 (取代原 mobile-nav 內通知) */
 .mobile-notify {
   display: flex;
   align-items: center;
@@ -907,7 +1121,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   Modals (登出確認 & 通知提醒)
+   Modals (Logout Confirmation & Notification)
    --------------------------- */
 .logout-modal-overlay,
 .modal-overlay {
@@ -995,7 +1209,7 @@ const openEducation = async (notification) => {
   background: #e0e0e0;
 }
 .confirm-btn {
-  background: #758ecd; 
+  background: #758ecd; /* 確認按鈕顏色改為藍色系 */
   color: #fff;
   font-size: 16px;
 }
@@ -1003,7 +1217,7 @@ const openEducation = async (notification) => {
   background: #627cb2;
 }
 .logout-actions .confirm-btn {
-  background: #e63946; 
+  background: #e63946; /* 登出確認按鈕維持紅色 */
 }
 .logout-actions .confirm-btn:hover {
   background: #d62f3a;
@@ -1059,7 +1273,9 @@ const openEducation = async (notification) => {
   text-decoration: none;
   font-size: 16px;
 }
-
+/* .dropdown-content a:hover {
+  background: #f0f0f0;
+} */
 
 /* 滑鼠 hover 顯示下拉 */
 .dropdown:hover .dropdown-content {
@@ -1068,20 +1284,20 @@ const openEducation = async (notification) => {
 
 .dropdown:hover .dropbtn::after {
   width: 100%; /* 確保下拉選單展開時底線一直存在 */
-  background: #aaa; /* 下拉展開時底線顏色 */
+  background: #aaa; /* 可以使用與 router-link-active 不同的顏色來區分 */
 }
 
+/* 確保當 .dropbtn 已經是 active 時，:hover 樣式不會覆蓋它的顏色 */
 .dropdown:hover .dropbtn.active::after  {
     /* 確保 active 狀態優先 */
-    background: #000; /* active 時底線顏色 */
+    background: #000; /* 假設您希望 active 顏色與 Logo 一致 */
 }
 
 /* 衛教資訊專區 - 強制 active*/
 .dropbtn.active {
   font-weight: 600;
 }
-
-/* 衛教資訊專區 active 狀態下的底線 */
+/* 讓dropbtn跟router-link-active一樣的底線效果 */
 .dropbtn.active::after {
   content: "";
   position: absolute;
@@ -1096,7 +1312,7 @@ const openEducation = async (notification) => {
 .notifications-scroll-area {
   max-height: 400px;    /* 設定最大高度，超過則出現卷軸 */
   overflow-y: auto;     /* 垂直方向自動出現卷軸 */
-  padding-right: 10px;  
+  padding-right: 10px;  /* 留一點空間給卷軸，避免擋到文字 */
   margin-bottom: 15px;
   
 }
@@ -1120,7 +1336,7 @@ const openEducation = async (notification) => {
 .notification-item {
   margin-left: 5px; 
   margin-bottom: 20px;
-  border-left: 3px solid #57aee2; 
+  border-left: 3px solid #57aee2; /* 增加左側條紋增加辨識度 */
   padding-left: 12px;
 }
 .notification-item h3 {
@@ -1162,7 +1378,7 @@ const openEducation = async (notification) => {
 
 
 /* ---------------------------
-    平板版 (max-width: 1024px)
+    Responsive Breakpoints 
    --------------------------- */
 @media (max-width: 1024px) {
   .nav {
@@ -1186,7 +1402,8 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-   手機版 (max-width: 768px)
+   Mobile Landscape & Tablet Portrait (max-width: 768px)
+   - 主要行動裝置 UI 模式
    --------------------------- */
 @media (max-width: 768px) {
   /* Header 佈局變更 */
@@ -1230,7 +1447,7 @@ const openEducation = async (notification) => {
 }
 
 /* ---------------------------
-    超小螢幕 (max-width: 420px)
+   Extra Small Mobile (max-width: 420px)
    --------------------------- */
 @media (max-width: 420px) {
   .logo {
