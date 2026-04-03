@@ -21,24 +21,33 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
-    console.log("收到錯誤回應:", err.response?.status);
+    // 取得請求的 URL
+    const config = err.config;
+    const status = err.response?.status;
 
-    // 處理網路斷線或無回應
+    // 1. 處理網路斷線或無回應
     if (!err.response) {
       ElMessage.error("網路異常，請檢查連線");
       return Promise.reject(err);
     }
 
-    const status = err.response.status;
+    // 2. 判斷是否為「登入/身分驗證」相關的 API 請求
+    // 如果是 auth 相關路徑，不執行全局的 401 彈窗邏輯
+    const isAuthRequest = config.url.includes('/api/auth/');
 
-    // 處理 401 (Token 過期) 或 403 (無權限)
+    // 3. 處理 401 (Token 過期) 或 403 (無權限)
     if ((status === 401 || status === 403) && !isRedirecting) {
-      console.log("偵測到 Token 過期，準備彈窗...");
+      
+      // 重要：如果是登入請求發生的 401 (代表身分證/電話錯誤)，直接回傳 Error
+      if (isAuthRequest) {
+        return Promise.reject(err);
+      }
 
-      isRedirecting = true; // 鎖定，防止多個請求同時失敗彈出多個視窗
+      // 只有在「非登入頁面」且「有 Token 但過期」的情況下才彈窗
+      console.log("偵測到 Token 過期，準備彈窗...");
+      isRedirecting = true; 
 
       try {
-        // 使用 await 確保使用者點擊「確定」後才執行後續動作
         await ElMessageBox.alert(
           "登入已逾時，請重新登入",
           "系統通知",
@@ -46,16 +55,14 @@ api.interceptors.response.use(
             confirmButtonText: "確定",
             type: "warning",
             callback: () => {
-              // 點擊確定後的執行邏輯
               localStorage.removeItem("token");
-              sessionStorage.clear(); // 清除暫存資訊
+              sessionStorage.clear(); 
               isRedirecting = false;
               router.push("/login");
             }
           }
         );
       } catch (error) {
-        // 如果使用者直接關閉視窗也要處理
         isRedirecting = false;
         router.push("/login");
       }
@@ -63,7 +70,12 @@ api.interceptors.response.use(
       return Promise.reject(err);
     } 
 
-    // 處理 500 以上錯誤
+    // 4. 處理 429 頻率限制 (如果不是 auth 請求才在這邊處理，auth 請求由頁面處理)
+    if (status === 429 && !isAuthRequest) {
+      ElMessage.warning("操作過於頻繁，請稍後再試");
+    }
+
+    // 5. 處理 500 以上錯誤
     if (status >= 500) {
       ElMessage.error("伺服器錯誤，請稍後再試");
     }
