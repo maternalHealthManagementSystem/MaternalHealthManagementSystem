@@ -103,14 +103,67 @@
         <button class="modal-close" @click="closeModal">×</button>
         
         <div class="modal-content">
+          <h3 class="result-title">評估總分</h3>
           <div class="score-circle" :class="scoreStatusClass">
             {{ totalScore }}
           </div>
-          <h3 class="result-title">評估總分</h3>
-          
-          <div class="result-message-box">
+
+          <div class="result-message-box" :class="messageBoxBgClass">
             <p class="message-text">{{ resultMessage }}</p>
           </div>
+          
+          <div v-if="previousScore !== null" class="trend-section">
+            <div class="trend-summary">
+              <div class="trend-text">
+                與上次測驗相比，您的分數 <span :class="trendClass">{{ trendText }}</span>
+              </div>
+              <div class="prev-score-hint">
+                （上次分數：{{ previousScore }} 分）
+              </div>
+            </div>
+
+            <p class="trend-encouragement">{{ trendEncouragement }}</p>
+            
+            <div class="svg-chart-container">
+              <svg viewBox="0 0 400 200" class="trend-svg" preserveAspectRatio="xMidYMid meet">
+                <g class="grid-lines">
+                  <line x1="40" y1="20" x2="380" y2="20" stroke="#e2e8f0" stroke-dasharray="4" />
+                  <text x="30" y="24" font-size="12" fill="#a0aec0" text-anchor="end">30</text>
+                  
+                  <line x1="40" y1="80" x2="380" y2="80" stroke="#e2e8f0" stroke-dasharray="4" />
+                  <text x="30" y="84" font-size="12" fill="#a0aec0" text-anchor="end">20</text>
+                  
+                  <line x1="40" y1="140" x2="380" y2="140" stroke="#e2e8f0" stroke-dasharray="4" />
+                  <text x="30" y="144" font-size="12" fill="#a0aec0" text-anchor="end">10</text>
+                  
+                  <line x1="40" y1="180" x2="380" y2="180" stroke="#cbd5e0" />
+                  <text x="30" y="184" font-size="12" fill="#a0aec0" text-anchor="end">0</text>
+                </g>
+
+                <defs>
+                  <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#3498db" stop-opacity="0.3" />
+                    <stop offset="100%" stop-color="#3498db" stop-opacity="0.0" />
+                  </linearGradient>
+                </defs>
+
+                <path v-if="areaPath" :d="areaPath" fill="url(#areaGradient)" />
+
+                <path v-if="linePath" :d="linePath" fill="none" stroke="#3498db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+                <g v-for="(point, index) in chartPoints" :key="index">
+                  <circle :cx="point.x" :cy="point.y" r="5" fill="#ffffff" stroke="#3498db" stroke-width="2" />
+                  <text :x="point.x" :y="point.y - 12" font-size="14" font-weight="bold" fill="#2d3748" text-anchor="middle">
+                    {{ point.score }}
+                  </text>
+                  <text :x="point.x" :y="195" font-size="12" fill="#718096" text-anchor="middle">
+                    {{ point.label }}
+                  </text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -269,11 +322,11 @@ const totalScore = computed(() => {
 const resultMessage = computed(() => {
   const score = totalScore.value;
   if (score >= 13) {
-    return '您的分數偏高，顯示您可能有產後憂鬱的傾向，強烈建議您儘快尋求專科醫師的協助與處理。';
+    return '您的身心健康狀況可能需要醫療專業的協助，請找專業醫師協助處理。';
   } else if (score >= 10) {
-    return '您的情緒狀態需多加注意，建議近期內再次進行評估，或諮詢專科醫師進行追蹤。';
+    return '請注意~您目前狀況可能有情緒困擾，讓您與身旁的人多聊聊，給心情一個出口，必要時可尋求專業人員協助。';
   } else {
-    return '目前情緒狀態穩定，請繼續保持愉悅的心情，並適度休息。';
+    return '您的身心狀況不錯，請繼續維持。';
   }
 });
 
@@ -285,6 +338,112 @@ const scoreStatusClass = computed(() => {
   return 'status-normal';
 });
 
+// 計算結果建議區塊的背景顏色 Class
+const messageBoxBgClass = computed(() => {
+  const score = totalScore.value;
+  if (score >= 13) return 'bg-danger-light';
+  if (score >= 10) return 'bg-warning-light';
+  return 'bg-normal-light';
+});
+
+// 歷史紀錄與圖表狀態
+const pastHistoryData = ref([]);
+const previousScore = ref(null);
+
+// 計算趨勢文字
+const trendText = computed(() => {
+  if (previousScore.value === null) return '';
+  const diff = totalScore.value - previousScore.value;
+  if (diff > 0) return `上升了 ${diff} 分`;
+  if (diff < 0) return `下降了 ${Math.abs(diff)} 分`;
+  return '持平';
+});
+
+// 計算趨勢顏色
+const trendClass = computed(() => {
+  if (previousScore.value === null) return '';
+  const diff = totalScore.value - previousScore.value;
+  if (diff > 0) return 'trend-up-danger'; 
+  if (diff < 0) return 'trend-down-good'; 
+  return 'trend-flat';
+});
+
+// 計算趨勢專屬鼓勵語
+const trendEncouragement = computed(() => {
+  if (previousScore.value === null) return '';
+  
+  const diff = totalScore.value - previousScore.value;
+  
+  if (diff < 0) {
+    // 分數下降：情況好轉
+    return '太棒了！看起來您最近的心情與狀態有所好轉，這陣子辛苦了，請繼續保持愉悅的心情哦～';
+  } else if (diff > 0) {
+    // 分數上升：情況變差
+    return '最近是不是感覺比較累呢？分數稍微上升了一些，但請別氣餒，情緒有起伏是非常正常的，照顧寶寶很耗費心力，請記得給自己多一點喘息的時間，需要時一定要向身邊的人尋求協助。';
+  } else {
+    // 分數持平
+    return '您的分數和上次相同，每天面對懷孕或育兒的各種挑戰，維持現狀十分不容易，您已經做得很好了！';
+  }
+});
+
+// 整合歷史紀錄與本次分數
+const chartData = computed(() => {
+  // 將所有歷史紀錄轉換格式，並保留原本的「第 X 次」真實序號
+  const data = pastHistoryData.value.map((item, index) => ({
+    label: `第 ${index + 1} 次`,
+    score: item.score
+  }));
+  // 加入本次的分數
+  data.push({
+    label: '本次',
+    score: totalScore.value
+  });
+
+  // 避免圖表太擠，最多只顯示「最近 7 次」的趨勢
+  const MAX_DISPLAY = 7; 
+  if (data.length > MAX_DISPLAY) {
+    // 如果總次數超過 7 次，就只切出陣列的最後 7 筆來畫圖
+    return data.slice(-MAX_DISPLAY); 
+  }
+  return data;
+});
+
+// 計算每個資料點在 SVG 中的 X, Y 座標
+const chartPoints = computed(() => {
+  const data = chartData.value;
+  if (data.length === 0) return [];
+  
+  const width = 340; 
+  const height = 160; 
+  const padLeft = 40;
+  const padTop = 20;
+  const maxScaleScore = 30; 
+
+  return data.map((item, index) => {
+    const x = data.length === 1 
+      ? padLeft + width / 2 
+      : padLeft + (index / (data.length - 1)) * width;
+    const y = padTop + height - (item.score / maxScaleScore) * height;
+    return { ...item, x, y };
+  });
+});
+
+// 計算折線的 SVG 路徑
+const linePath = computed(() => {
+  const points = chartPoints.value;
+  if (points.length === 0) return '';
+  return points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(' ');
+});
+
+// 計算下方漸層區域的 SVG 路徑
+const areaPath = computed(() => {
+  const points = chartPoints.value;
+  if (points.length === 0) return '';
+  const first = points[0];
+  const last = points[points.length - 1];
+  const baseY = 180; 
+  return `${linePath.value} L ${last.x} ${baseY} L ${first.x} ${baseY} Z`;
+});
 
 const submitForm = async () => {
   if (!form.identity || !form.date) {
@@ -317,6 +476,32 @@ const submitForm = async () => {
     if (result.success) {
       // 成功後顯示彈窗
       showResultModal.value = true;
+      // 呼叫後端 API 獲取歷史分數
+      try {
+        // 呼叫在後端建立的新 API
+        const historyRes = await fetch(`http://localhost:3000/api/edinburgh_history/${userId}`);
+        const historyResult = await historyRes.json();
+
+        if (historyResult.success && historyResult.data && historyResult.data.length > 0) {
+          const allRecords = historyResult.data;
+          
+          //「本次」測驗已經寫入資料庫， allRecords 的最後一筆就是「本次」的分數。
+          // 把最後一筆切掉 (slice(0, -1))，剩下的才算是「過去的紀錄」。
+          if (allRecords.length > 1) {
+            const pastRecords = allRecords.slice(0, -1); 
+            pastHistoryData.value = pastRecords;
+            
+            // 取出過去紀錄中的最後一筆，作為「上次測驗分數」
+            previousScore.value = pastRecords[pastRecords.length - 1].score;
+          } else {
+            // 如果長度只有 1，代表這是使用者的「第一次測驗」，還沒有過去的紀錄
+            pastHistoryData.value = [];
+            previousScore.value = null;
+          }
+        }
+      } catch (err) {
+        console.error("取得歷史分數失敗:", err);
+      }
     } else {
       alert("儲存失敗：" + result.message);
     }
@@ -483,7 +668,7 @@ const closeModal = () => {
 
 .modal-box {
   background-color: white;
-  width: 360px;
+  width: 440px;
   padding: 40px 30px;
   border-radius: 8px;
   position: relative;
@@ -523,19 +708,77 @@ const closeModal = () => {
 }
 
 .result-message-box {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  text-align: left;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  text-align: center;
+  font-weight: bold;
 }
 
+/* 根據分數給予不同底色 */
+.bg-normal-light { background-color: #e6f6e9; color: #27ae60; }
+.bg-warning-light { background-color: #fdf3e8; color: #d35400; }
+.bg-danger-light { background-color: #fdedec; color: #c0392b; }
+
 .message-text {
-  color: #555;
   line-height: 1.6;
   margin: 0;
 }
 
+/* ==========================================
+   趨勢圖表區塊樣式
+   ========================================== */
+.trend-section {
+  padding-top: 25px;
+  border-top: 2px dashed #e2e8f0; /* 明確的視覺分隔線 */
+}
+
+/* 趨勢文字置中排版 */
+.trend-summary {
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+.trend-text {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4a5568;
+  margin-bottom: 6px;
+}
+
+.prev-score-hint {
+  font-size: 14px;
+  color: #a0aec0;
+}
+
+.trend-up-danger { color: #e53e3e; }
+.trend-down-good { color: #38a169; }
+.trend-flat { color: #718096; }
+
+.svg-chart-container {
+  width: 100%;
+  height: auto;
+  margin-top: 15px;
+}
+
+.trend-svg {
+  width: 100%;
+  height: 200px;
+  display: block;
+}
+
+/* 鼓勵語樣式微調 */
+.trend-encouragement {
+  font-size: 14px;
+  color: #4a5568;
+  background-color: #f8fafc;
+  padding: 12px 15px;
+  border-radius: 6px;
+  margin: 0 0 20px 0;
+  line-height: 1.6;
+  text-align: left;
+  border-left: 4px solid #3498db;
+}
 
 /* =========================================
    2. iPad Air & Tablet (寬度 769px ~ 1024px)
@@ -656,6 +899,10 @@ const closeModal = () => {
   .modal-box {
     width: 85%; /* 改為百分比寬度 */
     padding: 30px 20px;
+  }
+  /*圖表高度微調*/
+  .trend-svg {
+    height: 160px;
   }
 }
 </style>
