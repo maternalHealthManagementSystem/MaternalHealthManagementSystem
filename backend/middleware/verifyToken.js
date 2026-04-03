@@ -19,6 +19,6 @@ export default function verifyToken(req, res, next) {
     next();
   } catch (err) {
     console.log("headers:", req.headers.authorization);
-    return res.status(403).json({ message: "Token 無效" });
+    return res.status(401).json({ message: "Token 已過期" });
   }
 }

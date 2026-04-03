@@ -25,7 +25,7 @@
         <p class="error-text" v-if="phoneError">{{ phoneError }}</p>
       </div>
 
-      <button v-show="showIdPhone" @click="verification">傳送OTP驗證碼至 Email</button>
+      <button v-show="showIdPhone" @click="verification" :disabled="isCounting || isLoading">傳送OTP驗證碼至 Email</button>
 
       <div v-show="!showIdPhone">
 
@@ -59,6 +59,7 @@
 import { ref, onUnmounted } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
+import { ElMessage, ElMessageBox,ElLoading } from "element-plus";
 
 const router = useRouter();
 const demoMode = false; // 建議接後端時關閉 demo
@@ -92,10 +93,11 @@ const validatePhone = (phone) => {
 };
 
 // 1. 啟動倒數計時
-const startCountdown = () => {
+const startCountdown = (seconds = 60) => {
   if (timer) clearInterval(timer);
   isCounting.value = true;
-  countdown.value = 60;
+  countdown.value = seconds;
+
   timer = setInterval(() => {
     countdown.value--;
     if (countdown.value <= 0) {
@@ -106,13 +108,15 @@ const startCountdown = () => {
 };
 
 // 2. 第一步：請求驗證碼 (verification)
+const isLoading = ref(false);
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const verification = async () => {
   idError.value = "";
   phoneError.value = "";
 
   let hasError = false;
-  
-  // 檢查身分證
+
   if (!idNumber.value) {
     idError.value = "請輸入身分證字號";
     hasError = true;
@@ -121,7 +125,6 @@ const verification = async () => {
     hasError = true;
   }
 
-  // 檢查手機號碼
   if (!phoneNumber.value) {
     phoneError.value = "請輸入手機號碼";
     hasError = true;
@@ -130,38 +133,86 @@ const verification = async () => {
     hasError = true;
   }
 
-  // 如果有任一錯誤，停止向下執行
   if (hasError) return;
 
+  let loadingInstance;
+
   try {
+    isLoading.value = true;
+
+    // 開啟 loading
+    loadingInstance = ElLoading.service({
+      lock: true,
+      text: "驗證碼寄送中...",
+      background: "rgba(0, 0, 0, 0.5)",
+    });
+
+    const start = Date.now();
+
     const res = await api.post("/api/auth/request-otp", {
       national_id: idNumber.value,
       phone_number: phoneNumber.value,
     });
 
+    const elapsed = Date.now() - start;
+    if (elapsed < 500) {
+      await delay(500 - elapsed);
+    }
+
     if (res.data.success) {
       sessionStorage.setItem("temp_user_id", res.data.user_id);
+
       showIdPhone.value = false;
-      smsCode.value = ""; // 清空舊 OTP
+      smsCode.value = "";
+
       startCountdown();
     }
 
   } catch (err) {
-    // 從後端錯誤回應中提取訊息，並根據內容決定顯示在哪個欄位
-    const errorMsg = err.response?.data?.message || "發送失敗，請檢查資料";
-    
+    const status = err.response?.status;
+    const errorMsg = err.response?.data?.message || "發送失敗";
+
+    if (status === 429) {
+      const remaining = err.response?.data?.remaining || 60;
+
+      // 先關 loading
+      if (loadingInstance) loadingInstance.close();
+
+       // toast（立即提示）
+      ElMessage.warning(`請 ${remaining} 秒後再試`);
+
+      await ElMessageBox.alert(
+        `操作過於頻繁，請 ${remaining} 秒後再試`,
+        "系統提示",
+        { confirmButtonText: "知道了", type: "warning" }
+      );
+
+      startCountdown(remaining);
+      return;
+    }
+
+    if (!err.response) {
+      ElMessage.error("網路連線異常");
+      return;
+    }
+
     if (errorMsg.includes("身分證")) {
       idError.value = errorMsg;
     } else if (errorMsg.includes("手機")) {
       phoneError.value = errorMsg;
     } else {
-      idError.value = errorMsg; 
+      ElMessage.error(errorMsg);
     }
+
+  } finally {
+    isLoading.value = false;
+
+    // 關閉 loading
+    if (loadingInstance) loadingInstance.close();
   }
 };
 
 // 3. 第二步：驗證驗證碼並登入 (sendsms)
-// login.vue 中的 sendsms 函式
 const sendsms = async () => {
   const tempId = sessionStorage.getItem("temp_user_id"); 
   if (!tempId) {
