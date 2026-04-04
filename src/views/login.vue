@@ -25,20 +25,23 @@
         <p class="error-text" v-if="phoneError">{{ phoneError }}</p>
       </div>
 
-      <button v-show="showIdPhone" @click="verification">傳送OTP驗證碼至 Email</button>
+      <button v-show="showIdPhone" @click="verification" :disabled="isCounting || isLoading">傳送OTP驗證碼至 Email</button>
 
       <div v-show="!showIdPhone">
-
-        <p v-if="demoMode && demoSMSDisplay" style="color: red; font-size: 14px; margin-bottom: 10px;">
-          驗證碼：{{ demoSMSDisplay }}
-        </p>
-
-        <input
-          v-model="smsCode"
-          :class="{ error: smsError }"
-          type="text"
-          placeholder="請輸入驗證碼"
-        />
+        <label>驗證碼</label>
+        <div class="otp-container">
+          <input
+            v-for="(digit, index) in otpDigits"
+            :key="index"
+            ref="otpRefs"
+            v-model="otpDigits[index]"
+            maxlength="1"
+            class="otp-input"
+            @input="handleInput(index)"
+            @keydown="handleKeydown($event, index)"
+            @paste="handlePaste"
+          />
+        </div>
         <p class="error-text" v-if="smsError">{{ smsError }}</p>
         
         <button 
@@ -56,9 +59,10 @@
   </div>
 </template>
 <script setup>
-import { ref, onUnmounted } from "vue";
+import { ref, onUnmounted, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
+import { ElMessage, ElMessageBox,ElLoading } from "element-plus";
 
 const router = useRouter();
 const demoMode = false; // 建議接後端時關閉 demo
@@ -79,6 +83,10 @@ const idError = ref("");
 const phoneError = ref("");
 const smsError = ref("");
 
+// OTP輸入框相關
+const otpDigits = ref(["", "", "", "", "", ""]);
+const otpRefs = ref([]);
+
 // 驗證函式：身分證字號格式 (台灣標準：1位大寫字母 + 1位(1或2) + 8位數字)
 const validateId = (id) => {
   const re = /^[A-Z][12]\d{8}$/;
@@ -92,10 +100,11 @@ const validatePhone = (phone) => {
 };
 
 // 1. 啟動倒數計時
-const startCountdown = () => {
+const startCountdown = (seconds = 60) => {
   if (timer) clearInterval(timer);
   isCounting.value = true;
-  countdown.value = 60;
+  countdown.value = seconds;
+
   timer = setInterval(() => {
     countdown.value--;
     if (countdown.value <= 0) {
@@ -106,9 +115,44 @@ const startCountdown = () => {
 };
 
 // 2. 第一步：請求驗證碼 (verification)
+const isLoading = ref(false);
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const verification = async () => {
+  idNumber.value = idNumber.value.trim().toUpperCase();
+  phoneNumber.value = phoneNumber.value.trim();
+
   idError.value = "";
   phoneError.value = "";
+  let hasError = false;
+
+  // 驗證輸入
+  if (!idNumber.value) {
+    idError.value = "請輸入身分證字號";
+    hasError = true;
+  } else if (!validateId(idNumber.value)) {
+    idError.value = "身分證格式錯誤，首字需大寫（例：A123456789）";
+    hasError = true;
+  }
+
+  if (!phoneNumber.value) {
+    phoneError.value = "請輸入手機號碼";
+    hasError = true;
+  } else if (!validatePhone(phoneNumber.value)) {
+    phoneError.value = "手機格式錯誤，需為 09 開頭 10 碼";
+    hasError = true;
+  }if (!phoneNumber.value) {
+    phoneError.value = "請輸入手機號碼";
+    hasError = true;
+  } else if (!validatePhone(phoneNumber.value)) {
+    phoneError.value = "手機格式錯誤，需為 09 開頭 10 碼";
+    hasError = true;
+  }
+
+  if (hasError) return;
+
+  // 模擬loading請求延遲
+  let loadingInstance;
 
   let hasError = false;
   
@@ -134,29 +178,77 @@ const verification = async () => {
   if (hasError) return;
 
   try {
+    isLoading.value = true;
+
+    // 開啟 loading
+    loadingInstance = ElLoading.service({
+      lock: true,
+      text: "驗證碼寄送中...",
+      background: "rgba(0, 0, 0, 0.5)",
+    });
+
+    const start = Date.now();
+
     const res = await api.post("/api/auth/request-otp", {
       national_id: idNumber.value,
       phone_number: phoneNumber.value,
     });
 
+    const elapsed = Date.now() - start;
+    if (elapsed < 500) {
+      await delay(500 - elapsed);
+    }
+
     if (res.data.success) {
       sessionStorage.setItem("temp_user_id", res.data.user_id);
+
       showIdPhone.value = false;
-      smsCode.value = ""; // 清空舊 OTP
+      smsCode.value = "";
+
       startCountdown();
     }
 
   } catch (err) {
-    // 從後端錯誤回應中提取訊息，並根據內容決定顯示在哪個欄位
-    const errorMsg = err.response?.data?.message || "發送失敗，請檢查資料";
-    
+    const status = err.response?.status;
+    const errorMsg = err.response?.data?.message || "發送失敗";
+
+    if (status === 429) {
+      const remaining = err.response?.data?.remaining || 60;
+
+      // 先關 loading
+      if (loadingInstance) loadingInstance.close();
+
+       // toast（立即提示）
+      ElMessage.warning(`請 ${remaining} 秒後再試`);
+
+      await ElMessageBox.alert(
+        `操作過於頻繁，請 ${remaining} 秒後再試`,
+        "系統提示",
+        { confirmButtonText: "知道了", type: "warning" }
+      );
+
+      startCountdown(remaining);
+      return;
+    }
+
+    if (!err.response) {
+      ElMessage.error("網路連線異常");
+      return;
+    }
+
     if (errorMsg.includes("身分證")) {
       idError.value = errorMsg;
     } else if (errorMsg.includes("手機")) {
       phoneError.value = errorMsg;
     } else {
-      idError.value = errorMsg; 
+      ElMessage.error(errorMsg);
     }
+
+  } finally {
+    isLoading.value = false;
+
+    // 關閉 loading
+    if (loadingInstance) loadingInstance.close();
   }
 };
 
@@ -173,7 +265,7 @@ const sendsms = async () => {
   try {
     const res = await api.post("/api/auth/verify-otp", {
       user_id: tempId, 
-      otp: smsCode.value,
+      otp: getOtp(),
     });
 
     if (res.data.success) {
@@ -218,6 +310,66 @@ const resendPhoneInput = () => {
 // 組件卸載時清除計時器避免記憶體洩漏
 onUnmounted(() => {
   if (timer) clearInterval(timer);
+});
+
+
+// ----------------
+// OTP輸入框處理
+// ----------------
+
+// 組合成完整 OTP
+const getOtp = () => otpDigits.value.join("");
+
+// 自動跳下一格
+const handleInput = (index) => {
+  const val = otpDigits.value[index];
+
+  // 只允許數字
+  if (!/^\d$/.test(val)) {
+    otpDigits.value[index] = "";
+    return;
+  }
+
+  // 跳到下一格
+  if (index < 5) {
+    nextTick(() => {
+      otpRefs.value[index + 1].focus();
+    });
+  } else {
+    // 👉 最後一格 → 自動送出（可選）
+    sendsms();
+  }
+};
+
+// Backspace 處理
+const handleKeydown = (e, index) => {
+  if (e.key === "Backspace" && !otpDigits.value[index] && index > 0) {
+    nextTick(() => {
+      otpRefs.value[index - 1].focus();
+    });
+  }
+};
+
+// 貼上 OTP
+const handlePaste = (e) => {
+  const pasteData = e.clipboardData.getData("text").slice(0, 6);
+
+  if (!/^\d+$/.test(pasteData)) return;
+
+  pasteData.split("").forEach((char, i) => {
+    otpDigits.value[i] = char;
+  });
+
+  nextTick(() => {
+    otpRefs.value[Math.min(pasteData.length - 1, 5)].focus();
+  });
+};
+
+watch(showIdPhone, async (val) => {
+  if (!val) {
+    await nextTick();
+    otpRefs.value[0]?.focus();
+  }
 });
 </script>
 
@@ -336,6 +488,29 @@ button:hover {
   cursor: not-allowed !important;
   text-decoration: none !important; /* 移除底線 */
 }
+
+/* OTP輸入框樣式 */
+.otp-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.otp-input {
+  width: 45px;
+  height: 55px;
+  text-align: center;
+  font-size: 24px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+}
+
+.otp-input:focus {
+  border-color: #3b82f6;
+  outline: none;
+}
+
 /* 手機響應式調整 */
 @media (max-width: 480px) {
   .login-box {

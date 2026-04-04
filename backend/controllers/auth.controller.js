@@ -36,8 +36,9 @@ export const requestOtp = async (req, res) => {
     );
 
     if (!rows.length) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
+        code: 'USER_NOT_FOUND', 
         message: '身分證字號或手機號碼錯誤',
       });
     }
@@ -47,9 +48,12 @@ export const requestOtp = async (req, res) => {
     const existing = otpStore[user.user_id];
 
     if (existing && Date.now() < existing.cooldown) {
+      const remaining = Math.ceil((existing.cooldown - Date.now()) / 1000);
+
       return res.status(429).json({
         success: false,
-        message: "請稍後再試",
+        message: `請 ${remaining} 秒後再試`,
+        remaining
       });
     }
 
@@ -66,8 +70,9 @@ export const requestOtp = async (req, res) => {
     // 存入暫存（5分鐘有效）
     otpStore[user.user_id] = {
       otp,
-      expires: Date.now() + 5 * 60 * 1000,
-      cooldown: Date.now() + 60 * 1000, // 1分鐘內不能重複請求
+      expires: Date.now() + 5 * 60 * 1000, // 5 分鐘後過期
+      cooldown: Date.now() + 60 * 1000, // 同一個使用者
+      attempts: 0
     };
     
     // 寄送 OTP 到使用者 Email
@@ -131,10 +136,19 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
+    if (record.attempts >= 5) {
+      delete otpStore[user_id];
+      return res.status(429).json({
+        success: false,
+        message: "驗證次數過多，請重新取得驗證碼"
+      });
+    }
+
     if (record.otp !== otp) {
+      record.attempts++;
       return res.status(400).json({
         success: false,
-        message: '驗證碼錯誤',
+        message: "驗證碼錯誤"
       });
     }
 
@@ -180,3 +194,5 @@ export const verifyOtp = async (req, res) => {
     });
   }
 };
+
+

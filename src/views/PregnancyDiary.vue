@@ -279,8 +279,8 @@ function handleEditEvent(event) {
 // 處理儲存編輯後的行程事件
 async function handleSaveEvent(updatedEvent) {
     console.log('儲存編輯行程:', updatedEvent)
+    // *** 呼叫 Store 的 Action ***
     await calendarStore.updateEvent(updatedEvent)
-    selectedEvent.value = { ...updatedEvent }
     alert('行程已更新！')
 
     showEditForm.value = false
