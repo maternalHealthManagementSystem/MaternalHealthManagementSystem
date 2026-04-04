@@ -99,6 +99,7 @@ const validatePhone = (phone) => {
   return re.test(phone);
 };
 
+
 // 1. 啟動倒數計時
 const startCountdown = (seconds = 60) => {
   if (timer) clearInterval(timer);
@@ -153,29 +154,6 @@ const verification = async () => {
 
   // 模擬loading請求延遲
   let loadingInstance;
-
-  let hasError = false;
-  
-  // 檢查身分證
-  if (!idNumber.value) {
-    idError.value = "請輸入身分證字號";
-    hasError = true;
-  } else if (!validateId(idNumber.value.toUpperCase())) {
-    idError.value = "身分證格式錯誤（例：A123456789）";
-    hasError = true;
-  }
-
-  // 檢查手機號碼
-  if (!phoneNumber.value) {
-    phoneError.value = "請輸入手機號碼";
-    hasError = true;
-  } else if (!validatePhone(phoneNumber.value)) {
-    phoneError.value = "手機格式錯誤（例：0912345678）";
-    hasError = true;
-  }
-
-  // 如果有任一錯誤，停止向下執行
-  if (hasError) return;
 
   try {
     isLoading.value = true;
@@ -253,7 +231,6 @@ const verification = async () => {
 };
 
 // 3. 第二步：驗證驗證碼並登入 (sendsms)
-// login.vue 中的 sendsms 函式
 const sendsms = async () => {
   const tempId = sessionStorage.getItem("temp_user_id"); 
   if (!tempId) {
