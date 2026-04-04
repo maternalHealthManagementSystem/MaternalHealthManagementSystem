@@ -347,7 +347,35 @@ app.post("/api/submit_edinburgh", async (req, res) => {
   }
 });
 
+// 獲取特定使用者的愛丁堡量表歷史分數 (GET) - 用於繪製趨勢圖
+app.get("/api/edinburgh_history/:user_id", async (req, res) => {
+  const { user_id } = req.params;
 
+  try {
+    // 關聯 assessment_history (主表) 與 edinburgh_history_detail (明細表)
+    // 並依照提交時間由舊到新排序 (ASC)，讓圖表由左至右繪製
+    const sql = `
+      SELECT 
+        DATE_FORMAT(h.assessment_submit_datetime, '%Y-%m-%d') AS date,
+        d.total_score AS score
+      FROM assessment_history h
+      JOIN edinburgh_history_detail d ON h.assessment_response_id = d.assessment_history_assessment_response_id
+      WHERE h.personal_informations_user_id = ?
+      ORDER BY h.assessment_submit_datetime ASC
+    `;
+    
+    const [rows] = await db.query(sql, [user_id]);
+    
+    res.json({
+      success: true,
+      data: rows // 回傳格式會是 [{ date: '2025-10-15', score: 9 }, ...]
+    });
+
+  } catch (error) {
+    console.error("查詢愛丁堡歷史分數趨勢錯誤：", error);
+    res.status(500).json({ success: false, message: "伺服器讀取歷史紀錄失敗" });
+  }
+});
 
 // 提交產前照護衛教紀錄表 (POST)
 app.post("/api/submit_prenatal", async (req, res) => {
