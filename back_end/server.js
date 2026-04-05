@@ -1,13 +1,22 @@
-require('dotenv').config();
-const express = require('express');
-const cloudinary = require('cloudinary').v2;
-const multer = require('multer');
-const mysql = require('mysql2');
-const cors = require('cors');
-const upload = multer({ dest: 'temp/' }); // 設定暫存目錄
-const fs = require('fs');
+import dotenv from 'dotenv';
+import express from 'express';
+import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
+import mysql from 'mysql2/promise';
+import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
+import  authMiddleware from "./middleware/authMiddleware.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+dotenv.config();
 const app = express();
+const upload = multer({ dest: 'temp/' });
+
 app.use(cors());
 app.use(express.json());
 
@@ -39,13 +48,13 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
-}).promise();
+});
 
 // API 路由 
 
 // 取得特定使用者的行程
-app.get('/api/schedule/:userId', async (req, res) => {
-    const userId = req.params.userId; 
+app.get('/api/schedule',authMiddleware, async (req, res) => {
+    const userId = req.user.user_id; 
     try {
         const [events] = await db.query(
             "SELECT * FROM schedule WHERE personal_informations_user_id = ?", 
@@ -65,8 +74,10 @@ app.get('/api/schedule/:userId', async (req, res) => {
 });
 
 // 新增行程 
-app.post('/api/schedule', async (req, res) => {
+app.post('/api/schedule', authMiddleware , async (req, res) => {
     const data = req.body;
+    const userId = req.user.user_id;
+
     if (!data.personal_informations_user_id) {
         return res.status(400).json({ success: false, message: "缺少使用者 ID" });
     }
@@ -104,7 +115,7 @@ app.post('/api/schedule', async (req, res) => {
 
         await db.query(sql, [
             nextId, 
-            data.personal_informations_user_id, 
+            userId, 
             data.event_title, 
             data.event_type, 
             data.event_start_date, 
@@ -125,8 +136,9 @@ app.post('/api/schedule', async (req, res) => {
 });
 
 // 刪除行程
-app.delete('/api/schedule/:eventId', async (req, res) => {
+app.delete('/api/schedule/:eventId', authMiddleware , async (req, res) => {
     const eventId = req.params.eventId;
+    const userId = req.user.user_id;
     try {
         const [result] = await db.query(
             "DELETE FROM schedule WHERE event_id = ?", 
@@ -145,9 +157,9 @@ app.delete('/api/schedule/:eventId', async (req, res) => {
 });
 
 // 編輯行程
-app.put('/api/schedule/:eventId', async (req, res) => {
+app.put('/api/schedule/:eventId', authMiddleware , async (req, res) => {
     const eventId = req.params.eventId;
-
+    const userId = req.user.user_id;
     const data = req.body;
 
     const sql = `UPDATE schedule SET 
@@ -164,20 +176,21 @@ app.put('/api/schedule/:eventId', async (req, res) => {
         await db.query(sql, [
             data.event_title, data.event_type, data.event_start_date, 
             data.event_start_time, data.event_end_time, data.event_place, 
-            data.event_describe, eventId
+            data.event_describe, eventId, userId
         ]);
         res.json({ success: true });
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
 // 新增日記
-app.post('/api/diary', upload.single('image'), async (req, res) => {
-    const { title, date, content, personal_informations_user_id } = req.body;
+app.post('/api/diary', authMiddleware , upload.single('image'), async (req, res) => {
+    const { title, date, content } = req.body;
+    const userId = req.user.user_id;
     let imageUrl = ''; 
 
-    if (!personal_informations_user_id) {
-        return res.status(400).json({ success: false, message: '使用者 ID 為必填項目' });
-    }
+    // if (!personal_informations_user_id) {
+    //     return res.status(400).json({ success: false, message: '使用者 ID 為必填項目' });
+    // }
 
     try {
         if (!date) {
@@ -231,7 +244,7 @@ app.post('/api/diary', upload.single('image'), async (req, res) => {
             date,
             content || '',
             imageUrl, // 有圖就是網址，沒圖就是空字串
-            personal_informations_user_id 
+            userId
         ]);
 
         res.json({ success: true, message: '日記儲存成功' });
@@ -247,8 +260,9 @@ app.post('/api/diary', upload.single('image'), async (req, res) => {
 });
 
 // 編輯日記
-app.put('/api/diary/:diaryId', upload.single('image') , async (req, res) => {
+app.put('/api/diary/:diaryId', authMiddleware , upload.single('image') , async (req, res) => {
     const diaryId = req.params.diaryId;
+    const userId = req.user.user_id;
     const { title, date, content, image } = req.body;
     let imageUrl = image || ''; // 前端傳回來的原圖網址 (如果沒有傳新檔案)
 
@@ -283,7 +297,8 @@ app.put('/api/diary/:diaryId', upload.single('image') , async (req, res) => {
             date,
             content || '',
             imageUrl, // 可能是舊網址或新網址
-            diaryId
+            diaryId,
+            userId
         ]);
 
         res.json({ success: true, message: '日記更新成功', imageUrl });
@@ -296,13 +311,14 @@ app.put('/api/diary/:diaryId', upload.single('image') , async (req, res) => {
 });
 
 // 刪除日記
-app.delete('/api/diary/:diaryId', async (req, res) => {
+app.delete('/api/diary/:diaryId', authMiddleware , async (req, res) => {
     const diaryId = req.params.diaryId; 
+    const userId = req.user.user_id;
     
     try {
         const [result] = await db.query(
             "DELETE FROM diary WHERE diary_id = ?", 
-            [diaryId]
+            [diaryId, userId]
         );
 
         if (result.affectedRows === 0) {
