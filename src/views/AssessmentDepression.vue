@@ -175,6 +175,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
 import AssessmentProgressBar from '../components/AssessmentProgressBar.vue';
+import api from '../services/api.js';
 // 引入 JSON 資料檔
 import depressionQuestions from '../assets/data/depressionQuestions.json';
 
@@ -269,8 +270,8 @@ onMounted(async () => {
   try {
     // 動態獲取 userId 來代入預產期
     const userId = getCurrentUserId();
-    const response = await fetch(`http://localhost:3000/api/personal_information/${userId}`);
-    const result = await response.json();
+    const response = await api.get(`http://localhost:3000/api/personal_information/${userId}`);
+    const result = response.data; // 直接從 .data 拿
 
     if (result.success && result.data.dueDate) {
       // 1. 取得預產期並處理格式 (HTML5 <input type="date"> 需使用 - 分隔)
@@ -459,19 +460,15 @@ const submitForm = async () => {
     // 動態獲取 userId 來送出表單
     const userId = getCurrentUserId();
     
-    const response = await fetch("http://localhost:3000/api/submit_edinburgh", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        user_id: userId,
-        form: form,
-        questions: questions,
-        totalScore: totalScore.value,
-        message: resultMessage.value
-      })
+    const response = await api.post("http://localhost:3000/api/submit_edinburgh", {
+      user_id: userId,
+      form: form,
+      questions: questions,
+      totalScore: totalScore.value,
+      message: resultMessage.value
     });
 
-    const result = await response.json();
+    const result = response.data;
     
     if (result.success) {
       // 成功後顯示彈窗
@@ -479,8 +476,8 @@ const submitForm = async () => {
       // 呼叫後端 API 獲取歷史分數
       try {
         // 呼叫在後端建立的新 API
-        const historyRes = await fetch(`http://localhost:3000/api/edinburgh_history/${userId}`);
-        const historyResult = await historyRes.json();
+        const historyRes = await api.get(`http://localhost:3000/api/edinburgh_history/${userId}`);
+        const historyResult = historyRes.data;
 
         if (historyResult.success && historyResult.data && historyResult.data.length > 0) {
           const allRecords = historyResult.data;
