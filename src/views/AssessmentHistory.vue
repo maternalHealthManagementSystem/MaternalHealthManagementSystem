@@ -26,6 +26,7 @@
 import { ref, onMounted} from 'vue';
 import { useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
+import api from '../services/api.js';
 
 const router = useRouter();
 const records = ref([]);
@@ -47,20 +48,22 @@ const getCurrentUserId = () => {
 // 使用 fetch 呼叫後端 API
 const fetchAssessmentHistory = async () => {
   try {
-    // 動態取得 userId
+    isLoading.value = true;
     const userId = getCurrentUserId();
     
-    // fetch 的 GET 請求：參數必須直接寫在網址後面
-    const url = `http://localhost:3000/api/assessment_history?user_id=${userId}`;
-    
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP 錯誤！狀態碼：${response.status}`);
+    if (!userId) {
+      console.warn("未取得登入資訊");
+      return;
     }
 
-    const data = await response.json(); // 解析 JSON 資料
-    records.value = data;
+    // api.get 會自動幫你在 Header 帶上 Authorization: Bearer <token>
+    // axios 的參數可以用物件寫法 (params)，比字串拼接更乾淨
+    const response = await api.get('http://localhost:3000/api/assessment_history', {
+      params: { user_id: userId }
+    });
+
+    // 直接從 response.data 拿取後端回傳的陣列
+    records.value = response.data;
     
   } catch (error) {
     console.error("抓取歷史紀錄失敗：", error);

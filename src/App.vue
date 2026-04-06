@@ -470,13 +470,32 @@ const getPregnancyWeek = (lmpDate) => {
 // 從後端 API 取得通知
 const fetchNotifications = async () => {
   const userStr = sessionStorage.getItem("user");
-  if (!userStr) return;
+  const token = localStorage.getItem("token");
+  // 必須同時檢查 user 和 token，如果沒有 token 就不要發送請求，避免送出 "Bearer null"
+  if (!userStr || !token) {
+    console.warn("未找到 Token 或使用者資料，停止發送請求");
+    return;
+  }
   const user = JSON.parse(userStr);
 
   try {
     // 1. 抓取個人資料 (Port 3000)
     // 根據你的 server.js，路徑應為 /api/personal_information/
-    const profileRes = await fetch(`http://localhost:3000/api/personal_information/${user.user_id}`);
+    const profileRes = await fetch(`http://localhost:3000/api/personal_information/${user.user_id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}` // 把拿到的 token 塞進來
+      }
+    });
+
+    // 攔截 403 錯誤，避免畫面死機
+    if (!profileRes.ok) {
+      console.error(`取得個人資料失敗，伺服器回傳狀態碼: ${profileRes.status}`);
+      // 如果是 403，通常代表 Token 過期或無效，可以考慮在這裡觸發登出
+      return; 
+    }
+
     const profileData = await profileRes.json();
     
     // 2. 檢查 API 是否成功回傳
@@ -487,7 +506,19 @@ const fetchNotifications = async () => {
       console.log(`[通知檢查] 使用者:${user.user_id}, 目前週數:${currentWeek}`);
 
       // 3. 抓取通知 (Port 3002)
-      const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`);
+      const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // 通知 API 也要檢查通行證
+        }
+      });
+
+      if (!res.ok) {
+        console.error(`取得通知資料失敗，伺服器回傳狀態碼: ${res.status}`);
+        return;
+      }
+
       const data = await res.json();
 
       // 4. 更新前端狀態
@@ -523,6 +554,7 @@ const isEducationActive = computed(() => {
 const openEducation = async (notification) => {
 
   const userStr = sessionStorage.getItem("user");
+  const token = localStorage.getItem("token");
   if (!userStr) return;
 
   const user = JSON.parse(userStr);
@@ -530,16 +562,24 @@ const openEducation = async (notification) => {
   try {
 
     // 寫入已讀
-    await fetch("http://localhost:3000/api/read_records", {
+    const res = await fetch("http://localhost:3000/api/read_records", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        // 把通行證加進來！
+        "Authorization": `Bearer ${token}` 
       },
       body: JSON.stringify({
         user_id: user.user_id,
         article_id: notification.article_id
       })
     });
+
+    // 攔截錯誤，確認後端有成功寫入
+    if (!res.ok) {
+      console.error(`標記已讀 API 失敗，狀態碼: ${res.status}`);
+      // 就算標記失敗，可能還是希望讓媽媽能看到文章，所以這裡不寫 return 阻斷
+    }
 
     // 開啟文章
     window.open(notification.link, "_blank");

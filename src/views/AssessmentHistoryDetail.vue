@@ -143,6 +143,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import AssessmentPanel from '../components/AssessmentPanel.vue';
+import api from '../services/api.js';
 // 引入 JSON 檔案
 import prenatalQuestions from '../assets/data/prenatalQuestions.json'; 
 import depressionQuestions from '../assets/data/depressionQuestions.json';
@@ -207,10 +208,10 @@ const fetchDetail = async () => {
     const apiUrl = isPrenatal 
       ? `http://localhost:3000/api/prenatal_detail/${responseId}`
       : `http://localhost:3000/api/edinburgh_detail/${responseId}`;
-
-    const response = await fetch(apiUrl);
-    if (!response.ok) throw new Error("找不到紀錄");
-    const data = await response.json();
+    
+    const response = await api.get(apiUrl)  
+    // axios 會自動解析 JSON 並放在 .data 屬性中
+    const data = response.data;
 
     if (isPrenatal) {
       // --- 映射產前表單資料 ---

@@ -1,7 +1,10 @@
-require('dotenv').config()
-const express = require('express');
-const cors = require('cors');
-const db = require('./db'); // 引入剛剛寫好的資料庫連線
+import 'dotenv/config'; 
+import express from 'express';
+import cors from 'cors';
+
+import db from './db.js'; 
+import authMiddleware from './middleware/auth.js'
+
 
 const app = express();
 
@@ -11,7 +14,7 @@ app.use(express.json());
 
 
 // [GET] 獲取使用者個人詳細資料 (用於產前照護和愛丁堡表單自動代入、衛教資訊專區的目前懷孕週數)
-app.get("/api/personal_information/:user_id", async (req, res) => {
+app.get("/api/personal_information/:user_id", authMiddleware, async (req, res) => {
   const { user_id } = req.params;
 
   try {
@@ -52,7 +55,7 @@ app.get("/api/personal_information/:user_id", async (req, res) => {
 
 
 //  獲取使用者的已讀文章列表 (GET)
-app.get("/api/read_records", async (req, res) => {
+app.get("/api/read_records", authMiddleware, async (req, res) => {
   // 從網址列取得 user_id (例如 ?user_id=U001)
   const userId = req.query.user_id; 
 
@@ -73,7 +76,7 @@ app.get("/api/read_records", async (req, res) => {
 });
 
 // 新增一筆已讀紀錄 (POST)
-app.post("/api/read_records", async (req, res) => {
+app.post("/api/read_records", authMiddleware, async (req, res) => {
   // 接收前端送來的 JSON body 資料
   const { user_id, article_id } = req.body;
 
@@ -117,7 +120,7 @@ app.post("/api/read_records", async (req, res) => {
 
 
 // 獲取使用者的評估歷史紀錄 (GET)
-app.get("/api/assessment_history", async (req, res) => {
+app.get("/api/assessment_history", authMiddleware, async (req, res) => {
   const userId = req.query.user_id;
 
   if (!userId) {
@@ -151,7 +154,7 @@ app.get("/api/assessment_history", async (req, res) => {
 
 
 // 獲取愛丁堡量表的詳細內容 (GET) 
-app.get("/api/edinburgh_detail/:response_id", async (req, res) => {
+app.get("/api/edinburgh_detail/:response_id", authMiddleware, async (req, res) => {
   const { response_id } = req.params;
 
   try {
@@ -210,7 +213,7 @@ app.get("/api/edinburgh_detail/:response_id", async (req, res) => {
 
 
 // 獲取產前健康照護表單的詳細內容 (GET)
-app.get("/api/prenatal_detail/:response_id", async (req, res) => {
+app.get("/api/prenatal_detail/:response_id", authMiddleware, async (req, res) => {
   const { response_id } = req.params;
 
   try {
@@ -294,7 +297,7 @@ app.get("/api/prenatal_detail/:response_id", async (req, res) => {
 
 
 // 提交愛丁堡量表 (POST)
-app.post("/api/submit_edinburgh", async (req, res) => {
+app.post("/api/submit_edinburgh", authMiddleware, async (req, res) => {
   const { user_id, form, questions, totalScore, message } = req.body;
   const connection = await db.getConnection(); // 取得連線以使用 Transaction
 
@@ -347,10 +350,38 @@ app.post("/api/submit_edinburgh", async (req, res) => {
   }
 });
 
+// 獲取特定使用者的愛丁堡量表歷史分數 (GET) - 用於繪製趨勢圖
+app.get("/api/edinburgh_history/:user_id", authMiddleware, async (req, res) => {
+  const { user_id } = req.params;
 
+  try {
+    // 關聯 assessment_history (主表) 與 edinburgh_history_detail (明細表)
+    // 並依照提交時間由舊到新排序 (ASC)，讓圖表由左至右繪製
+    const sql = `
+      SELECT 
+        DATE_FORMAT(h.assessment_submit_datetime, '%Y-%m-%d') AS date,
+        d.total_score AS score
+      FROM assessment_history h
+      JOIN edinburgh_history_detail d ON h.assessment_response_id = d.assessment_history_assessment_response_id
+      WHERE h.personal_informations_user_id = ?
+      ORDER BY h.assessment_submit_datetime ASC
+    `;
+    
+    const [rows] = await db.query(sql, [user_id]);
+    
+    res.json({
+      success: true,
+      data: rows // 回傳格式會是 [{ date: '2025-10-15', score: 9 }, ...]
+    });
+
+  } catch (error) {
+    console.error("查詢愛丁堡歷史分數趨勢錯誤：", error);
+    res.status(500).json({ success: false, message: "伺服器讀取歷史紀錄失敗" });
+  }
+});
 
 // 提交產前照護衛教紀錄表 (POST)
-app.post("/api/submit_prenatal", async (req, res) => {
+app.post("/api/submit_prenatal", authMiddleware, async (req, res) => {
   const { user_id, form, educationTopics } = req.body;
   const connection = await db.getConnection();
 
@@ -449,19 +480,6 @@ function getMedicalLabel(id) {
   return labels[id] || '未知疾病';
 }
 
-
-// --- 輔助函式：生成流水號 (AR001, ED001 等) ---
-// async function getNextId(conn, table, column, prefix) {
-//   const [rows] = await conn.query(`SELECT ${column} FROM ${table} ORDER BY CAST(SUBSTRING(${column}, ${prefix.length + 1}) AS UNSIGNED) DESC LIMIT 1`);
-//   if (rows.length === 0) return `${prefix}001`;
-//   const lastId = rows[0][column];
-//   return incrementId(lastId, prefix);
-// }
-
-// function incrementId(lastId, prefix) {
-//   const num = parseInt(lastId.replace(prefix, "")) + 1;
-//   return `${prefix}${String(num).padStart(3, '0')}`;
-// }
 async function getNextId(conn, table, column, prefix) {
   // 使用反引號處理包含空格的欄位名稱，並使用 AS 強制命名為 last_id
   const sql = `SELECT ${column} AS last_id FROM ${table} ORDER BY CAST(SUBSTRING(${column}, ${prefix.length + 1}) AS UNSIGNED) DESC LIMIT 1`;
