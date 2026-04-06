@@ -18,6 +18,7 @@ router.get("/:userId", async (req, res) => {
 
     const [events] = await db.query(`
       SELECT 
+        event_id,
         event_title,
         event_type,
         event_start_date,
@@ -33,29 +34,6 @@ router.get("/:userId", async (req, res) => {
     events.forEach(e => {
 
       let message = "";
-
-      // switch (e.event_type) {
-
-      //   case "產檢":
-      //     message = `您距離下一次產檢「${e.event_title}」，還有 ${e.days_left} 天。`;
-      //     break;
-
-      //   case "預約":
-      //     message = `您有一個預約「${e.event_title}」，距離預約還有 ${e.days_left} 天。`;
-      //     break;
-
-      //   case "提醒":
-      //     message = `提醒您：「${e.event_title}」還有 ${e.days_left} 天。`;
-      //     break;
-
-      //   case "其他":
-      //     message = `即將到來的行程：「${e.event_title}」，${e.days_left} 天後開始。`;
-      //     break;
-
-      //   default:
-      //     message = `距離「${e.event_title}」還有 ${e.days_left} 天。`;
-      // }
-
       if (e.event_describe) {
         message += ` ${e.event_describe}` ;
       }
@@ -103,46 +81,96 @@ router.get("/:userId", async (req, res) => {
     }
 
 
-    /* 3️⃣ 未讀衛教 */
 
-    const [education] = await db.query(`
-      SELECT 
-        hp.he_pregnancy_id,
-        hp.title_hepregnancy,
-        hp.link_hepregnancy
-      FROM he_pregnancy hp
-      WHERE hp.he_pregnancy_min_week <= ? 
-        AND hp.he_pregnancy_id NOT IN (
-          SELECT he_pregnancy_id 
-          FROM read_records 
-          WHERE personal_informations_user_id = ?
-        )
-      ORDER BY hp.he_pregnancy_min_week ASC
-    `, [currentWeek, userId]); 
+  /* 取得衛教提醒 (優先取未讀，全讀完則取複習) */
 
-    console.log("Found Education Count:", education.length);
+  // 先抓出「當前週數以前(含)」所有還沒讀過的文章
+  const [unreadEducation] = await db.query(`
+    SELECT 
+      hp.he_pregnancy_id,
+      hp.title_hepregnancy,
+      hp.link_hepregnancy,
+      hp.he_pregnancy_min_week
+    FROM he_pregnancy hp
+    WHERE hp.he_pregnancy_min_week <= ? 
+      AND hp.he_pregnancy_id NOT IN (
+        SELECT he_pregnancy_id 
+        FROM read_records 
+        WHERE personal_informations_user_id = ?
+      )
+    ORDER BY hp.he_pregnancy_min_week ASC
+  `, [currentWeek, userId]);
 
-    education.forEach(e => {
-
+  if (unreadEducation.length > 0) {
+    // 還有文章沒讀就推播這些未讀文章
+    unreadEducation.forEach(e => {
       notifications.push({
         type: "education",
         article_id: e.he_pregnancy_id,
         title: e.title_hepregnancy,
         link: e.link_hepregnancy,
-        // message: `您尚未閱讀「${e.title_hepregnancy}」孕期衛教`
+        message: `第 ${e.he_pregnancy_min_week} 週：尚未閱讀「${e.title_hepregnancy}」`
       });
-
     });
+  } else {
+    // 全部都讀過的話根據目前週數，推薦「同階段」的內容進行複習
+    const [reviewArticles] = await db.query(`
+      SELECT 
+        hp.he_pregnancy_id,
+        hp.title_hepregnancy,
+        hp.link_hepregnancy,
+        hp.he_pregnancy_min_week
+      FROM read_records rr
+      JOIN he_pregnancy hp ON rr.he_pregnancy_id = hp.he_pregnancy_id
+      WHERE rr.personal_informations_user_id = ?
+        AND hp.he_pregnancy_min_week <= ?
+        AND hp.he_pregnancy_min_week > ?
+      ORDER BY RAND()
+      LIMIT 3
+    `, [userId, currentWeek, currentWeek - 4]); // 推薦最近 4 週內的內容複習
 
-    res.json(notifications);
+    if (reviewArticles.length > 0) {
+      reviewArticles.forEach(e => {
+        notifications.push({
+          type: "review", 
+          article_id: e.he_pregnancy_id,
+          title: e.title_hepregnancy,
+          link: e.link_hepregnancy,
+          message: `您已完成本階段衛教！建議複習：第 ${e.he_pregnancy_min_week} 週內容`
+        });
+      });
+    } else {
+      // 如果連最近4週都沒有，就隨機抓3則已讀的
+      const [fallbackReview] = await db.query(`
+        SELECT hp.he_pregnancy_id, hp.title_hepregnancy, hp.link_hepregnancy
+        FROM read_records rr
+        JOIN he_pregnancy hp ON rr.he_pregnancy_id = hp.he_pregnancy_id
+        WHERE rr.personal_informations_user_id = ?
+        ORDER BY RAND() LIMIT 3
+      `, [userId]);
 
-  } catch (error) {
-
-    console.error(error);
-    res.status(500).json({ error: "通知取得失敗" });
-
+      fallbackReview.forEach(e => {
+          notifications.push({
+            type: "review",
+            article_id: e.he_pregnancy_id,
+            title: e.title_hepregnancy,
+            link: e.link_hepregnancy,
+            message: "回顧精彩內容 🎉"
+          });
+      });
+    }
   }
+      
 
-});
+      res.json(notifications);
 
-export default router;
+    } catch (error) {
+
+      console.error(error);
+      res.status(500).json({ error: "通知取得失敗" });
+
+    }
+
+  });
+
+  export default router;

@@ -220,9 +220,32 @@
               </div>
             </div>
             
-            <div v-if="educationNotifications.length > 0">
-              <h2>📝 衛教提醒 ({{ educationNotifications.length }})</h2>
+            <div v-if="educationNotifications.length > 0 || reviewNotifications.length > 0">
+              <h2>📝 衛教提醒 ({{ educationNotifications.length + reviewNotifications.length }})</h2>
               <div class="edu-grid">
+
+                <div 
+                  class="edu-grid-card review"
+                  v-for="n in reviewNotifications" 
+                  :key="'review-' + n.article_id"
+                  @click="openEducation(n)"
+                >
+                  <span class="status-badge review-badge">
+                    複習
+                  </span>
+
+                  <div class="card-icon-wrapper">
+                    <i class="fi fi-rr-refresh"></i>
+                  </div>
+
+                  <div class="card-title">
+                    {{ n.title || '衛教資訊' }}
+                  </div>
+                  <div v-if="n.message" class="review-msg-hint">
+                    {{ n.message }}
+                  </div>
+                </div>
+
                 <div 
                   class="edu-grid-card" 
                   v-for="n in educationNotifications" 
@@ -239,8 +262,12 @@
               </div>
             </div>
           </div>
-          <div v-if="checkupNotifications.length === 0 && educationNotifications.length === 0" style="text-align: center; padding: 20px;">
-          <p>目前暫無新提醒</p>
+          <div v-if="
+              checkupNotifications.length === 0 && 
+              educationNotifications.length === 0 &&
+              reviewNotifications.length === 0
+            " style="text-align: center; padding: 20px;">
+            <p>目前暫無新提醒</p>
           </div>
         </div>
         <button class="confirm-btn" @click="closeNotificationModal">
@@ -542,7 +569,12 @@ const notificationCount = computed(() => {
   // 直接加總過濾後的未讀陣列長度
   const checkupUnread = checkupNotifications.value.filter(n => !n.read).length;
   const eduUnread = educationNotifications.value.filter(n => !n.read).length;
-  return checkupUnread + eduUnread;
+  const reviewCount = reviewNotifications.value.filter(n => !n.read).length;
+  return checkupUnread + eduUnread + reviewCount;
+});
+
+const reviewNotifications = computed(() => {
+  return notifications.value.filter(n => n.type === 'review');
 });
 
 // 衛教專區是否為當前頁面
@@ -612,6 +644,12 @@ const getDaysRemaining = (dateStr) => {
 </script>
 
 <style scoped>
+.review-msg-hint {
+  font-size: 11px;
+  color: #888;
+  margin-top: 5px;
+  font-weight: 500;
+}
 .notify-card {
   display: flex;
   gap: 12px;
@@ -748,7 +786,7 @@ const getDaysRemaining = (dateStr) => {
   line-height: 1.4;
   /* 限制標題長度 */
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* -webkit-line-clamp:2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -769,6 +807,15 @@ const getDaysRemaining = (dateStr) => {
   background: #fff0f0;
   color: #ff4d4f;
   font-weight: 600;
+}
+
+.review-badge {
+  background: #e6f4ff;
+  color: #1890ff;
+}
+
+.edu-grid-card.review {
+  border: 1px solid #d6eaff;
 }
 
 /* RWD 調整：手機版改為單欄或縮小間距 */
