@@ -264,7 +264,9 @@
 <script setup>
 import { ref, computed, onMounted,onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-// import EventDetailModal from './components/Calendar/EventDetailModal.vue';
+import api from "./services/api.js";
+import { jwtDecode } from "jwt-decode";
+import { forceLogout } from "./services/api.js"; 
 
 const route = useRoute();
 const router = useRouter();
@@ -368,9 +370,6 @@ const confirmLogout = () => {
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
   sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
   localStorage.removeItem("token"); // 如果有使用 localStorage 儲存 JWT，這裡也要清除
-  router.push("/").then(() => {
-    window.location.reload();
-  });
 
   // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
@@ -388,18 +387,45 @@ const cancelLogout = () => {
   showLogoutConfirm.value = false;
 };
 
+// 檢查 Token 是否過期的函式
+const checkTokenExpiry = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const decoded = jwtDecode(token);
+    const currentTime = Date.now() / 1000; // 轉換為秒
+
+    if (decoded.exp < currentTime) {
+      console.warn("偵測到 Token 已過期，執行自動登出");
+      forceLogout("登入已逾時，系統已自動為您登出");
+    }
+  } catch (error) {
+    console.error("Token 解析失敗", error);
+    // 如果 Token 格式錯誤，通常也視為無效
+    forceLogout("登入狀態異常，請重新登入");
+  }
+};
+
+let expiryCheckTimer = null;
+
 onMounted(async () => {
   loadUserData();
+  
+  // 1. 頁面重整或開啟時立即檢查一次
+  checkTokenExpiry();
 
-  await fetchNotifications(); // ⭐ 頁面載入時取得通知
-  setInterval(fetchNotifications, 300000); // 每5分鐘自動更新通知
+  // 2. 設定定時器，每 1 分鐘自動檢查一次 (主動監控)
+  expiryCheckTimer = setInterval(checkTokenExpiry, 60000); 
 
+  await fetchNotifications();
   window.addEventListener("user-data-updated", loadUserData);
 });
 
 onUnmounted(() => {
-  // 移除監聽，避免記憶體洩漏
   window.removeEventListener("user-data-updated", loadUserData);
+  // 清除定時器
+  if (expiryCheckTimer) clearInterval(expiryCheckTimer);
 });
 
 /* -----------------------------
@@ -479,15 +505,8 @@ const fetchNotifications = async () => {
   const user = JSON.parse(userStr);
 
   try {
-    // 1. 抓取個人資料 (Port 3000)
-    // 根據你的 server.js，路徑應為 /api/personal_information/
-    const profileRes = await fetch(`http://localhost:3000/api/personal_information/${user.user_id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` // 把拿到的 token 塞進來
-      }
-    });
+    // 1. 抓取個人資料 
+    const profileRes = await api.get(`/api/personal_information/${user.user_id}`);
 
     // 攔截 403 錯誤，避免畫面死機
     if (!profileRes.ok) {
@@ -506,20 +525,11 @@ const fetchNotifications = async () => {
       console.log(`[通知檢查] 使用者:${user.user_id}, 目前週數:${currentWeek}`);
 
       // 3. 抓取通知 (Port 3002)
-      const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // 通知 API 也要檢查通行證
-        }
+      const res = await api.get(`/api/notifications/${user.user_id}`, {
+        params: { week: currentWeek }
       });
 
-      if (!res.ok) {
-        console.error(`取得通知資料失敗，伺服器回傳狀態碼: ${res.status}`);
-        return;
-      }
-
-      const data = await res.json();
+      const data = res.data;
 
       // 4. 更新前端狀態
       notifications.value = data.map((n, index) => ({
@@ -608,6 +618,17 @@ const getDaysRemaining = (dateStr) => {
   if (diffDays < 0) return `已過 ${Math.abs(diffDays)} 天`;
   return `還有 ${diffDays} 天`;
 };
+
+
+let notificationTimer = null;
+
+onMounted(() => {
+  notificationTimer = setInterval(fetchNotifications, 300000);
+});
+
+onUnmounted(() => {
+  clearInterval(notificationTimer);
+});
 
 </script>
 
