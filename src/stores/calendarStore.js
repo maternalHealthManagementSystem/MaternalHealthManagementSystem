@@ -37,7 +37,12 @@ export const useCalendarStore = defineStore('schedule', {
       this.currentUserId = user_id;
       this.loading = true;
       try {
-        const response = await api.get(`http://localhost:3001/api/schedule/${user_id}`);
+        const response = await api.get(`http://localhost:3001/api/schedule`,{
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        });
+
         const { dbEvents, dbDiaries } = response.data;
 
         // 轉換行程資料
@@ -93,7 +98,11 @@ export const useCalendarStore = defineStore('schedule', {
           event_describe: newEvent.description || '',
           personal_informations_user_id: this.currentUserId,
         };
-        await axios.post('http://localhost:3001/api/schedule', payload);
+        await axios.post('http://localhost:3001/api/schedule', payload, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`
+          }
+        });
         await this.fetchAllData(this.currentUserId); 
       } catch (error) {
         console.error('新增失敗:', error);
@@ -114,7 +123,13 @@ export const useCalendarStore = defineStore('schedule', {
           event_describe: updatedEvent.description,
           personal_informations_user_id: this.currentUserId
         };
-        await axios.put(`http://localhost:3001/api/schedule/${updatedEvent.id}`, payload);
+        await axios.put(`http://localhost:3001/api/schedule/${updatedEvent.id}`, payload,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
         await this.fetchAllData(this.currentUserId);
       } catch (error) { console.error('更新失敗:', error); }
     },
@@ -122,7 +137,13 @@ export const useCalendarStore = defineStore('schedule', {
     // 刪除行程
     async deleteEvent(eventId) {
       try {
-        await axios.delete(`http://localhost:3001/api/schedule/${eventId}`);
+        await axios.delete(`http://localhost:3001/api/schedule/${eventId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
         await this.fetchAllData(this.currentUserId); 
       } catch (error) {
         console.error('刪除失敗:', error);
@@ -136,13 +157,19 @@ export const useCalendarStore = defineStore('schedule', {
         formData.append('date', diary.date);
         formData.append('title', diary.title || '今日日記');
         formData.append('content', diary.content || '');
-        formData.append('personal_informations_user_id', this.currentUserId);
+        //formData.append('personal_informations_user_id', this.currentUserId);
         
         if (imageFile) {
           formData.append('image', imageFile);
         }
 
-        await axios.post('http://localhost:3001/api/diary', formData);
+        await axios.post('http://localhost:3001/api/diary', formData,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
         await this.fetchAllData(this.currentUserId);
       } catch (error) {
         console.error("儲存日記失敗:", error);
@@ -164,7 +191,13 @@ export const useCalendarStore = defineStore('schedule', {
         } else {
           formData.append('image', updatedDiary.image || '');
         }
-        await axios.put(`http://localhost:3001/api/diary/${updatedDiary.id}`, formData);
+        await axios.put(`http://localhost:3001/api/diary/${updatedDiary.id}`, formData,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
         await this.fetchAllData(this.currentUserId); 
       } catch (error) {
         console.error('更新日記失敗:', error);
@@ -175,7 +208,13 @@ export const useCalendarStore = defineStore('schedule', {
     // 刪除日記
     async deleteDiary(diaryId) {
       try {
-        await axios.delete(`http://localhost:3001/api/diary/${diaryId}`);
+        await axios.delete(`http://localhost:3001/api/diary/${diaryId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`
+            }
+          }
+        );
         await this.fetchAllData(this.currentUserId); 
       } catch (error) {
         console.error('刪除日記失敗:', error);
