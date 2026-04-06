@@ -85,6 +85,7 @@ import { ref, onMounted } from "vue";
 
 import SearchBar from "../components/SearchBar.vue";
 import ScrollTop from "../components/ScrollTop.vue";
+import api from "../services/api.js";
 // 引入 JSON 檔案
 import pregnancyData from "../assets/data/pregnancyData.json";
 // checkbox 可以被修改 (checked 狀態)，使用 ref 包起來
@@ -137,12 +138,11 @@ const fetchReadRecords = async () => {
       return;
     }
     
-    const response = await fetch(`http://localhost:3000/api/read_records?user_id=${userId}`);
+    const response = await api.get(`http://localhost:3000/api/read_records?user_id=${userId}`);
     
-    if (!response.ok) throw new Error('無法取得已讀紀錄');
-    
+    // 直接從 response.data 拿資料，不用 await response.json()
     // 這裡會拿到你剛剛在網頁上看到的 ["PG001", "PG002", "PG003", "PG004"]
-    const readArticleIds = await response.json(); 
+    const readArticleIds = response.data;
 
     // 比對 JSON 與已讀紀錄，把讀過的打勾
     sections.value.forEach(section => {
@@ -184,16 +184,13 @@ const handleLinkClick = async (item) => {
     // 動態取得 userId
     const userId = getCurrentUserId();
     // 發送 POST 請求新增紀錄
-    const response = await fetch('http://localhost:3000/api/read_records', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,      
-        article_id: item.he_pregnancy_id // 傳送 JSON 裡定義的文章 ID
-      })
+    // api.post 的第二個參數就是要傳送的資料物件，不用寫 headers，也不用 JSON.stringify
+    await api.post('http://localhost:3000/api/read_records', {
+      user_id: userId,      
+      article_id: item.he_pregnancy_id // 傳送 JSON 裡定義的文章 ID
     });
 
-    if (!response.ok) throw new Error('寫入已讀失敗');
+    // Axios 只要沒進 catch 區塊就是成功，不用寫 if(!response.ok)
     console.log(`已成功將文章 ${item.he_pregnancy_id} 標記為已讀！`);
     
   } catch (error) {

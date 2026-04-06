@@ -20,6 +20,7 @@ import { useRouter } from 'vue-router';
 import dayjs from 'dayjs';
 import EducationCard from '../components/EducationCard.vue';
 import ScrollTop from '../components/ScrollTop.vue';
+import api from '../services/api.js';
 // 引入JSON 資料
 import pregnancyData from '../assets/data/pregnancyData.json';
 import prenatalData from '../assets/data/prenatalData.json';
@@ -63,8 +64,8 @@ onMounted(async () => {
     const userId = user.user_id; // 這就是動態的 'U001', 'U002', 或 'U003'
 
     // 發送請求
-    const response = await fetch(`http://localhost:3000/api/personal_information/${userId}`);
-    const result = await response.json();
+    const response = await api.get(`http://localhost:3000/api/personal_information/${userId}`);
+    const result = response.data;
 
     if (result.success && result.data) {
       // 判斷後端是否有傳回 lmpDate (來自你之前修改的 API)
@@ -186,16 +187,13 @@ const handleArticleClick = async (clickedItem) => {
     const userId = JSON.parse(userDataStr).user_id;
 
     // 3. 呼叫我們之前寫好的 POST API
-    const response = await fetch('http://localhost:3000/api/read_records', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        article_id: clickedItem.article_id
-      })
+    // api.post 的第二個參數就是你要傳的 Body，不用自己 stringify 也不用寫 headers，axios 都會幫你做好！
+    await api.post('http://localhost:3000/api/read_records', {
+      user_id: userId,
+      article_id: clickedItem.article_id
     });
 
-    if (!response.ok) throw new Error('寫入已讀失敗');
+    // Axios 只要沒有跑進 catch，就代表狀態碼是 2xx (成功)，所以不用自己寫 if(!response.ok) 了
     console.log(`成功將推薦文章 ${clickedItem.article_id} 標記為已讀！`);
     
   } catch (error) {
