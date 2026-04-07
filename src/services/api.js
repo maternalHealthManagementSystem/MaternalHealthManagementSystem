@@ -31,6 +31,14 @@ export const forceLogout = async (message = "登入已逾時，請重新登入")
   }
 };
 
+
+export const getPersonalInfo = (id) =>
+  api.get(`/personal_information/${id}`);
+
+export const getNotifications = (id, week) =>
+  api.get(`/notifications/${id}`, { params: { week } });
+
+
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
