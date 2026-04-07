@@ -35,6 +35,8 @@
             :key="index"
             ref="otpRefs"
             v-model="otpDigits[index]"
+            autocomplete="one-time-code"
+            inputmode="numeric"
             maxlength="1"
             class="otp-input"
             @input="handleInput(index)"

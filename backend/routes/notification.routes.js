@@ -57,7 +57,7 @@ router.get("/:userId", async (req, res) => {
 
     let currentWeek = Number(clientWeek);
 
-    if (!currentWeek && currentWeek !== 0) {
+    if (currentWeek === undefined || currentWeek === null || isNaN(currentWeek)) {
 
       const [user] = await db.query(`
         SELECT LMP
@@ -76,7 +76,7 @@ router.get("/:userId", async (req, res) => {
 
     }
 
-    if (!currentWeek && currentWeek !== 0) {
+    if (currentWeek === null || currentWeek === undefined || isNaN(currentWeek)) {
       return res.json(notifications);
     }
 
@@ -128,6 +128,7 @@ router.get("/:userId", async (req, res) => {
       ORDER BY RAND()
       LIMIT 3
     `, [userId, currentWeek, currentWeek - 4]); // 推薦最近 4 週內的內容複習
+    console.log("Unread Count:", unreadEducation.length);
 
     if (reviewArticles.length > 0) {
       reviewArticles.forEach(e => {

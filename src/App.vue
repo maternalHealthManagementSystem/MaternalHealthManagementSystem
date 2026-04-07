@@ -195,7 +195,6 @@
       </div>
     </div>
 
-    <!-- 通知提醒 Modal -->
     <div v-if="showNotificationModal" class="modal-overlay modal-notification">
       <div class="modal-window">
         <span class="close" @click="closeNotificationModal">×</span>
@@ -291,12 +290,20 @@
 <script setup>
 import { ref, computed, onMounted,onUnmounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-// import EventDetailModal from './components/Calendar/EventDetailModal.vue';
+import api from "./services/api.js";
+import { jwtDecode } from "jwt-decode";
+import { forceLogout } from "./services/api.js"; 
 
 const route = useRoute();
 const router = useRouter();
 
+function handleDayClick(day) {
+  console.log(day);
+}
 
+function handleMonthChange(month) {
+  console.log(month);
+}
 
 /* 基礎狀態 */
 
@@ -395,9 +402,6 @@ const confirmLogout = () => {
   // 2. 清除所有可能的憑證 (依據你 router/index.js 守衛的檢查對象)
   sessionStorage.clear(); // 清除 sessionStorage 中的 user 資料和登入旗標
   localStorage.removeItem("token"); // 如果有使用 localStorage 儲存 JWT，這裡也要清除
-  router.push("/").then(() => {
-    window.location.reload();
-  });
 
   // 4. 重置本頁變數狀態
   currentUser.value = { name: "", email: "" };
@@ -415,18 +419,45 @@ const cancelLogout = () => {
   showLogoutConfirm.value = false;
 };
 
+// 檢查 Token 是否過期的函式
+const checkTokenExpiry = () => {
+  const token = localStorage.getItem("token");
+  if (!token) return;
+
+  try {
+    const decoded = jwtDecode(token);
+    const currentTime = Date.now() / 1000; // 轉換為秒
+
+    if (decoded.exp < currentTime) {
+      console.warn("偵測到 Token 已過期，執行自動登出");
+      forceLogout("登入已逾時，系統已自動為您登出");
+    }
+  } catch (error) {
+    console.error("Token 解析失敗", error);
+    // 如果 Token 格式錯誤，通常也視為無效
+    forceLogout("登入狀態異常，請重新登入");
+  }
+};
+
+let expiryCheckTimer = null;
+
 onMounted(async () => {
   loadUserData();
+  
+  // 1. 頁面重整或開啟時立即檢查一次
+  checkTokenExpiry();
 
-  await fetchNotifications(); // ⭐ 頁面載入時取得通知
-  setInterval(fetchNotifications, 300000); // 每5分鐘自動更新通知
+  // 2. 設定定時器，每 1 分鐘自動檢查一次 (主動監控)
+  expiryCheckTimer = setInterval(checkTokenExpiry, 60000); 
 
+  await fetchNotifications();
   window.addEventListener("user-data-updated", loadUserData);
 });
 
 onUnmounted(() => {
-  // 移除監聽，避免記憶體洩漏
   window.removeEventListener("user-data-updated", loadUserData);
+  // 清除定時器
+  if (expiryCheckTimer) clearInterval(expiryCheckTimer);
 });
 
 /* -----------------------------
@@ -482,6 +513,13 @@ const educationNotifications = computed(() => {
   return notifications.value.filter(n => n.type === 'education');
 });
 
+// 分離複習提醒
+const reviewNotifications = computed(() => {
+  return notifications.value.filter(n => n.type === 'review');
+});
+
+
+
 // 計算週數函式(與home.vue一致)
 const getPregnancyWeek = (lmpDate) => {
   if (!lmpDate) return null;
@@ -494,87 +532,66 @@ const getPregnancyWeek = (lmpDate) => {
   return Math.floor(diffDays / 7);
 };
 
+const isFetching = ref(false);
+
 // 從後端 API 取得通知
 const fetchNotifications = async () => {
+  if (isFetching.value) return; // 防止重複請求
+  
   const userStr = sessionStorage.getItem("user");
   const token = localStorage.getItem("token");
-  // 必須同時檢查 user 和 token，如果沒有 token 就不要發送請求，避免送出 "Bearer null"
+  
   if (!userStr || !token) {
     console.warn("未找到 Token 或使用者資料，停止發送請求");
     return;
   }
+  
   const user = JSON.parse(userStr);
+  isFetching.value = true;
 
   try {
-    // 1. 抓取個人資料 (Port 3000)
-    // 根據你的 server.js，路徑應為 /api/personal_information/
-    const profileRes = await fetch(`http://localhost:3000/api/personal_information/${user.user_id}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` // 把拿到的 token 塞進來
-      }
-    });
+    let currentWeek = null;
 
-    // 攔截 403 錯誤，避免畫面死機
-    if (!profileRes.ok) {
-      console.error(`取得個人資料失敗，伺服器回傳狀態碼: ${profileRes.status}`);
-      // 如果是 403，通常代表 Token 過期或無效，可以考慮在這裡觸發登出
-      return; 
+    // 1. 嘗試從 3001 取得個人資料 (LMP)
+    try {
+      const profileRes = await api.get(`http://localhost:3000/api/personal_information/${user.user_id}`);
+      if (profileRes.data && profileRes.data.success) {
+        currentWeek = getPregnancyWeek(profileRes.data.data.lmpDate);
+        console.log(`[通知檢查] 目前週數: ${currentWeek}`);
+      }
+    } catch (e) {
+      console.warn("無法從 3000 取得週數，繼續嘗試抓取基礎通知...");
     }
 
-    const profileData = await profileRes.json();
-    
-    // 2. 檢查 API 是否成功回傳
-    if (profileData.success && profileData.data.lmpDate) {
-      // 使用正確的變數 profileData 以及正確的欄位 lmpDate
-      const currentWeek = getPregnancyWeek(profileData.data.lmpDate);
-      
-      console.log(`[通知檢查] 使用者:${user.user_id}, 目前週數:${currentWeek}`);
+    const res = await api.get(`http://localhost:3002/api/notifications/${user.user_id}`, {
+      params: { week: currentWeek }
+    });
 
-      // 3. 抓取通知 (Port 3002)
-      const res = await fetch(`http://localhost:3002/api/notifications/${user.user_id}?week=${currentWeek}`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // 通知 API 也要檢查通行證
-        }
-      });
+    const data = res.data;
 
-      if (!res.ok) {
-        console.error(`取得通知資料失敗，伺服器回傳狀態碼: ${res.status}`);
-        return;
-      }
-
-      const data = await res.json();
-
-      // 4. 更新前端狀態
+    // 3. 更新前端狀態
+    if (Array.isArray(data)) {
       notifications.value = data.map((n, index) => ({
-        id: index + 1,
+        id: n.id || index + 1,
         ...n,
         read: false
       }));
-      
-      console.log("成功取得通知列表:", notifications.value);
-    } else {
-      console.error("無法取得使用者的 LMP 資料，請檢查資料庫 personal_information 表");
+      console.log("成功取得合併後的通知列表:", notifications.value);
     }
+    
   } catch (error) {
-    console.error("通知取得流程發生錯誤:", error);
+    console.error("通知取得流程發生嚴重錯誤:", error);
+  } finally {
+    isFetching.value = false;
   }
 };
 
 // 計算未讀通知數量
 const notificationCount = computed(() => {
-  // 直接加總過濾後的未讀陣列長度
   const checkupUnread = checkupNotifications.value.filter(n => !n.read).length;
   const eduUnread = educationNotifications.value.filter(n => !n.read).length;
-  const reviewCount = reviewNotifications.value.filter(n => !n.read).length;
-  return checkupUnread + eduUnread + reviewCount;
-});
-
-const reviewNotifications = computed(() => {
-  return notifications.value.filter(n => n.type === 'review');
+  const reviewUnread = reviewNotifications.value.filter(n => !n.read).length; // 加入這一行
+  return checkupUnread + eduUnread + reviewUnread;
 });
 
 // 衛教專區是否為當前頁面
@@ -584,45 +601,24 @@ const isEducationActive = computed(() => {
 
 // 點擊衛教通知後，標記已讀、開啟連結、重新抓取通知
 const openEducation = async (notification) => {
-
   const userStr = sessionStorage.getItem("user");
-  const token = localStorage.getItem("token");
   if (!userStr) return;
 
   const user = JSON.parse(userStr);
 
   try {
-
-    // 寫入已讀
-    const res = await fetch("http://localhost:3000/api/read_records", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // 把通行證加進來！
-        "Authorization": `Bearer ${token}` 
-      },
-      body: JSON.stringify({
-        user_id: user.user_id,
-        article_id: notification.article_id
-      })
+    await api.post("http://localhost:3000/api/read_records", {
+      user_id: user.user_id,
+      article_id: notification.article_id
     });
 
-    // 攔截錯誤，確認後端有成功寫入
-    if (!res.ok) {
-      console.error(`標記已讀 API 失敗，狀態碼: ${res.status}`);
-      // 就算標記失敗，可能還是希望讓媽媽能看到文章，所以這裡不寫 return 阻斷
-    }
-
-    // 開啟文章
     window.open(notification.link, "_blank");
 
-    // 重新抓通知
     await fetchNotifications();
 
   } catch (error) {
     console.error("標記已讀失敗", error);
   }
-
 };
 
 // 計算距離今天還有幾天
@@ -641,15 +637,34 @@ const getDaysRemaining = (dateStr) => {
   return `還有 ${diffDays} 天`;
 };
 
+
+let notificationTimer = null;
+
+onMounted(() => {
+  notificationTimer = setInterval(fetchNotifications, 300000);
+});
+
+onUnmounted(() => {
+  clearInterval(notificationTimer);
+});
+
 </script>
 
 <style scoped>
-.review-msg-hint {
-  font-size: 11px;
-  color: #888;
-  margin-top: 5px;
-  font-weight: 500;
+.review-badge {
+  background: #e6f4ff !important;
+  color: #1890ff !important;
 }
+
+.edu-grid-card.review {
+  border: 1px solid #d6eaff;
+  background: #fafcff;
+}
+
+.edu-grid-card.review:hover {
+  border-color: #1890ff;
+}
+
 .notify-card {
   display: flex;
   gap: 12px;
@@ -786,7 +801,6 @@ const getDaysRemaining = (dateStr) => {
   line-height: 1.4;
   /* 限制標題長度 */
   display: -webkit-box;
-  /* -webkit-line-clamp:2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -807,15 +821,6 @@ const getDaysRemaining = (dateStr) => {
   background: #fff0f0;
   color: #ff4d4f;
   font-weight: 600;
-}
-
-.review-badge {
-  background: #e6f4ff;
-  color: #1890ff;
-}
-
-.edu-grid-card.review {
-  border: 1px solid #d6eaff;
 }
 
 /* RWD 調整：手機版改為單欄或縮小間距 */
