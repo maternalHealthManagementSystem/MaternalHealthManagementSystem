@@ -195,7 +195,6 @@
       </div>
     </div>
 
-    <!-- 通知提醒 Modal -->
     <div v-if="showNotificationModal" class="modal-overlay modal-notification">
       <div class="modal-window">
         <span class="close" @click="closeNotificationModal">×</span>
@@ -223,7 +222,8 @@
             <div v-if="educationNotifications.length > 0 || reviewNotifications.length > 0">
               <h2>📝 衛教提醒 ({{ educationNotifications.length + reviewNotifications.length }})</h2>
               <div class="edu-grid">
-                 <div 
+
+                <div 
                   class="edu-grid-card review"
                   v-for="n in reviewNotifications" 
                   :key="'review-' + n.article_id"
@@ -297,7 +297,13 @@ import { forceLogout } from "./services/api.js";
 const route = useRoute();
 const router = useRouter();
 
+function handleDayClick(day) {
+  console.log(day);
+}
 
+function handleMonthChange(month) {
+  console.log(month);
+}
 
 /* 基礎狀態 */
 
@@ -507,6 +513,13 @@ const educationNotifications = computed(() => {
   return notifications.value.filter(n => n.type === 'education');
 });
 
+// 分離複習提醒
+const reviewNotifications = computed(() => {
+  return notifications.value.filter(n => n.type === 'review');
+});
+
+
+
 // 計算週數函式(與home.vue一致)
 const getPregnancyWeek = (lmpDate) => {
   if (!lmpDate) return null;
@@ -519,72 +532,66 @@ const getPregnancyWeek = (lmpDate) => {
   return Math.floor(diffDays / 7);
 };
 
+const isFetching = ref(false);
+
 // 從後端 API 取得通知
 const fetchNotifications = async () => {
+  if (isFetching.value) return; // 防止重複請求
+  
   const userStr = sessionStorage.getItem("user");
   const token = localStorage.getItem("token");
-  // 必須同時檢查 user 和 token，如果沒有 token 就不要發送請求，避免送出 "Bearer null"
+  
   if (!userStr || !token) {
     console.warn("未找到 Token 或使用者資料，停止發送請求");
     return;
   }
+  
   const user = JSON.parse(userStr);
+  isFetching.value = true;
 
   try {
-    // 1. 抓取個人資料 
-    const profileRes = await api.get(`/api/personal_information/${user.user_id}`);
+    let currentWeek = null;
 
-    // 攔截 403 錯誤，避免畫面死機
-    if (!profileRes.ok) {
-      console.error(`取得個人資料失敗，伺服器回傳狀態碼: ${profileRes.status}`);
-      // 如果是 403，通常代表 Token 過期或無效，可以考慮在這裡觸發登出
-      return; 
+    // 1. 嘗試從 3001 取得個人資料 (LMP)
+    try {
+      const profileRes = await api.get(`http://localhost:3000/api/personal_information/${user.user_id}`);
+      if (profileRes.data && profileRes.data.success) {
+        currentWeek = getPregnancyWeek(profileRes.data.data.lmpDate);
+        console.log(`[通知檢查] 目前週數: ${currentWeek}`);
+      }
+    } catch (e) {
+      console.warn("無法從 3000 取得週數，繼續嘗試抓取基礎通知...");
     }
 
-    const profileData = await profileRes.json();
-    
-    // 2. 檢查 API 是否成功回傳
-    if (profileData.success && profileData.data.lmpDate) {
-      // 使用正確的變數 profileData 以及正確的欄位 lmpDate
-      const currentWeek = getPregnancyWeek(profileData.data.lmpDate);
-      
-      console.log(`[通知檢查] 使用者:${user.user_id}, 目前週數:${currentWeek}`);
+    const res = await api.get(`http://localhost:3002/api/notifications/${user.user_id}`, {
+      params: { week: currentWeek }
+    });
 
-      // 3. 抓取通知 (Port 3002)
-      const res = await api.get(`/api/notifications/${user.user_id}`, {
-        params: { week: currentWeek }
-      });
+    const data = res.data;
 
-      const data = res.data;
-
-      // 4. 更新前端狀態
+    // 3. 更新前端狀態
+    if (Array.isArray(data)) {
       notifications.value = data.map((n, index) => ({
-        id: index + 1,
+        id: n.id || index + 1,
         ...n,
         read: false
       }));
-      
-      console.log("成功取得通知列表:", notifications.value);
-    } else {
-      console.error("無法取得使用者的 LMP 資料，請檢查資料庫 personal_information 表");
+      console.log("成功取得合併後的通知列表:", notifications.value);
     }
+    
   } catch (error) {
-    console.error("通知取得流程發生錯誤:", error);
+    console.error("通知取得流程發生嚴重錯誤:", error);
+  } finally {
+    isFetching.value = false;
   }
 };
 
 // 計算未讀通知數量
 const notificationCount = computed(() => {
-  // 直接加總過濾後的未讀陣列長度
   const checkupUnread = checkupNotifications.value.filter(n => !n.read).length;
   const eduUnread = educationNotifications.value.filter(n => !n.read).length;
-  const reviewCount = reviewNotifications.value.filter(n => !n.read).length;
-  
-  return checkupUnread + eduUnread + reviewCount;
-});
-
-const reviewNotifications = computed(() => {
-  return notifications.value.filter(n => n.type === 'review');
+  const reviewUnread = reviewNotifications.value.filter(n => !n.read).length; // 加入這一行
+  return checkupUnread + eduUnread + reviewUnread;
 });
 
 // 衛教專區是否為當前頁面
@@ -594,45 +601,24 @@ const isEducationActive = computed(() => {
 
 // 點擊衛教通知後，標記已讀、開啟連結、重新抓取通知
 const openEducation = async (notification) => {
-
   const userStr = sessionStorage.getItem("user");
-  const token = localStorage.getItem("token");
   if (!userStr) return;
 
   const user = JSON.parse(userStr);
 
   try {
-
-    // 寫入已讀
-    const res = await fetch("http://localhost:3000/api/read_records", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        // 把通行證加進來！
-        "Authorization": `Bearer ${token}` 
-      },
-      body: JSON.stringify({
-        user_id: user.user_id,
-        article_id: notification.article_id
-      })
+    await api.post("http://localhost:3000/api/read_records", {
+      user_id: user.user_id,
+      article_id: notification.article_id
     });
 
-    // 攔截錯誤，確認後端有成功寫入
-    if (!res.ok) {
-      console.error(`標記已讀 API 失敗，狀態碼: ${res.status}`);
-      // 就算標記失敗，可能還是希望讓媽媽能看到文章，所以這裡不寫 return 阻斷
-    }
-
-    // 開啟文章
     window.open(notification.link, "_blank");
 
-    // 重新抓通知
     await fetchNotifications();
 
   } catch (error) {
     console.error("標記已讀失敗", error);
   }
-
 };
 
 // 計算距離今天還有幾天
@@ -665,11 +651,18 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.review-msg-hint {
-  font-size: 11px;
-  color: #888;
-  margin-top: 5px;
-  font-weight: 500;
+.review-badge {
+  background: #e6f4ff !important;
+  color: #1890ff !important;
+}
+
+.edu-grid-card.review {
+  border: 1px solid #d6eaff;
+  background: #fafcff;
+}
+
+.edu-grid-card.review:hover {
+  border-color: #1890ff;
 }
 
 .notify-card {
@@ -828,15 +821,6 @@ onUnmounted(() => {
   background: #fff0f0;
   color: #ff4d4f;
   font-weight: 600;
-}
-
-.review-badge {
-  background: #e6f4ff;
-  color: #1890ff;
-}
-
-.edu-grid-card.review {
-  border: 1px solid #d6eaff;
 }
 
 /* RWD 調整：手機版改為單欄或縮小間距 */
