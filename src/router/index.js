@@ -82,11 +82,8 @@ const router = createRouter({
   routes,
 });
 
-export default router;
-
-
 //登入後才可以訪問其他頁面，否則導回登入頁
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, from) => {
   // 1. 取得並解析使用者資料
   let user = null;
   try {
@@ -96,23 +93,30 @@ router.beforeEach((to, from, next) => {
     user = null;
   }
 
-  // 2. 核心登入判斷：是否存在 user 且包含 user_id
+  // 2. 核心登入判斷
   const isLoggedIn = !!(user && user.user_id);
   
-  // 3. 判斷目標路徑是否為登入頁 (檢查路徑 '/' 或 名稱 'login')
+  // 3. 判斷目標路徑是否為登入頁
   const isGoingToLogin = to.path === '/' || to.name === 'login';
 
   console.log(`[Router Guard] Path: ${to.path}, LoggedIn: ${isLoggedIn}`);
 
+  // --- 開始判斷邏輯，使用 return 取代 next() ---
+
   if (!isLoggedIn && !isGoingToLogin) {
-    // 情況 A：未登入且要去保護頁面 -> 強制回登入頁
+    // 情況 A：未登入且要去保護頁面 -> 重定向至登入頁
     console.warn("未偵測到登入資訊，重定向至登入頁");
-    next({ name: 'login' });
-  } else if (isLoggedIn && isGoingToLogin) {
+    return { name: 'login' }; 
+  } 
+  
+  if (isLoggedIn && isGoingToLogin) {
     // 情況 B：已登入但想去登入頁 -> 強制去首頁
-    next({ name: 'home' });
-  } else {
-    // 情況 C：其他正常情況 -> 放行
-    next();
+    console.log("已登入，自動跳轉至首頁");
+    return { name: 'home' };
   }
+
+  // 情況 C：其他正常情況 -> 直接 return (不 return 任何東西即代表放行)
+  // 在 Vue Router 4 中，不 return 或是 return true 就是允許導航
 });
+
+export default router;
