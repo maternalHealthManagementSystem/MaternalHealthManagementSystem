@@ -50,6 +50,9 @@ export const useCalendarStore = defineStore('schedule', {
           id: item.event_id,
           date: dayjs(item.event_start_date).format('YYYY-MM-DD'),      
           startDate: dayjs(item.event_start_date).format('YYYY-MM-DD'),
+          endDate: item.event_end_date
+            ? dayjs(item.event_end_date).format('YYYY-MM-DD')
+            : dayjs(item.event_start_date).format('YYYY-MM-DD'),
           title: item.event_title,
           type: TYPE_MAP[item.event_type] || 'other',
           rawType: item.event_type,
@@ -91,7 +94,8 @@ export const useCalendarStore = defineStore('schedule', {
         const payload = {
           event_title: newEvent.title,
           event_type: REVERSE_TYPE_MAP[newEvent.type] || '其他',
-          event_start_date: newEvent.date,
+          event_start_date: newEvent.startDate,
+          event_end_date: newEvent.endDate, 
           event_start_time: newEvent.startTime.length === 5 ? `${newEvent.startTime}:00` : newEvent.startTime,
           event_end_time: newEvent.endTime.length === 5 ? `${newEvent.endTime}:00` : newEvent.endTime,
           event_place: newEvent.location || '',
@@ -116,7 +120,8 @@ export const useCalendarStore = defineStore('schedule', {
         const payload = {
           event_title: updatedEvent.title,
           event_type: REVERSE_TYPE_MAP[updatedEvent.type] || '其他',
-          event_start_date: updatedEvent.date,
+          event_start_date: updatedEvent.startDate,
+          event_end_date: updatedEvent.endDate, 
           event_start_time: updatedEvent.startTime,
           event_end_time: updatedEvent.endTime,
           event_place: updatedEvent.location,

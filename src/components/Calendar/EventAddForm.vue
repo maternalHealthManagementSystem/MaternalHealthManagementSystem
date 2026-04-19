@@ -45,19 +45,32 @@
               </select>
             </div>
 
-            <!-- 日期 -->
-            <div class="form-group">
-              <label class="form-label">
-                <span class="required">*</span>📅日期
-              </label>
-              <input
-                v-model="formData.startDate"
-                type="date"
-                class="form-input"
-                required
-              />
+            <!-- 日期範圍 -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="required">*</span>📅開始日期
+                </label>
+                <input
+                  v-model="formData.startDate"
+                  type="date"
+                  class="form-input"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="required">*</span>📅結束日期
+                </label>
+                <input
+                  v-model="formData.endDate"
+                  type="date"
+                  class="form-input"
+                  required
+                />
+              </div>
             </div>
-
+            
             <!-- 時間範圍 -->
             <div class="form-row">
               <div class="form-group">
@@ -146,6 +159,7 @@ const formData = ref({
   title: '',
   type: '',
   startDate: '',
+  endDate:'',
   startTime: '',
   endTime: '',
   location: '',
@@ -170,12 +184,25 @@ watch(() => props.show, (newVal) => {
   }
 })
 
+// 結束日期大多與開始日期相同時的處理
+watch(() => formData.value.startDate, (newStartDate, oldStartDate) => {
+  if (!formData.value.endDate || formData.value.endDate === oldStartDate) {
+    formData.value.endDate = newStartDate;
+  } 
+  else if (dayjs(formData.value.endDate).isBefore(dayjs(newStartDate))) {
+    formData.value.endDate = newStartDate;
+  }
+});
+
 // 重置行程表單
 function resetForm() {
+  const today = dayjs().format('YYYY-MM-DD')
+
   formData.value = {
     title: '',
     type: '',
-    startDate: dayjs().format('YYYY-MM-DD'),
+    startDate: today,
+    endDate: today,
     startTime: '09:00',
     endTime: '10:00',
     location: '',
@@ -213,12 +240,18 @@ function validateForm() {
     return false
   }
 
+  if (!formData.value.startDate || !formData.value.endDate) {
+    errorMessage.value = '請選擇開始與結束日期'
+    return false
+  }
+
   // 檢查時間邏輯
   const startDateTime = dayjs(`${formData.value.startDate} ${formData.value.startTime}`)
-  const endDateTime = dayjs(`${formData.value.startDate} ${formData.value.endTime}`)
+  const endDateTime = dayjs(`${formData.value.endDate} ${formData.value.endTime}`)
 
-  if (endDateTime.isBefore(startDateTime) || endDateTime.isSame(startDateTime)) {
-    errorMessage.value = '結束時間必須晚於開始時間'
+  // 跨日行程
+  if (!endDateTime.isAfter(startDateTime)) {
+    errorMessage.value = '結束時間必須晚於開始時間（請檢查日期與時間）'
     return false
   }
 
@@ -237,8 +270,9 @@ function saveEvent() {
     id: Date.now(), // 使用時間戳作為臨時 ID
     title: formData.value.title,
     type: formData.value.type,
-    date: formData.value.startDate,
+    //date: formData.value.startDate,
     startDate: formData.value.startDate,
+    endDate: formData.value.endDate,
     startTime: formData.value.startTime,
     endTime: formData.value.endTime,
     location: formData.value.location,
