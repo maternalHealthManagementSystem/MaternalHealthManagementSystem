@@ -102,16 +102,16 @@ app.post('/api/schedule', authMiddleware , async (req, res) => {
             personal_informations_user_id, 
             event_title, 
             event_type, 
-            event_start_date, 
-            event_start_time, 
+            event_start_date,
             event_end_date, 
+            event_start_time, 
             event_end_time, 
             event_place, 
             event_describe, 
             event_created_datetime, 
             event_is_auto, 
             event_is_editable
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`;
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,  NOW(), ?, ?)`;
 
         await db.query(sql, [
             nextId, 
@@ -119,8 +119,8 @@ app.post('/api/schedule', authMiddleware , async (req, res) => {
             data.event_title, 
             data.event_type, 
             data.event_start_date, 
+            data.event_end_date, 
             data.event_start_time, 
-            data.event_start_date, 
             data.event_end_time, 
             data.event_place, 
             data.event_describe, 
@@ -166,6 +166,7 @@ app.put('/api/schedule/:eventId', authMiddleware , async (req, res) => {
         event_title=?, 
         event_type=?, 
         event_start_date=?, 
+        event_end_date=?,
         event_start_time=?, 
         event_end_time=?, 
         event_place=?, 
@@ -175,7 +176,7 @@ app.put('/api/schedule/:eventId', authMiddleware , async (req, res) => {
     try {
         await db.query(sql, [
             data.event_title, data.event_type, data.event_start_date, 
-            data.event_start_time, data.event_end_time, data.event_place, 
+            data.event_end_date,data.event_start_time, data.event_end_time, data.event_place, 
             data.event_describe, eventId, userId
         ]);
         res.json({ success: true });

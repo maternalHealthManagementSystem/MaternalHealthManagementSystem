@@ -47,16 +47,29 @@
             </div>
 
             <!-- 日期 -->
-            <div class="form-group">
-              <label class="form-label">
-                <span class="required">*</span>📅日期
-              </label>
-              <input
-                v-model="formData.startDate"
-                type="date"
-                class="form-input"
-                required
-              />
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="required">*</span>📅開始日期
+                </label>
+                <input
+                  v-model="formData.startDate"
+                  type="date"
+                  class="form-input"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label class="form-label">
+                  <span class="required">*</span>📅結束日期
+                </label>
+                <input
+                  v-model="formData.endDate"
+                  type="date"
+                  class="form-input"
+                  required
+                />
+              </div>
             </div>
 
             <!-- 時間範圍 -->
@@ -148,6 +161,7 @@ const formData = ref({
   title: '',
   type: '',
   startDate: '',
+  endDate: '',
   startTime: '',
   endTime: '',
   location: '',
@@ -165,6 +179,7 @@ watch(() => props.event, (newEvent) => {
       title: newEvent.title || '',
       type: newEvent.type || '',
       startDate: newEvent.startDate || '',
+      endDate: newEvent.endDate || newEvent.startDate || '', // 如果原始行程沒有 endDate，則預設等於 startDate
       startTime: newEvent.startTime || '',
       endTime: newEvent.endTime || '',
       location: newEvent.location || '',
@@ -204,18 +219,27 @@ function validateForm() {
     return false
   }
 
-
-  // 檢查時間邏輯
-  const startDateTime = dayjs(`${formData.value.startDate} ${formData.value.startTime}`)
-  const endDateTime = dayjs(`${formData.value.startDate} ${formData.value.endTime}`)
-
-  if (endDateTime.isBefore(startDateTime) || endDateTime.isSame(startDateTime)) {
-    errorMessage.value = '結束時間必須晚於開始時間'
-    return false
+  if (!formData.value.startTime || !formData.value.endTime) {
+    errorMessage.value = '請輸入開始和結束時間'
+    return false;
   }
 
-  errorMessage.value = ''
-  return true
+  // 跨日邏輯檢查
+    const startDateTime = dayjs(`${formData.value.startDate} ${formData.value.startTime}`)
+    const endDateTime = dayjs(`${formData.value.endDate} ${formData.value.endTime}`)
+
+    if (endDateTime.isBefore(startDateTime)) {
+      errorMessage.value = '結束時間不能早於開始時間'
+      return false
+    }
+    
+    if (endDateTime.isSame(startDateTime)) {
+      errorMessage.value = '開始與結束時間不能完全相同'
+      return false
+    }
+
+    errorMessage.value = ''
+    return true
 }
 
 // 儲存行程
