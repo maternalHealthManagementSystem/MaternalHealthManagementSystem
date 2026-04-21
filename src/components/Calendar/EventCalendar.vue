@@ -92,10 +92,19 @@
               v-for="event in day.events.slice(0, 2)"
               :key="event.id"
               class="event-item"
-              :class="`event-${event.type}`"
+              :class="[
+                `event-${event.type}`,
+                {
+                  'is-multi-start': event.isMultiDay && event.isStart,
+                  'is-multi-middle': event.isMultiDay && !event.isStart && !event.isEnd,
+                  'is-multi-end': event.isMultiDay && event.isEnd
+                }
+              ]"
               @click.stop="handleEventClick(event)"
             >
-              {{ event.title }}
+            <span :style="{ visibility: (event.isMultiDay && !event.isStart) ? 'hidden' : 'visible' }">
+                {{ event.title }}
+            </span>
             </div>
 
             <div 
@@ -124,7 +133,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import dayjs from 'dayjs'
+import isBetween from 'dayjs/plugin/isBetween'
 import EventListModal from './EventListModal.vue'
+
+dayjs.extend(isBetween)
 
 const eventsMap = computed(() => {
   const map = {}
@@ -190,7 +202,7 @@ async function openMonthPicker() {
   tempMonth.value = currentDate.value.month() + 1
   showMonthPicker.value = true
 
-  // 等待 DOM 渲染後，自動捲動到選中的項目
+  // 自動捲動到選中的年月
   await nextTick()
   if (pickerRef.value) {
     const activeItems = pickerRef.value.querySelectorAll('.picker-item.active')
@@ -224,6 +236,18 @@ function closeMonthPicker() {
 const currentYear = computed(() => currentDate.value.year())
 const currentMonth = computed(() => currentDate.value.month() + 1)
 
+
+const isDateInRange = (dateStr, event) => {
+  // 單日事件 
+  if (!event.startDate && !event.endDate) {
+    return event.date === dateStr
+  }
+  // 跨日事件
+  const start = event.startDate || event.date
+  const end = event.endDate || event.date
+  return dayjs(dateStr).isBetween(start, end, 'day', '[]')
+}
+
 // 生成日曆天數
 const calendarDays = computed(() => {
   const year = currentYear.value
@@ -236,32 +260,56 @@ const calendarDays = computed(() => {
   // 計算需要顯示的天數
   const startDay = firstDay.startOf('week').add(1, 'day') // 從週一開始
   const endDay = lastDay.endOf('week').add(1, 'day')
-  
+
   const days = []
   let currentDay = startDay
-  let dayId = 1
+
+  const sortedAllEvents = [...props.events].sort((a, b) => {
+    const aStart = a.startDate || a.date
+    const aEnd = a.endDate || a.date
+    const bStart = b.startDate || b.date
+    const bEnd = b.endDate || b.date
+    const aLen = dayjs(aEnd).diff(dayjs(aStart), 'day')
+    const bLen = dayjs(bEnd).diff(dayjs(bStart), 'day')
+    return bLen - aLen || dayjs(aStart).diff(dayjs(bStart))
+  })
   
   while (currentDay.isBefore(endDay) || currentDay.isSame(endDay, 'day')) {
-    const dayData = {
-      id: dayId++,
+    const dateStr = currentDay.format('YYYY-MM-DD')
+    
+    // 取得該日事件並處理跨日狀態
+    const dayEvents = sortedAllEvents
+      .filter(e => isDateInRange(dateStr, e))
+      .map(event => {
+        const start = event.startDate || event.date
+        const end = event.endDate || event.date
+        const isStart = start === dateStr
+        const isEnd = end === dateStr
+        const isMultiDay = start !== end
+
+        return {
+          ...event,
+          isMultiDay,
+          isStart,
+          isEnd
+        }
+      })
+
+    days.push({
       date: currentDay.date(),
-      fullDate: currentDay.format('YYYY-MM-DD'),
+      fullDate: dateStr,
       isCurrentMonth: currentDay.month() + 1 === month,
       isToday: currentDay.isSame(dayjs(), 'day'),
-      events: getEventsForDay(currentDay)
-    }
-    
-    days.push(dayData)
+      events: dayEvents
+    })
     currentDay = currentDay.add(1, 'day')
   }
-  
   return days
 })
 
 // 獲取特定日期的事件
 function getEventsForDay(date) {
   const dateStr = date.format('YYYY-MM-DD')
-  //return props.events.filter(event => event.date === dateStr)
   return eventsMap.value[dateStr] || []
 }
 
@@ -315,16 +363,25 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+:root {
+  --primary-blue: #5eb3e4;
+  --secondary-blue: #0557e5;
+  --bg-gray: #f5f5f5;
+  --border-color: #e0e0e0;
+  --text-main: #333;
+  --text-muted: #666;
+}
+
 .calendar-container {
   border-radius: 12px;
   background: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  /* flex:  0 0 65%; */
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
   max-width: 800px; 
-  padding-bottom: 10px;
+  padding-bottom: 15px;
+  overflow: hidden;
   
 } 
 
@@ -344,6 +401,10 @@ onUnmounted(() => {
   cursor: pointer;
   user-select: none;
   margin-bottom: 5px;
+}
+
+.month-title:hover {
+  color: var(--primary-blue);
 }
 
 .calender-header-bar{
@@ -496,10 +557,10 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   margin-bottom: 1px;
-  /* flex: 0 0 45%; */
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   box-shadow: none; 
   padding: 0 15px;
+  color: var(--text-muted);
 }
 
 .calendar-grid {
@@ -512,123 +573,148 @@ onUnmounted(() => {
 
 .weekday {
   background: #f5f5f5;
-  padding: 12px;
+  padding: 12px 0;
   text-align: center;
   font-weight: 600;
   color: #666;
   font-size: 14px;
-  border-right: none;  /* 保持分隔線的處理 */
   max-width: 100%;
 }
 
-/* 移除每行最右側的邊框，防止凸出 */
-.day-cell:nth-child(7n){
-  border-right:1px solid #e0e0e0  ;
-}
-
-/* 移除每行最左側的邊框) */
-.day-cell:nth-child(7n-6){
-  border-left: 1px solid #e0e0e0;
-}
-
-/* 日期格子邊框修正：確保左右兩側邊緣的格子貼合容器邊緣 */
+/* 確保左右兩側邊緣的格子貼合容器邊緣 */
 .day-cell {
   background: white;
-  min-height: 90px;
-  max-width: 90px;
-  padding: 6px;
+  min-height: 100px;
+  padding: 0;
   cursor: pointer;
-  border-bottom: 1px solid #e0e0e0;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  border-right: 1px solid #e0e0e0;
   border-bottom: 1px solid #e0e0e0;
+  overflow: hidden; 
+  position: relative;
+  border-right: none;
+  transition: background 0.2s;
+}
+
+.day-cell:nth-child(7n) { 
+  border-right: none; 
 }
 
 .day-cell:hover {
-  background: #f8f9fa;
+  background: #fcfcfc;
 }
 
 .day-cell.other-month {
-  background: #fafafa;
-  color: #ccc;
+  background: #f5f5f5; 
+  color: #d0d0d0;
 }
 
 .day-cell.today {
-  background: #e3f2fd;
+  background: #f0f7ff;
 }
 
 .day-cell.today .day-number {
   background: #5eb3e4;
   color: white;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 5px;
 }
 
 .day-number {
   font-size: 16px;
   font-weight: 500;
-  color: #333;
   flex-shrink: 0; 
-  margin-bottom: 4px;
-  
+  margin-top: 4px;
+  padding: 2px 2px; 
+  z-index: 5;
 }
 
 .events {
-  margin-top: 0;
-  flex-grow: 1;
-  overflow-y: hidden;
-  overflow-x: hidden;
+  padding: 0 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .event-item {
   font-size: 13px;
-  padding: 2px 4px;
-  margin-bottom: 2px;
-  border-radius: 3px;
+  border-radius: 4px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   color: white;
   cursor: pointer;
-  transition: opacity 0.2s;
+  box-sizing: border-box;      
+  height: 22px;
+  line-height: 18px;
+  padding: 2px 6px;
+  position: relative;
+  margin-right: 0;
+  margin-left: 0;
   width: 100%;
-  box-sizing: border-box;       /* 確保 padding/border 不會使寬度溢出 */
+}
+
+/* 開始天 */
+.is-multi-start {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  width: 105%;
+  z-index: 3;
+
+}
+
+/* 中間天 */
+.is-multi-middle {
+  border-radius: 0;
+  margin-left: -5%;
+  width: 110%;
+  z-index: 3;
+}
+
+/* 結束天 */
+.is-multi-end {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  margin-left: -5%;
+  width: 105%;
+  z-index: 3;
 }
 
 .event-item:hover {
   opacity: 0.8;
 }
 
-/* 產檢：對應 type: 'checkup' */
+/* 產檢 */
 .event-checkup {
   background-color: #ff6b9d !important;
   color: white !important;
 }
 
-/* 其他：對應 type: 'other' */
+/* 其他 */
 .event-other {
   background-color: #4fc3f7 !important;
   color: white !important;
 }
 
-/* 日記：對應 type: 'diary' */
+/* 日記 */
 .event-diary {
   background-color: #4e7d50 !important;
   color: white !important;
 }
 
-/* 提醒或預約 (視你的需求而定) */
+/* 預約*/
 .event-appointment {
   background-color: #9c8ec9 !important;
   color: white !important;
 }
 
+/* 提醒*/
 .event-reminder {
   background-color: #ffa726 !important;
   color: white !important;
@@ -656,17 +742,27 @@ onUnmounted(() => {
 @media (min-width: 350px) and (max-width: 400px) {
   .calendar-container {
     min-width: 100%;
+    overflow: hidden; 
   }
   .day-cell {
-    padding: 4px;
     min-height: 60px;
-    max-width: 47px;
+    border-right: none;
+    overflow: visible;
+    max-width:40px;
   }
+  .day-number{
+    font-size: 12px;
+  }
+  .day-cell.today .day-number {
+    width: 20px;
+    height: 20px;
+    margin-bottom: 5px;
+  }
+
   .event-item {
     font-size: 10px;
-    padding: 2px 4px;
+    padding: 2px 2px;
     margin-top: 2px;
-    max-width: 38px;
   }
   .events {
     margin-top: 2px;
@@ -677,6 +773,22 @@ onUnmounted(() => {
   }
   .month-title{
     font-size: 25px;
+  }
+  .is-multi-start {
+    border-radius: 4px 0 0 4px;
+    width: 115%; 
+    margin-right: -15%;
+  }
+
+  .is-multi-middle {
+    width: 130%;
+    margin-left: -15%;
+  }
+
+  .is-multi-end {
+    border-radius: 0 4px 4px 0;
+    margin-left: -15%;
+    width: 115%;
   }
 }
 
@@ -684,17 +796,20 @@ onUnmounted(() => {
 @media (min-width: 400px) and (max-width: 450px) {
   .calendar-container {
     min-width: 100%;
+    overflow: hidden;
   }
   .day-cell {
-    padding: 4px;
+    padding: 2px;
     min-height: 60px;
-    max-width: 47px;
+    border-right: none;
+    overflow: visible;
+    max-width:45px;
   }
   .event-item {
     font-size: 10px;
     padding: 2px 4px;
     margin-top: 2px;
-    max-width: 38px;
+    width: 100%;
   }
   .events {
     margin-top: 2px;
@@ -706,12 +821,29 @@ onUnmounted(() => {
   .month-title{
     font-size: 25px;
   }
+  
+  .is-multi-start {
+    border-radius: 4px 0 0 4px;
+    width: 115%;
+  }
+
+  .is-multi-middle {
+    width: 125%;
+    margin-left: -10%;
+  }
+
+  .is-multi-end {
+    border-radius: 0 4px 4px 0;
+    margin-left: -10%;
+    width: 110%;
+  }
 }
 
 /* iPad Air*/
 @media (min-width: 750px) and (max-width: 820px){
   .calendar-container {
     min-width: 100%;
+    overflow: hidden; 
   }
   .calendar-header {
     flex-direction: column;
@@ -727,7 +859,10 @@ onUnmounted(() => {
   }
 
   .day-cell {
-    min-height: 65px;
+    min-height: 100px;
+    border-right: none;
+    overflow: visible;
+    
   }
 
   .month-picker-popup {
@@ -735,6 +870,21 @@ onUnmounted(() => {
   }
   .event-item{
     font-size: 15px;
+  }
+  .is-multi-start {
+    border-radius: 4px 0 0 4px;
+    width: 115%;
+  }
+
+  .is-multi-middle {
+    width: 125%;
+    margin-left: -10%;
+  }
+
+  .is-multi-end {
+    border-radius: 0 4px 4px 0;
+    margin-left: -10%;
+    width: 110%;
   }
 }
 </style>

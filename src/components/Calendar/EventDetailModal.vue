@@ -25,15 +25,18 @@ eventdatailmodel
           <div class="event-details">
             <!-- 日期時間 -->
             <div class="detail-item">
-              <div class="detail-label">📅日期時間</div>
+              <div class="detail-label">📅日期</div>
               <div class="detail-content">
-                <div class="datetime-info">
-                  <span class="date-text">{{ formatDate(event.startDate) }}</span>
-                  <div class="time-range">
-                    <span>{{ formatTimeDisplay(event.startTime) }}</span>
-                    <span class="separator">-</span>
-                    <span>{{ formatTimeDisplay(event.endTime) }}</span>
-                  </div>
+                <div class="date-info">
+                  <template v-if="!isMultiDay">
+                    <span class="date-text">{{ formatDate(event.startDate) }}</span>
+                  </template>
+                  
+                  <template v-else>
+                    <span class="date-text">{{ formatDate(event.startDate) }}</span>
+                    <span class="separator">－</span>
+                    <span class="date-text">{{ formatDate(event.endDate) }}</span>
+                  </template>
                 </div>
               </div>
             </div>
@@ -48,34 +51,26 @@ eventdatailmodel
               </div>
             </div>
 
-            <!-- 時間軸視覺化 -->
+            <!-- 時間軸 -->
             <div class="detail-item">
-              <div class="detail-label">🕛時間軸</div>
+              <div class="detail-label">🕛行程安排</div>
               <div class="detail-content">
-                <div class="timeline">
-                  <div
-                    v-for="hour in timelineHours"
-                    :key="hour.value"
-                    class="timeline-row"
-                  >
-                    <span class="time-label">{{ hour.label }}</span>
-                    <div class="timeline-segment"></div>
-                  </div>
-
-                  <div
-                    v-if="event.startTime && event.endTime"
-                    class="event-block-container"
-                    :style="eventBlockStyle"
-                  >
-                    <div class="event-block">
-                      <span class="timeline-title">{{ event.title }}</span>
-                      <span class="timeline-time">{{ event.startTime }} – {{ event.endTime }}</span>
+                <div class="unified-timeline">
+                  <div v-for="(node, index) in timelineNodes" :key="index" class="timeline-node-item">
+                    <div class="node-indicator">
+                      <div class="node-dot" :class="[`type-${event.type}`, { 'is-end': index === timelineNodes.length - 1 }]"></div>
+                      <div v-if="index !== timelineNodes.length - 1" class="node-line"></div>
+                    </div>
+                    
+                    <div class="node-info-card">
+                      <div class="node-time">{{ node.time }}</div>
+                      <div class="node-desc">{{ node.description }}</div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-
+          
             <!-- 備註 -->
             <div class="detail-item" v-if="event.description">
               <div class="detail-label">📑備註</div>
@@ -84,14 +79,21 @@ eventdatailmodel
               </div>
             </div>
 
-           <!-- 地圖 -->
-          <div class="detail-item" v-if="event.location">
-            <div class="detail-label">🗺️位置</div>
-            <div class="detail-content">
-              <div ref="mapContainer" class="map-container"></div>
+            <!-- 地圖 -->
+            <div class="detail-item" v-if="event.location">
+              <div class="detail-label">🗺️位置</div>
+              <div class="detail-content">
+                <div ref="mapContainer" class="map-container"></div>
+              </div>
             </div>
-          </div>
-          </div>
+            <div class="meta">
+            <!-- 有更新時間時才顯示 -->
+            <div v-if="event.updatedAt" class="meta-item">
+              <span class="meta-label">最後編輯：</span>
+              <span class="meta-value">{{ formatDateTime(event.updatedAt) }}</span>
+            </div>
+          </div>  
+        </div>
         </div>
 
         <!-- 底部按鈕 -->
@@ -124,7 +126,9 @@ const props = defineProps({
       startTime: '',
       endTime: '',
       location: '',
-      description: ''
+      description: '',
+      createdAt: '', 
+      updatedAt: ''  
     })
   }
 })
@@ -134,69 +138,6 @@ const emit = defineEmits(['close', 'delete', 'edit'])
 
 // 響應式數據
 const activeTab = ref('view')
-
-// 時間軸計算
-const timelineHours = computed(() => {
-  if (!props.event.startTime || !props.event.endTime) {
-    return [];
-  }
-
-// 解析開始和結束時間 (小時部分)
-  const startTimeHour = parseTime(props.event.startTime);
-  const endTimeHour = parseTime(props.event.endTime);
-
-  // 計算顯示範圍（前後各加1小時）
-  const displayStart = Math.max(0, startTimeHour - 1);
-  const displayEnd = Math.min(24, endTimeHour + 1);
-
-  const hours = [];
-  for (let hour = displayStart; hour <= displayEnd; hour++) {
-    hours.push({
-      value: hour,
-      label: formatHourLabel(hour),
-    });
-  }
-  return hours;
-});
-
-// 計算事件區塊的樣式 (定位和高度)
-const eventBlockStyle = computed(() => {
-  if (!props.event.startTime || !props.event.endTime) {
-    return {};
-  }
-
-  const startHour = parseTime(props.event.startTime);
-  const startMinute = parseMinute(props.event.startTime);
-  const endHour = parseTime(props.event.endTime);
-  const endMinute = parseMinute(props.event.endTime);
-
-  const totalStartMinutes = startHour * 60 + startMinute;
-  const totalEndMinutes = endHour * 60 + endMinute;
-
-  // 獲取時間軸顯示的第一個小時的總分鐘數
-  const firstDisplayedHour = timelineHours.value[0].value;
-  const firstDisplayedTotalMinutes = firstDisplayedHour * 60;
-
-  // 計算事件相對於第一個顯示小時的頂部偏移 (單位為分鐘)
-  const offsetMinutes = totalStartMinutes - firstDisplayedTotalMinutes;
-
-  // 計算事件的持續時間 (單位為分鐘)
-  const durationMinutes = totalEndMinutes - totalStartMinutes;
-
-  // 每個小時在 CSS 中設定的高度為 60px
-  const pixelsPerHour = 60; 
-  const pixelsPerMinute = pixelsPerHour / 60; // 1 像素/分鐘
-
-  const topOffset = offsetMinutes * pixelsPerMinute;
-  const height = durationMinutes * pixelsPerMinute;
-
-  const containerPaddingTop = 15;
-
-  return {
-    top: `${topOffset + containerPaddingTop}px`, 
-    height: `${height}px`,
-  };
-});
 
 // 解析時間字串 (如 "10:00" -> 10)
 function parseTime(timeStr) {
@@ -234,6 +175,59 @@ function formatTimeDisplay(timeStr) {
   return `下午${hour - 12}:${minute}`
 }
 
+// 時間軸
+const timelineNodes = computed(() => {
+  if (!props.event.startTime || !props.event.endTime) return [];
+
+  if (!isMultiDay.value) {
+    // 單日行程
+    const dayLabel = dayjs(props.event.startDate).format('MM/DD (ddd)');
+    return [
+      { 
+        time: formatTimeDisplay(props.event.startTime), 
+        description: `行程 ${dayLabel} 開始`,
+        isPoint: true 
+      },
+      { 
+        time: formatTimeDisplay(props.event.endTime), 
+        description: `預計 ${dayLabel} 結束`,
+        isPoint: true 
+      }
+    ];
+  } else {
+    // 跨日行程
+    return multiDayList.value.map((day, index) => ({
+      time: index === 0 ? props.event.startTime : (index === multiDayList.value.length - 1 ? props.event.endTime : '整天'),
+      description: day.dateDisplay,
+      isPoint: true
+    }));
+  }
+});
+
+// 判斷是否為跨日行程
+const isMultiDay = computed(() => {
+  if (!props.event.startDate || !props.event.endDate) return false;
+  return props.event.startDate !== props.event.endDate;
+});
+
+// 生成跨日列表
+const multiDayList = computed(() => {
+  if (!isMultiDay.value) return [];
+  
+  const start = dayjs(props.event.startDate);
+  const end = dayjs(props.event.endDate);
+  const diffDays = end.diff(start, 'day');
+  
+  const days = [];
+  for (let i = 0; i <= diffDays; i++) {
+    const currentDay = start.add(i, 'day');
+    days.push({
+      dateDisplay: currentDay.format('MM/DD (ddd)'), 
+      isToday: currentDay.isSame(dayjs(), 'day')
+    });
+  }
+  return days;
+});
 
 // 關閉彈窗
 function closeModal() {
@@ -257,6 +251,13 @@ function editEvent() {
 function formatDate(date) {
   if (!date) return ''
   return dayjs(date).format('YYYY 年 M 月 D 日')
+}
+
+// 格式化日期時間
+function formatDateTime(date) {
+  if (!date) return '尚無編輯紀錄'
+  const formatted = dayjs(date).format('YYYY/MM/DD')
+  return formatted === 'Invalid Date' ? '時間格式錯誤' : formatted
 }
 
 // 取得事件類型文字
@@ -462,32 +463,22 @@ onUnmounted(() => {
   color: #333;
 }
 
-/* 日期時間 */
-.datetime-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.date-text {
-  font-size: 16px;
-  font-weight: 450;
-  color: #666;
-  justify-content: center;
-  text-align: center;
-}
-
-.time-range {
+/* 日期 */
+.date-info {
   display: flex;
   justify-content: center;
   text-align: center;
   gap: 8px;
   color: #666;
   font-size: 16px;
+  font-weight: 500;
 }
 
 .separator {
-  color: #ccc;
+  color: #999;
+  font-size: 14px;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 /* 地點 */
@@ -500,107 +491,79 @@ onUnmounted(() => {
 }
 
 /* 時間軸  */
- .timeline {
-  background: #f8f9fa;
-  border-radius: 6px;
-  padding: 15px;
-  position: relative; 
-  overflow: hidden;
+.unified-timeline {
+  padding: 15px 15px;
 }
 
-.timeline-row {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  align-items: center;
-  gap: 15px;
-  box-sizing: border-box;
-  height: 60px;
+.timeline-node-item {
+  display: flex;
+  gap: 20px;
   position: relative;
-  z-index: 1;
-  height: 60px;
 }
 
-.timeline-row:last-child {
-  margin-bottom: 0;
+.node-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
 }
 
-.time-label {
-  font-size: 12px;
-  color: #999;
-  text-align: right;
-  padding-right: 5px; 
-  white-space: nowrap;
+.node-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ccc; 
+  z-index: 2;
+  border: 2px solid white;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-top: 20px;
+  margin-bottom: 15px;
 }
 
-/* 每個小時的分隔線*/
-.timeline-segment {
-  height: 1px; 
-  background: #e0e0e0;
-  border-radius: 0; 
+.node-dot.type-checkup { background-color: #ff6b9d; }
+.node-dot.type-other { background-color: #4fc3f7; }
+.node-dot.type-appointment{background-color: #9c8ec9;}
+.node-dot.type-reminder{background-color: #ffa726;}
+
+/* 終點節點 */
+.node-dot.is-end {
+  background-color: white !important;
+  border: 3px solid;
+}
+.node-dot.is-end.type-checkup { border-color: #ff6b9d; }
+.node-dot.is-end.type-other { border-color: #4fc3f7; }
+.node-dot.is-end.type-appointment { border-color: #9c8ec9; }
+.node-dot.is-end.type-reminder { border-color: #ffa726; }
+
+.node-line {
+  width: 3px;
+  flex-grow: 1;
+  background: #f0f0f0;
+  min-height: 40px; 
 }
 
-/* 時間區塊的容器 */
-.event-block-container {
-  position: absolute;
-  margin-top:29px;
-  left: 105px; 
-  width: calc(100% - 105px - 15px);
-  background-color: #ff6b9d; 
+.node-info-card {
+  flex: 1;
+  background: #fdfdfd;
+  border: 1px solid #f0f0f0;
+  padding: 10px 15px;
   border-radius: 8px;
-  z-index: 2; 
-  padding: 4px 15px; 
-  box-sizing: border-box;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  color: white;
-  overflow: hidden; 
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
 }
 
-.event-block ,
-.timeline-time,
-.timeline-title{
-  font-size: 14px;
-  font-weight: bold;
-  opacity: 0.9;
-  white-space: nowrap; 
-  overflow: hidden; 
-  text-overflow: ellipsis;
+.node-time {
+  font-size: 16px;
+  font-weight: 700;
+  color: #333;
 }
 
-.timeline-time,
-.timeline-title{
-  display: flex;
-  justify-content:flex-start;
-  text-align: left;
-}
-
-.timeline-bar {
-  background: #e0e0e0;
-  border-radius: 4px;
-  position: relative;
-}
-
-.timeline-bar.active {
-  background: #ff6b9d;
-  height: 40px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-}
-
-.timeline-row.highlight {
-  background: #fff;
-  padding: 5px;
-  border-radius: 8px;
-  margin: 5px -5px;
-}
-
-.timeline-row.highlight .time-label {
-  color: #666;
-  font-weight: 500;
+.node-desc {
+  font-size: 13px;
+  color: #999;
+  margin-top: 2px;
 }
 
 /* 地圖 */
@@ -638,6 +601,33 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   text-align: center;
+}
+
+/* 元資料 */
+.event-meta {
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 15px;
+  margin-bottom: 5px;
+  justify-content: center;
+  text-align: center;
+}
+
+.meta-item {
+  margin-bottom: 15px;
+  justify-content: center;
+  text-align: center;
+  font-size: 15px
+}
+
+.meta-label  {
+  color: #999;
+}
+
+.meta-value {
+  color: #666;
+  font-weight: 500;
+  margin-right: 5px;
 }
 
 /* 底部按鈕 */
@@ -740,8 +730,6 @@ onUnmounted(() => {
   }
   
   .detail-content,
-  .date-text,
-  .time-range span,
   .description-text {
     font-size: 16px;
   }
@@ -815,8 +803,6 @@ onUnmounted(() => {
   }
   
   .detail-content,
-  .date-text,
-  .time-range span,
   .description-text {
     font-size: 17px;
   }
@@ -890,8 +876,6 @@ onUnmounted(() => {
   }
   
   .detail-content,
-  .date-text,
-  .time-range span,
   .description-text,
   .location-info span {
     font-size: 20px;
@@ -925,9 +909,6 @@ onUnmounted(() => {
   .event-block-container{
     left: 80px;
     width: 500px;
-  }
-  .timeline-title{
-    font-size: 18px;
   }
 }
 </style>
