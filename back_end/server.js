@@ -17,7 +17,6 @@ dotenv.config();
 const app = express();
 const upload = multer({ dest: 'temp/' });
 
-
 app.use(cors({
   origin: function (origin, callback) {
     // 允許沒有 origin 的請求 (例如行動裝置 App 或 Postman)
@@ -25,8 +24,8 @@ app.use(cors({
     
     // 定義允許的清單
     const allowedOrigins = [
-    //   'http://localhost:5173',
-    //   'http://127.0.0.1:5173',
+      // 'http://localhost:5173',
+      // 'http://127.0.0.1:5173',
       'http://192.168.0.187:5173' // 手機目前連線的網址
     ];
 
@@ -122,9 +121,9 @@ app.post('/api/schedule', authMiddleware , async (req, res) => {
             personal_informations_user_id, 
             event_title, 
             event_type, 
-            event_start_date, 
-            event_start_time, 
+            event_start_date,
             event_end_date, 
+            event_start_time, 
             event_end_time, 
             event_place, 
             event_describe, 
@@ -139,7 +138,7 @@ app.post('/api/schedule', authMiddleware , async (req, res) => {
             data.event_title, 
             data.event_type, 
             data.event_start_date, 
-            data.event_end_date,
+            data.event_end_date, 
             data.event_start_time, 
             data.event_end_time, 
             data.event_place, 
@@ -186,7 +185,7 @@ app.put('/api/schedule/:eventId', authMiddleware , async (req, res) => {
         event_title=?, 
         event_type=?, 
         event_start_date=?, 
-        event_end_date=?, 
+        event_end_date=?,
         event_start_time=?, 
         event_end_time=?, 
         event_place=?, 
@@ -196,7 +195,7 @@ app.put('/api/schedule/:eventId', authMiddleware , async (req, res) => {
     try {
         await db.query(sql, [
             data.event_title, data.event_type, data.event_start_date, 
-            data.event_end_date,data.event_start_time, data.event_end_time, data.event_place,  
+            data.event_end_date,data.event_start_time, data.event_end_time, data.event_place, 
             data.event_describe, eventId, userId
         ]);
         res.json({ success: true });
@@ -353,6 +352,6 @@ app.delete('/api/diary/:diaryId', authMiddleware , async (req, res) => {
     }
 });
 
-app.listen(3001,'0.0.0.0', () => {
+app.listen(3001, () => {
     console.log('🚀 橋樑已搭建！後端伺服器運行在 http://192.168.0.187:3001');
 });
