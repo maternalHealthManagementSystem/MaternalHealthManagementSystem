@@ -6,8 +6,6 @@ import { v2 as cloudinary } from 'cloudinary';
 import  verifyToken from "./middleware/verifyToken.js";
 import authRoutes from './routes/auth.routes.js';
 
-
-
 dotenv.config();
 // Cloudinary 配置
 cloudinary.config({
@@ -19,7 +17,9 @@ cloudinary.config({
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  // origin: ['http://localhost:5173','http://127.0.0.1:5173',
+  //   'http://192.168.0.187:5173'],
+  origin:'http://192.168.0.187:5173',
   credentials: true
 }));
 app.use(express.json({limit: '10mb' })); // 增加 JSON 請求的大小限制
@@ -32,8 +32,8 @@ app.get('/', (req, res) => {
   res.send('Backend API is running');
 });
 
-app.listen(3002, () => {
-  console.log('API running at http://localhost:3002');
+app.listen(3002,'0.0.0.0', () => {
+  console.log('API running at http://192.168.0.187:3002');
 });
 
 app.get("/api/profile", verifyToken,async (req, res) => {

@@ -554,7 +554,7 @@ const fetchNotifications = async () => {
 
     // 1. 嘗試從 3001 取得個人資料 (LMP)
     try {
-      const profileRes = await api.get(`http://localhost:3000/api/personal_information/${user.user_id}`);
+      const profileRes = await api.get(`http://192.168.0.187:3000/api/personal_information/${user.user_id}`);
       if (profileRes.data && profileRes.data.success) {
         currentWeek = getPregnancyWeek(profileRes.data.data.lmpDate);
         console.log(`[通知檢查] 目前週數: ${currentWeek}`);
@@ -563,7 +563,7 @@ const fetchNotifications = async () => {
       console.warn("無法從 3000 取得週數，繼續嘗試抓取基礎通知...");
     }
 
-    const res = await api.get(`http://localhost:3002/api/notifications/${user.user_id}`, {
+    const res = await api.get(`http://192.168.0.187:3002/api/notifications/${user.user_id}`, {
       params: { week: currentWeek }
     });
 
@@ -607,7 +607,7 @@ const openEducation = async (notification) => {
   const user = JSON.parse(userStr);
 
   try {
-    await api.post("http://localhost:3000/api/read_records", {
+    await api.post("http://192.168.0.187:3000/api/read_records", {
       user_id: user.user_id,
       article_id: notification.article_id
     });

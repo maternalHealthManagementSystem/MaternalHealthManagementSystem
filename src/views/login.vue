@@ -18,8 +18,8 @@
         <label>手機號碼</label>
         <input
           v-model="phoneNumber"
-          :class="{ error: phoneError }"
-          type="text"
+          type="tel"
+          autocomplete="tel"
           placeholder="請輸入手機號碼"
         />
         <p class="error-text" v-if="phoneError">{{ phoneError }}</p>
@@ -31,18 +31,28 @@
         <label>驗證碼</label>
         <div class="otp-container">
           <input
-            v-for="(digit, index) in otpDigits"
-            :key="index"
-            ref="otpRefs"
-            v-model="otpDigits[index]"
+            ref="hiddenOtpInput"
+            v-model="fullOtp"
+            type="text"
+            maxlength="6"
             autocomplete="one-time-code"
+            name="one-time-code"
             inputmode="numeric"
-            maxlength="1"
-            class="otp-input"
-            @input="handleInput(index)"
-            @keydown="handleKeydown($event, index)"
-            @paste="handlePaste"
+            pattern="[0-9]*"
+            class="hidden-input"
           />
+
+          <div class="otp-visual-group">
+            <div
+              v-for="(digit, index) in 6"
+              :key="index"
+              class="otp-input-visual"
+              :class="{ 'is-active': fullOtp.length === index }"
+              @click="focusHiddenInput"
+            >
+              {{ fullOtp[index] || '' }}
+            </div>
+          </div>
         </div>
         <p class="error-text" v-if="smsError">{{ smsError }}</p>
         
@@ -60,14 +70,34 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, onUnmounted, nextTick, watch } from "vue";
+import { ref, onMounted, onUnmounted, nextTick, watch } from "vue";
 import { useRouter } from "vue-router";
 import api from "../services/api";
 import { ElMessage, ElMessageBox,ElLoading } from "element-plus";
 
 const router = useRouter();
 const demoMode = false; // 建議接後端時關閉 demo
+
+// 讓驗證碼輸入欄位的分段式UI同時支援「自動填充」
+const fullOtp = ref("");
+const hiddenOtpInput = ref(null);
+
+const focusHiddenInput = () => {
+  hiddenOtpInput.value?.focus();
+};
+
+onMounted(() => {
+  document.addEventListener("click", () => {
+    hiddenOtpInput.value?.focus();
+  });
+});
+
+const syncDigits = () => {
+  // 當 fullOtp 改變（不管是手打還是自動填充），視覺格子會跟著響應
+  console.log("當前驗證碼：", fullOtp.value);
+};
 
 // 狀態控制
 const showIdPhone = ref(true);
@@ -100,6 +130,13 @@ const validatePhone = (phone) => {
   const re = /^09\d{8}$/;
   return re.test(phone);
 };
+
+
+const savedStep = sessionStorage.getItem("otp_step");
+
+if (savedStep === "verify") {
+  showIdPhone.value = false;
+}
 
 
 // 1. 啟動倒數計時
@@ -186,6 +223,7 @@ const verification = async () => {
       smsCode.value = "";
 
       startCountdown();
+      sessionStorage.setItem("otp_step", "verify");
     }
 
   } catch (err) {
@@ -281,6 +319,7 @@ const resendsms = async () => {
 // 5. 回到上一步
 const resendPhoneInput = () => {
   showIdPhone.value = true;
+  sessionStorage.removeItem("otp_step");
   smsCode.value = "";
   if (timer) clearInterval(timer);
   isCounting.value = false;
@@ -291,13 +330,24 @@ onUnmounted(() => {
   if (timer) clearInterval(timer);
 });
 
+onMounted(() => {
+  const savedStep = sessionStorage.getItem("otp_step");
+  if (savedStep === "verify") {
+    showIdPhone.value = false;
+
+    nextTick(() => {
+      hiddenOtpInput.value?.focus();
+    });
+  }
+});
+
 
 // ----------------
 // OTP輸入框處理
 // ----------------
 
 // 組合成完整 OTP
-const getOtp = () => otpDigits.value.join("");
+const getOtp = () => fullOtp.value;
 
 // 自動跳下一格
 const handleInput = (index) => {
@@ -470,13 +520,58 @@ button:hover {
 
 /* OTP輸入框樣式 */
 .otp-container {
+  position: relative;
+  width: 100%;
+  margin: 20px 0;
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 15px;
+  justify-content: center;
 }
 
-.otp-input {
+/* 將真實輸入框隱藏，但不能用 display: none，否則 iOS 無法聚焦 */
+.hidden-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.01;         /* 透明但存在 */
+  z-index: 10;        /* 確保在最上層 */
+  cursor: text;
+  border: none;       /* 移除邊框以免干擾佔位 */
+}
+
+/* 視覺格子組：確保它是橫向排列且佔滿寬度 */
+.otp-visual-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: space-between;
+  pointer-events: none; /* 讓點擊事件穿透到下層的 hidden-input，或者靠 z-index 處理 */
+}
+
+/* 單個視覺格子 */
+.otp-input-visual {
+  flex: 1;            /* 平分空間 */
+  max-width: 45px;
+  height: 55px;
+  display: flex;      /* 關鍵：改為 flex 才能置中數字 */
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: white;
+  transition: all 0.2s ease;
+}
+
+/* 啟動狀態（游標感） */
+.otp-input-visual.is-active {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* .otp-input {
   width: 45px;
   height: 55px;
   text-align: center;
@@ -488,7 +583,7 @@ button:hover {
 .otp-input:focus {
   border-color: #3b82f6;
   outline: none;
-}
+} */
 
 /* 手機響應式調整 */
 @media (max-width: 480px) {

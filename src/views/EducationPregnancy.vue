@@ -138,7 +138,7 @@ const fetchReadRecords = async () => {
       return;
     }
     
-    const response = await api.get(`http://localhost:3000/api/read_records?user_id=${userId}`);
+    const response = await api.get(`http://192.168.0.187:3000/api/read_records?user_id=${userId}`);
     
     // 直接從 response.data 拿資料，不用 await response.json()
     // 這裡會拿到你剛剛在網頁上看到的 ["PG001", "PG002", "PG003", "PG004"]
@@ -185,7 +185,7 @@ const handleLinkClick = async (item) => {
     const userId = getCurrentUserId();
     // 發送 POST 請求新增紀錄
     // api.post 的第二個參數就是要傳送的資料物件，不用寫 headers，也不用 JSON.stringify
-    await api.post('http://localhost:3000/api/read_records', {
+    await api.post('http://192.168.0.187:3000/api/read_records', {
       user_id: userId,      
       article_id: item.he_pregnancy_id // 傳送 JSON 裡定義的文章 ID
     });

@@ -270,7 +270,7 @@ onMounted(async () => {
   try {
     // 動態獲取 userId 來代入預產期
     const userId = getCurrentUserId();
-    const response = await api.get(`http://localhost:3000/api/personal_information/${userId}`);
+    const response = await api.get(`http://192.168.0.187:3000/api/personal_information/${userId}`);
     const result = response.data; // 直接從 .data 拿
 
     if (result.success && result.data.dueDate) {
@@ -460,7 +460,7 @@ const submitForm = async () => {
     // 動態獲取 userId 來送出表單
     const userId = getCurrentUserId();
     
-    const response = await api.post("http://localhost:3000/api/submit_edinburgh", {
+    const response = await api.post("http://192.168.0.187:3000/api/submit_edinburgh", {
       user_id: userId,
       form: form,
       questions: questions,
@@ -476,7 +476,7 @@ const submitForm = async () => {
       // 呼叫後端 API 獲取歷史分數
       try {
         // 呼叫在後端建立的新 API
-        const historyRes = await api.get(`http://localhost:3000/api/edinburgh_history/${userId}`);
+        const historyRes = await api.get(`http://local192.168.0.187host:3000/api/edinburgh_history/${userId}`);
         const historyResult = historyRes.data;
 
         if (historyResult.success && historyResult.data && historyResult.data.length > 0) {

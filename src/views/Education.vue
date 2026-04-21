@@ -64,7 +64,7 @@ onMounted(async () => {
     const userId = user.user_id; // 這就是動態的 'U001', 'U002', 或 'U003'
 
     // 發送請求
-    const response = await api.get(`http://localhost:3000/api/personal_information/${userId}`);
+    const response = await api.get(`http://192.168.0.187:3000/api/personal_information/${userId}`);
     const result = response.data;
 
     if (result.success && result.data) {
@@ -188,7 +188,7 @@ const handleArticleClick = async (clickedItem) => {
 
     // 3. 呼叫我們之前寫好的 POST API
     // api.post 的第二個參數就是你要傳的 Body，不用自己 stringify 也不用寫 headers，axios 都會幫你做好！
-    await api.post('http://localhost:3000/api/read_records', {
+    await api.post('http://192.168.0.187:3000/api/read_records', {
       user_id: userId,
       article_id: clickedItem.article_id
     });

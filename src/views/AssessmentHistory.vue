@@ -58,7 +58,7 @@ const fetchAssessmentHistory = async () => {
 
     // api.get 會自動幫你在 Header 帶上 Authorization: Bearer <token>
     // axios 的參數可以用物件寫法 (params)，比字串拼接更乾淨
-    const response = await api.get('http://localhost:3000/api/assessment_history', {
+    const response = await api.get('http://192.168.0.187:3000/api/assessment_history', {
       params: { user_id: userId }
     });
 
