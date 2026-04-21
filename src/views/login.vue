@@ -181,12 +181,6 @@ const verification = async () => {
   } else if (!validatePhone(phoneNumber.value)) {
     phoneError.value = "手機格式錯誤，需為 09 開頭 10 碼";
     hasError = true;
-  }if (!phoneNumber.value) {
-    phoneError.value = "請輸入手機號碼";
-    hasError = true;
-  } else if (!validatePhone(phoneNumber.value)) {
-    phoneError.value = "手機格式錯誤，需為 09 開頭 10 碼";
-    hasError = true;
   }
 
   if (hasError) return;
@@ -349,26 +343,11 @@ onMounted(() => {
 // 組合成完整 OTP
 const getOtp = () => fullOtp.value;
 
-// 自動跳下一格
-const handleInput = (index) => {
-  const val = otpDigits.value[index];
-
-  // 只允許數字
-  if (!/^\d$/.test(val)) {
-    otpDigits.value[index] = "";
-    return;
-  }
-
-  // 跳到下一格
-  if (index < 5) {
-    nextTick(() => {
-      otpRefs.value[index + 1].focus();
-    });
-  } else {
-    // 👉 最後一格 → 自動送出（可選）
+watch(fullOtp, (val) => {
+  if (val.length === 6) {
     sendsms();
   }
-};
+});
 
 // Backspace 處理
 const handleKeydown = (e, index) => {
