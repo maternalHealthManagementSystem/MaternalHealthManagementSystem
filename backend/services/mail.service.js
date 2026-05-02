@@ -26,18 +26,39 @@ export const sendOtpEmail = async (to, otp) => {
     `.trim(),
 
     html: `
-      <div style="text-align:center; font-family:sans-serif;">
-        <p>Your verification code is:</p>
-        <h1 style="font-size:32px; letter-spacing:5px;">${otp}</h1>
+    <table width="100%" bgcolor="#f6f9fc" cellpadding="0" cellspacing="0">
+      <tr>
+        <td align="center">
 
-        <p>Use this code to sign in</p>
-        <p>Valid for 5 minutes</p>
+          <table width="600" bgcolor="#ffffff" cellpadding="0" cellspacing="0" style="border:1px solid #e0e0e0;">
+            <tr>
+              <td align="center" style="padding:40px 20px; font-family: Arial, sans-serif;">
 
-        <hr />
+                <h2 style="color:#4A90E2;">孕產婦健康照護管理系統</h2>
 
-        <p>您的驗證碼為 ${otp}</p>
-        <p>5分鐘內有效</p>
-      </div>
-    `,
+                <p>Your verification code is:</p>
+                <p>您的驗證碼為 </p>
+
+                <table cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td bgcolor="#f8f9fa" style="padding:15px 30px;">
+                      <span style="font-size:42px; font-weight:bold; color:#d93025;">
+                        ${otp}
+                      </span>
+                    </td>
+                  </tr>
+                </table>
+
+                <p>Valid for 5 minutes</p>
+                <p>5分鐘內有效</p>
+
+              </td>
+            </tr>
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  `,
   });
 };
