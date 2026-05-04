@@ -17,7 +17,26 @@ dotenv.config();
 const app = express();
 const upload = multer({ dest: 'temp/' });
 
-app.use(cors());
+app.use(cors({
+  origin: function (origin, callback) {
+    // 允許沒有 origin 的請求 (例如行動裝置 App 或 Postman)
+    if (!origin) return callback(null, true);
+    
+    // 定義允許的清單
+    const allowedOrigins = [
+      // 'http://localhost:5173',
+      // 'http://127.0.0.1:5173',
+      'http://172.20.10.4:5173' // 手機目前連線的網址
+    ];
+
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://172.20.')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true // 如果你有用到 Cookie 或 Auth Header，這行很重要
+}));
 app.use(express.json());
 
 // Cloudinary 配置 
@@ -334,5 +353,5 @@ app.delete('/api/diary/:diaryId', authMiddleware , async (req, res) => {
 });
 
 app.listen(3001, () => {
-    console.log('🚀 橋樑已搭建！後端伺服器運行在 http://localhost:3001');
+    console.log('🚀 橋樑已搭建！後端伺服器運行在 http://172.20.10.4:3001');
 });

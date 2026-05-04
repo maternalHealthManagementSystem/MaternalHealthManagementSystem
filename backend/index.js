@@ -6,8 +6,6 @@ import { v2 as cloudinary } from 'cloudinary';
 import  verifyToken from "./middleware/verifyToken.js";
 import authRoutes from './routes/auth.routes.js';
 
-
-
 dotenv.config();
 // Cloudinary 配置
 cloudinary.config({
@@ -19,7 +17,9 @@ cloudinary.config({
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  // origin: ['http://localhost:5173','http://127.0.0.1:5173',
+  //   'http://192.168.0.187:5173'],
+  origin:'http://172.20.10.4:5173',
   credentials: true
 }));
 app.use(express.json({limit: '10mb' })); // 增加 JSON 請求的大小限制
@@ -32,8 +32,8 @@ app.get('/', (req, res) => {
   res.send('Backend API is running');
 });
 
-app.listen(3002, () => {
-  console.log('API running at http://localhost:3002');
+app.listen(3002,'0.0.0.0', () => {
+  console.log('API running at http://172.20.10.4:3002');
 });
 
 app.get("/api/profile", verifyToken,async (req, res) => {
@@ -135,16 +135,24 @@ app.put("/api/profile/:user_id", verifyToken, async (req, res) => {
 
 // 引入並使用產檢資料的路由
 import prenatalRoutes from "./routes/prenatal.routes.js";
-app.use("/api/prenatal", prenatalRoutes);
+app.use("/api/prenatal", verifyToken, prenatalRoutes);
 
 // 引入並使用寶寶水果示意圖的路由
 import growthRoutes from "./routes/growth.routes.js";
-app.use("/api/growth", growthRoutes);
+app.use("/api/growth", verifyToken, growthRoutes);
 
 // 引入並使用通知的路由
 import notificationRoutes from "./routes/notification.routes.js";
-app.use("/api/notifications", notificationRoutes);
+app.use("/api/notifications", verifyToken, notificationRoutes);
 
 // 引入並使用上傳圖片的路由
 import uploadRoutes from "./routes/upload.routes.js";
 app.use("/api", uploadRoutes);
+
+// 引入並使用超音波列表的路由
+import ultrasoundTimelineRoutes from "./routes/ultrasoundTimeline.routes.js";
+app.use("/api",verifyToken, ultrasoundTimelineRoutes);
+
+// 引入並使用最新超音波的路由
+import ultrasoundRoutes from "./routes/ultrasound.routes.js";
+app.use("/api",verifyToken, ultrasoundRoutes);
