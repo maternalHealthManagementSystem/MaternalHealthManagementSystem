@@ -22,12 +22,40 @@
           </div>
         </div>
         <div class="image-placeholder">
+          <div v-if="isImageLoading">載入中...</div>
+
           <img
-            v-if="currentData.img"
+            v-else-if="ultrasoundImg"
+            :src="ultrasoundImg"
+            class="baby-fruit-img"
+            @click="showImageModal = true"
+          />
+
+          <img
+            v-else-if="currentData.img"
             :src="currentData.img"
-            alt="baby size"
             class="baby-fruit-img"
           />
+        </div>
+        <div v-if="ultrasoundList.length || currentData.img" class="timeline">
+          <button 
+            class="fruit-toggle-btn"
+            :class="{ active: ultrasoundImg === null }"
+            @click="showFruitImage"
+          >
+            寶寶示意圖
+          </button>
+          
+          <button
+            v-for="item in ultrasoundList"
+            :key="item.checkup_wks"
+            :class="{ active: item.checkup_wks === selectedWeek }"
+            @click="selectUltrasound(item)"
+          >
+            {{ item.checkup_wks }}週
+            <br />
+            <small>{{ formatDate(item.upload_date) }}</small>
+          </button>
         </div>
 
         <div class="pregnancy-tracker">
@@ -75,6 +103,13 @@
     @delete="handleDeleteDiary"
     @edit="handleEditDiary"
   />
+  <div v-if="showImageModal" class="image-modal" @click="showImageModal = false">
+    <img
+      :src="ultrasoundImg"
+      class="modal-img"
+      @click.stop
+    />
+  </div>
 </template>
 
 <script setup>
@@ -90,6 +125,14 @@ import api from "../services/api.js";
 
 const calendarStore = useCalendarStore();
 const router = useRouter();
+const ultrasoundImg = ref(null);
+const isImageLoading = ref(true);
+const ultrasoundList = ref([]);
+const selectedWeek = ref(null);
+const showImageModal = ref(false);
+const formatDate = (date) => {
+  return dayjs(date).format("YYYY/MM/DD");
+};
 
 // 合併事件和日記（用於顯示在日曆上）
 const combinedCalendarData = computed(() => {
@@ -127,29 +170,6 @@ const getLoggedInUserId = () => {
 };
 const currentUserId = getLoggedInUserId();
 
-onMounted(async () => {
-  //await calendarStore.fetchAllData('U001');
-  if (!currentUserId) {
-    alert("登入逾時或尚未登入，請重新登入");
-    router.push("/"); // 導回登入頁
-    return;
-  }
-
-  await calendarStore.fetchAllData(currentUserId);
-
-  if (router.query.date) {
-    newDiary.value.date = router.query.date;
-    currentMonth.value = dayjs(router.query.date);
-  }
-
-  if (router.query.editEventId) {
-    const eventToEdit = calendarStore.events.find(e => e.id == router.query.editEventId);
-    if (eventToEdit) {
-      selectedEvent.value = { ...eventToEdit };
-      showEditForm.value = true;
-    }
-  }
-});
 
 // 彈窗狀態
 const showEventDetail = ref(false);
@@ -163,10 +183,7 @@ const selectedEvent = ref({});
 // 選中的日記
 const selectedDiary = ref({});
 
-// --- 函式處理 ---
-onMounted(() => {
-  console.log("Home page loaded.");
-});
+
 
 // 處理日曆事件點擊
 function handleEventClick(event) {
@@ -283,7 +300,25 @@ function calculatePregnancyByLMP(lmpDate) {
   console.log(`LMP: ${lmpDate}, 目前已過: ${currentTotalDays} 天`);
 }
 
-// 2. 抓取水果資料
+// 2. 抓取超音波照片或水果資料
+const fetchUltrasound = async (week) => {
+  try {
+    const res = await api.get("/api/ultrasound/latest", {
+      params: {
+        checkup_wks: week
+      }
+    });
+
+    if (res.data.hasUltrasound) {
+      ultrasoundImg.value = res.data.img;
+    } else {
+      ultrasoundImg.value = null;
+    }
+  } catch (err) {
+    console.error("取得超音波失敗:", err);
+  }
+};
+
 const fetchGrowthData = async (week) => {
   try {
     const targetWeek = Math.max(4, Math.min(40, week));
@@ -302,25 +337,62 @@ const fetchGrowthData = async (week) => {
   }
 };
 
-onMounted(async () => {
-  const loginUser = JSON.parse(sessionStorage.getItem("user") || "{}");
-  console.log("登入使用者:", loginUser);
+// 3. 抓取所有超音波資料（用於選擇週數）
 
-  if (!loginUser.user_id) return;
+// 顯示水果示意圖的邏輯
+const showFruitImage = () => {
+  ultrasoundImg.value = null;    // 清空超音波路徑，觸發模板顯示水果圖
+  selectedWeek.value = null;     // 取消週數選中狀態（可選）
+};
 
+const fetchUltrasoundList = async () => {
   try {
+    const res = await api.get("/api/ultrasound/all");
+    ultrasoundList.value = res.data;
+
+    // 預設顯示「最接近目前週數」
+    if (res.data.length > 0) {
+      const closest = res.data.reduce((prev, curr) =>
+        Math.abs(curr.checkup_wks - currentWeek.value) <
+        Math.abs(prev.checkup_wks - currentWeek.value)
+          ? curr
+          : prev
+      );
+
+      ultrasoundImg.value = closest.file_path;
+      selectedWeek.value = closest.checkup_wks;
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const selectUltrasound = (item) => {
+  ultrasoundImg.value = item.file_path;
+  selectedWeek.value = item.checkup_wks;
+};
+
+onMounted(async () => {
+  try {
+    // 1. 先抓日曆資料
+    await calendarStore.fetchAllData(currentUserId);
+
+    // 2. 抓個人資料獲取 LMP
     const res = await api.get("/api/profile");
 
-    if (res.data && res.data.LMP) {
+    if (res.data?.LMP) {
       calculatePregnancyByLMP(res.data.LMP);
-      console.log("計算後週數:", currentWeek.value);
-
+      
+      // 3. 獲取所有超音波紀錄
+      await fetchUltrasoundList(); 
+      
+      // 4. 獲取水果成長資料
       await fetchGrowthData(currentWeek.value);
-    } else {
-      console.log("沒有lmp資料，無法計算週數");
     }
   } catch (error) {
-    console.error("初始化首頁資料失敗:", error);
+    console.error("初始化失敗:", error);
+  } finally {
+    isImageLoading.value = false;
   }
 });
 </script>
@@ -439,9 +511,17 @@ onMounted(async () => {
 
 /* 水果示意圖 */
 .baby-fruit-img {
-  max-width: 100%;
-  height: auto;
+  width: 300px;           
+  height: 300px;          
+  object-fit: cover;      /* 保持比例並填滿容器 */
   border-radius: 15px;
+  cursor: pointer;        /* 增加手型游標讓使用者知道可以點擊 */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.baby-fruit-img:hover {
+  transform: scale(1.02); /* 滑鼠滑過稍微放大，增加互動感 */
 }
 
 .fruit-text {
@@ -497,6 +577,61 @@ onMounted(async () => {
   box-sizing: border-box; /* 讓 padding 和 border 包含在 width 內 */
 }
 
+/* 時間軸樣式 */
+.timeline {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.timeline button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 20px;
+  background-color: #eee;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.timeline button.active {
+  background-color: #57aee2;
+  color: white;
+  font-weight: bold;
+}
+
+/* 模態視窗樣式 */
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 10px;
+}
+
+.fruit-toggle-btn {
+  background-color: #fef1ff !important; /* 淡淡的粉紅色 */
+  border: 1px solid #f893ff !important;
+  color: #dd4ee7;
+}
+
+.fruit-toggle-btn.active {
+  background-color: #f893ff !important;
+  color: white !important;
+}
+
 /* =====================================
    📱 手機版：< 768px  → 上下排列
 ===================================== */
@@ -516,9 +651,9 @@ onMounted(async () => {
     height: auto;
   }
 
-  .baby-fruit-img {
-    width: 65%;
-    height: auto;
+.baby-fruit-img {
+    width: 250px;
+    height: 250px;
   }
 
   .fruit-text {

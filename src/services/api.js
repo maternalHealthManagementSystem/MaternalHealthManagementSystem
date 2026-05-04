@@ -4,7 +4,7 @@ import { ElMessageBox, ElMessage } from "element-plus";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  timeout: 5000,
+  timeout: 15000,
 });
 
 // 標記是否正在跳轉，避免重複彈出多個視窗

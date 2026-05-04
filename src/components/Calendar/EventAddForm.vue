@@ -556,7 +556,7 @@ function saveEvent() {
   transform: scale(0.9);
 }
 
-/* iPhne 12 Pro  */
+/* iPhone 12 Pro  */
 @media (max-width: 400px){
   .modal-overlay {
     padding: 0; 
@@ -629,7 +629,7 @@ function saveEvent() {
   }
 }
 
-/* iPhne 14 Pro Max */
+/* iPhone 14 Pro Max */
 @media(min-width: 400px) and (max-width: 450px){
   .modal-overlay {
     padding: 0; 
