@@ -428,7 +428,7 @@ onMounted(async () => {
   try {
     // 動態獲取 userId 進行資料代入
     const userId = getCurrentUserId();
-    const response = await api.get(`http://localhost:3000/api/personal_information/${userId}`);
+    const response = await api.get(`http://192.168.100.6:3000/api/personal_information/${userId}`);
     const result = response.data;
 
     if (result.success && result.data) {
@@ -468,7 +468,7 @@ const submitForm = async () => {
     // 動態獲取 userId 來送出表單
     const userId = getCurrentUserId();
 
-    const response = await api.post("http://localhost:3000/api/submit_prenatal", {
+    const response = await api.post("http://192.168.100.6:3000/api/submit_prenatal", {
       user_id: userId,
       form: form,              // 包含基本資料、行為、病史
       educationTopics: educationTopics // 18 題衛教資料

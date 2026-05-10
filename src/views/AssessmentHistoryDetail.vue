@@ -206,8 +206,8 @@ const fetchDetail = async () => {
     // 直接根據 type 決定 API 路徑與判斷布林值
     const isPrenatal = formType === 'prenatal';
     const apiUrl = isPrenatal 
-      ? `http://localhost:3000/api/prenatal_detail/${responseId}`
-      : `http://localhost:3000/api/edinburgh_detail/${responseId}`;
+      ? `http://192.168.100.6:3000/api/prenatal_detail/${responseId}`
+      : `http://192.168.100.6:3000/api/edinburgh_detail/${responseId}`;
     
     const response = await api.get(apiUrl)  
     // axios 會自動解析 JSON 並放在 .data 屬性中

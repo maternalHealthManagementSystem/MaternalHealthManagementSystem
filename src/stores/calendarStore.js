@@ -37,7 +37,7 @@ export const useCalendarStore = defineStore('schedule', {
       this.currentUserId = user_id;
       this.loading = true;
       try {
-        const response = await api.get(`http://localhost:3001/api/schedule`,{
+        const response = await api.get(`http://192.168.100.6:3001/api/schedule`,{
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }
@@ -102,7 +102,7 @@ export const useCalendarStore = defineStore('schedule', {
           event_describe: newEvent.description || '',
           personal_informations_user_id: this.currentUserId,
         };
-        await axios.post('http://localhost:3001/api/schedule', payload, {
+        await axios.post('http://192.168.100.6:3001/api/schedule', payload, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`
           }
@@ -128,7 +128,7 @@ export const useCalendarStore = defineStore('schedule', {
           event_describe: updatedEvent.description,
           personal_informations_user_id: this.currentUserId
         };
-        await axios.put(`http://localhost:3001/api/schedule/${updatedEvent.id}`, payload,
+        await axios.put(`http://192.168.100.6:3001/api/schedule/${updatedEvent.id}`, payload,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -142,7 +142,7 @@ export const useCalendarStore = defineStore('schedule', {
     // 刪除行程
     async deleteEvent(eventId) {
       try {
-        await axios.delete(`http://localhost:3001/api/schedule/${eventId}`,
+        await axios.delete(`http://192.168.100.6:3001/api/schedule/${eventId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -168,7 +168,7 @@ export const useCalendarStore = defineStore('schedule', {
           formData.append('image', imageFile);
         }
 
-        await axios.post('http://localhost:3001/api/diary', formData,
+        await axios.post('http://192.168.100.6:3001/api/diary', formData,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -196,7 +196,7 @@ export const useCalendarStore = defineStore('schedule', {
         } else {
           formData.append('image', updatedDiary.image || '');
         }
-        await axios.put(`http://localhost:3001/api/diary/${updatedDiary.id}`, formData,
+        await axios.put(`http://192.168.100.6:3001/api/diary/${updatedDiary.id}`, formData,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`
@@ -213,7 +213,7 @@ export const useCalendarStore = defineStore('schedule', {
     // 刪除日記
     async deleteDiary(diaryId) {
       try {
-        await axios.delete(`http://localhost:3001/api/diary/${diaryId}`,
+        await axios.delete(`http://192.168.100.6:3001/api/diary/${diaryId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`
