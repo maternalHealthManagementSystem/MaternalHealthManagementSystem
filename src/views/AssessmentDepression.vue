@@ -374,9 +374,9 @@ const previousScore = ref(null);
 const trendText = computed(() => {
   if (previousScore.value === null) return '';
   const diff = totalScore.value - previousScore.value;
-  if (diff > 0) return `上升了 ${diff} 分⬆️`;
-  if (diff < 0) return `下降了 ${Math.abs(diff)} 分⬇️`;
-  return '持平➖';
+  if (diff > 0) return `上升了 ${diff} 分 ▲`;
+  if (diff < 0) return `下降了 ${Math.abs(diff)} 分 ▼`;
+  return '持平 ➖';
 });
 
 // 計算趨勢顏色
