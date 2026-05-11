@@ -376,7 +376,7 @@ const trendText = computed(() => {
   const diff = totalScore.value - previousScore.value;
   if (diff > 0) return `上升了 ${diff} 分 ▲`;
   if (diff < 0) return `下降了 ${Math.abs(diff)} 分 ▼`;
-  return '持平 ➖';
+  return '沒有變動 ＝';
 });
 
 // 計算趨勢顏色
@@ -769,7 +769,7 @@ const closeModal = () => {
 
 .trend-up-danger { color: #e53e3e; }
 .trend-down-good { color: #38a169; }
-.trend-flat { color: #8854c7; }
+.trend-flat { color: #718096; }
 
 .svg-chart-container {
   width: 100%;
