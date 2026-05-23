@@ -122,10 +122,13 @@
               </div>
             </div>
 
-            <p class="trend-encouragement">{{ trendEncouragement }}</p>
+            <p class="trend-encouragement" :style="{ borderLeftColor: themeHexColor, backgroundColor: themeLightBgColor }">
+              {{ trendEncouragement }}
+            </p>
             
             <div class="svg-chart-container">
               <svg viewBox="0 0 400 200" class="trend-svg" preserveAspectRatio="xMidYMid meet">
+                
                 <g class="grid-lines">
                   <line x1="40" y1="20" x2="380" y2="20" stroke="#e2e8f0" stroke-dasharray="4" />
                   <text x="30" y="24" font-size="12" fill="#a0aec0" text-anchor="end">30</text>
@@ -142,17 +145,17 @@
 
                 <defs>
                   <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="#3498db" stop-opacity="0.3" />
-                    <stop offset="100%" stop-color="#3498db" stop-opacity="0.0" />
+                    <stop offset="0%" :stop-color="themeHexColor" stop-opacity="0.3" />
+                    <stop offset="100%" :stop-color="themeHexColor" stop-opacity="0.0" />
                   </linearGradient>
                 </defs>
 
                 <path v-if="areaPath" :d="areaPath" fill="url(#areaGradient)" />
 
-                <path v-if="linePath" :d="linePath" fill="none" stroke="#3498db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                <path v-if="linePath" :d="linePath" fill="none" :stroke="themeHexColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
 
                 <g v-for="(point, index) in chartPoints" :key="index">
-                  <circle :cx="point.x" :cy="point.y" r="5" fill="#ffffff" stroke="#3498db" stroke-width="2" />
+                  <circle :cx="point.x" :cy="point.y" r="5" :fill="themeHexColor" stroke="#ffffff" stroke-width="2" />
                   <text :x="point.x" :y="point.y - 12" font-size="14" font-weight="bold" fill="#2d3748" text-anchor="middle">
                     {{ point.score }}
                   </text>
@@ -347,6 +350,22 @@ const messageBoxBgClass = computed(() => {
   return 'bg-normal-light';
 });
 
+// 計算動態主題色（讓圖表與鼓勵語邊框和總分顏色一致）
+const themeHexColor = computed(() => {
+  const score = totalScore.value;
+  if (score >= 13) return '#da291c'; 
+  if (score >= 10) return '#f39c12'; 
+  return '#27ae60'; 
+});
+
+// 計算鼓勵語區塊的動態淡底色
+const themeLightBgColor = computed(() => {
+  const score = totalScore.value;
+  if (score >= 13) return '#fcf7f7'; // 淡紅色
+  if (score >= 10) return '#faf7f3'; // 淡橘色
+  return '#f3f6f3';                  // 淡綠色
+});
+
 // 歷史紀錄與圖表狀態
 const pastHistoryData = ref([]);
 const previousScore = ref(null);
@@ -355,9 +374,9 @@ const previousScore = ref(null);
 const trendText = computed(() => {
   if (previousScore.value === null) return '';
   const diff = totalScore.value - previousScore.value;
-  if (diff > 0) return `上升了 ${diff} 分`;
-  if (diff < 0) return `下降了 ${Math.abs(diff)} 分`;
-  return '持平';
+  if (diff > 0) return `上升了 ${diff} 分 ▲`;
+  if (diff < 0) return `下降了 ${Math.abs(diff)} 分 ▼`;
+  return '沒有變動 ＝';
 });
 
 // 計算趨勢顏色
@@ -695,9 +714,9 @@ const closeModal = () => {
   margin: 0 auto 15px auto;
 }
 
-.status-normal { background-color: #27ae60; }   /* 綠色 */
-.status-warning { background-color: #f39c12; }  /* 橘色 */
-.status-danger { background-color: #c0392b; }   /* 紅色 */
+.status-danger { background-color: #da291c; }   
+.status-warning { background-color: #f39c12; }  
+.status-normal { background-color: #27ae60; }
 
 .result-title {
   margin: 0 0 15px 0;
@@ -768,13 +787,14 @@ const closeModal = () => {
 .trend-encouragement {
   font-size: 14px;
   color: #4a5568;
-  background-color: #f8fafc;
+  /* background-color: #f8f9fa;  */
+  /* background-color: #f4f3ed; */
   padding: 12px 15px;
   border-radius: 6px;
   margin: 0 0 20px 0;
   line-height: 1.6;
   text-align: left;
-  border-left: 4px solid #3498db;
+  border-left: 4px solid; 
 }
 
 /* =========================================
